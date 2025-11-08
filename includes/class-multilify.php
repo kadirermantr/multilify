@@ -189,7 +189,8 @@ class Multilify {
             return;
         }
 
-        // Handle form submissions
+        // Handle form submissions (nonce is verified inside handle_admin_actions)
+        // phpcs:ignore WordPress.Security.NonceVerification.Missing
         if ( isset( $_POST['multilify_action'] ) ) {
             $this->handle_admin_actions();
         }
@@ -486,7 +487,9 @@ class Multilify {
         $index_name = 'multilify_slug_lookup';
 
         // Check if index exists
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+        // Schema information queries must access INFORMATION_SCHEMA directly
+        // phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery
+        // phpcs:disable WordPress.DB.DirectDatabaseQuery.NoCaching
         $index_exists = $wpdb->get_var( $wpdb->prepare(
             "SELECT COUNT(1) FROM INFORMATION_SCHEMA.STATISTICS
             WHERE table_schema = DATABASE()
@@ -495,16 +498,25 @@ class Multilify {
             $wpdb->postmeta,
             $index_name
         ) );
+        // phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery
+        // phpcs:enable WordPress.DB.DirectDatabaseQuery.NoCaching
 
         if ( ! $index_exists ) {
             // Create composite index for meta_key and meta_value (first 191 chars for utf8mb4)
             // Sanitize index name (alphanumeric and underscore only)
             $safe_index_name = preg_replace( '/[^a-zA-Z0-9_]/', '', $index_name );
 
-            // phpcs:ignore WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+            // Index name is manually sanitized above (only alphanumeric and underscore allowed)
+            // Schema changes require direct queries and cannot use prepared statements for DDL
+            // phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange
+            // phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+            // phpcs:disable WordPress.DB.DirectDatabaseQuery.NoCaching
             $wpdb->query(
                 "ALTER TABLE {$wpdb->postmeta} ADD INDEX {$safe_index_name} (meta_key(191), meta_value(191))"
             );
+            // phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange
+            // phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+            // phpcs:enable WordPress.DB.DirectDatabaseQuery.NoCaching
 
             if ( ! $wpdb->last_error ) {
                 update_option( 'multilify_db_indexes_created', true );

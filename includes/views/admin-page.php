@@ -10,7 +10,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 <div class="wrap multilify-admin">
     <h1><?php echo esc_html( get_admin_page_title() ); ?></h1>
 
-    <?php if ( isset( $_GET['multilify_updated'] ) && $_GET['multilify_updated'] === '1' ) : ?>
+    <?php
+    // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+    if ( isset( $_GET['multilify_updated'] ) && '1' === $_GET['multilify_updated'] ) :
+        ?>
         <div class="notice notice-success is-dismissible">
             <p>Changes saved successfully!</p>
         </div>
