@@ -1,8 +1,8 @@
 === Multilify ===
-Contributors: Kadir Erman
+Contributors: kadirermantr
 Tags: multilingual, translation, language, i18n, localization, seo, wpml alternative
 Requires at least: 5.8
-Tested up to: 6.4
+Tested up to: 6.7
 Requires PHP: 7.4
 Stable tag: 1.0.0
 License: GPLv2 or later
@@ -171,4 +171,4 @@ For support, please visit the [WordPress.org support forums](https://wordpress.o
 
 == Contributing ==
 
-Multilify is open source! Contribute on [GitHub](https://github.com/yourname/multilify).
+Multilify is open source! Contribute on [GitHub](https://github.com/kadirermantr/multilify).
