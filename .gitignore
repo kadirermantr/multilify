@@ -1,0 +1,76 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+.directory
+
+# IDE & Editors
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+*.swp
+*.swo
+*~
+.project
+.settings/
+nbproject/
+
+# Node.js
+node_modules/
+npm-debug.log
+yarn-error.log
+package-lock.json
+yarn.lock
+
+# Composer
+vendor/
+composer.lock
+
+# WordPress
+wp-config.php
+.htaccess
+
+# Logs
+*.log
+error_log
+debug.log
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.cache
+
+# Build files
+/build/
+/dist/
+*.min.js
+*.min.css
+!assets/js/*.min.js
+!assets/css/*.min.css
+
+# Testing
+/tests/
+phpunit.xml
+.phpunit.result.cache
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Backup files
+*.sql
+*.sql.gz
+backup/
