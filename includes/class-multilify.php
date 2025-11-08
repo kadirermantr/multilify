@@ -508,15 +508,19 @@ class Multilify {
 
             // Index name is manually sanitized above (only alphanumeric and underscore allowed)
             // Schema changes require direct queries and cannot use prepared statements for DDL
+            // phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery
             // phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange
-            // phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
             // phpcs:disable WordPress.DB.DirectDatabaseQuery.NoCaching
+            // phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+            // phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter
             $wpdb->query(
                 "ALTER TABLE {$wpdb->postmeta} ADD INDEX {$safe_index_name} (meta_key(191), meta_value(191))"
             );
+            // phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery
             // phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange
-            // phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
             // phpcs:enable WordPress.DB.DirectDatabaseQuery.NoCaching
+            // phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+            // phpcs:enable PluginCheck.Security.DirectDB.UnescapedDBParameter
 
             if ( ! $wpdb->last_error ) {
                 update_option( 'multilify_db_indexes_created', true );
