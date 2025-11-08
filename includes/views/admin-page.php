@@ -36,17 +36,17 @@ if ( ! defined( 'ABSPATH' ) ) {
                             <td colspan="5">No languages added yet.</td>
                         </tr>
                     <?php else : ?>
-                        <?php foreach ( $languages as $language ) : ?>
+                        <?php foreach ( $languages as $multilify_language ) : ?>
                             <tr>
-                                <td><?php echo esc_html( $language['flag'] ); ?></td>
-                                <td><strong><?php echo esc_html( $language['code'] ); ?></strong></td>
-                                <td><?php echo esc_html( $language['name'] ); ?></td>
+                                <td><?php echo esc_html( $multilify_language['flag'] ); ?></td>
+                                <td><strong><?php echo esc_html( $multilify_language['code'] ); ?></strong></td>
+                                <td><?php echo esc_html( $multilify_language['name'] ); ?></td>
                                 <td>
                                     <form method="post" style="display: inline;">
                                         <?php wp_nonce_field( 'multilify_action' ); ?>
                                         <input type="hidden" name="multilify_action" value="set_default">
-                                        <input type="hidden" name="default_language" value="<?php echo esc_attr( $language['code'] ); ?>">
-                                        <?php if ( $language['code'] === $default_language ) : ?>
+                                        <input type="hidden" name="default_language" value="<?php echo esc_attr( $multilify_language['code'] ); ?>">
+                                        <?php if ( $multilify_language['code'] === $default_language ) : ?>
                                             <span class="dashicons dashicons-yes" style="color: #46b450;"></span>
                                             <strong>Default</strong>
                                         <?php else : ?>
@@ -58,7 +58,7 @@ if ( ! defined( 'ABSPATH' ) ) {
                                     <form method="post" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this language?');">
                                         <?php wp_nonce_field( 'multilify_action' ); ?>
                                         <input type="hidden" name="multilify_action" value="delete_language">
-                                        <input type="hidden" name="lang_code" value="<?php echo esc_attr( $language['code'] ); ?>">
+                                        <input type="hidden" name="lang_code" value="<?php echo esc_attr( $multilify_language['code'] ); ?>">
                                         <button type="submit" class="button button-small button-link-delete">Delete</button>
                                     </form>
                                 </td>

@@ -328,24 +328,24 @@ class Multilify {
             $lang_code = $language['code'];
 
             // Verify nonce
-            if ( ! isset( $_POST['multilify_nonce_' . $lang_code] ) ||
-                 ! wp_verify_nonce( $_POST['multilify_nonce_' . $lang_code], 'multilify_save_' . $lang_code ) ) {
+            if ( ! isset( $_POST[ 'multilify_nonce_' . $lang_code ] ) ||
+                 ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST[ 'multilify_nonce_' . $lang_code ] ) ), 'multilify_save_' . $lang_code ) ) {
                 continue;
             }
 
             // Save title
-            if ( isset( $_POST['multilang_title_' . $lang_code] ) ) {
-                update_post_meta( $post_id, '_multilang_title_' . $lang_code, sanitize_text_field( $_POST['multilang_title_' . $lang_code] ) );
+            if ( isset( $_POST[ 'multilang_title_' . $lang_code ] ) ) {
+                update_post_meta( $post_id, '_multilang_title_' . $lang_code, sanitize_text_field( wp_unslash( $_POST[ 'multilang_title_' . $lang_code ] ) ) );
             }
 
             // Save content
-            if ( isset( $_POST['multilang_content_' . $lang_code] ) ) {
-                update_post_meta( $post_id, '_multilang_content_' . $lang_code, wp_kses_post( $_POST['multilang_content_' . $lang_code] ) );
+            if ( isset( $_POST[ 'multilang_content_' . $lang_code ] ) ) {
+                update_post_meta( $post_id, '_multilang_content_' . $lang_code, wp_kses_post( wp_unslash( $_POST[ 'multilang_content_' . $lang_code ] ) ) );
             }
 
             // Save slug and clear cache
-            if ( isset( $_POST['multilang_slug_' . $lang_code] ) ) {
-                $new_slug = sanitize_title( $_POST['multilang_slug_' . $lang_code] );
+            if ( isset( $_POST[ 'multilang_slug_' . $lang_code ] ) ) {
+                $new_slug = sanitize_title( wp_unslash( $_POST[ 'multilang_slug_' . $lang_code ] ) );
                 $old_slug = get_post_meta( $post_id, '_multilang_slug_' . $lang_code, true );
 
                 update_post_meta( $post_id, '_multilang_slug_' . $lang_code, $new_slug );
@@ -486,6 +486,7 @@ class Multilify {
         $index_name = 'multilify_slug_lookup';
 
         // Check if index exists
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
         $index_exists = $wpdb->get_var( $wpdb->prepare(
             "SELECT COUNT(1) FROM INFORMATION_SCHEMA.STATISTICS
             WHERE table_schema = DATABASE()
@@ -497,12 +498,12 @@ class Multilify {
 
         if ( ! $index_exists ) {
             // Create composite index for meta_key and meta_value (first 191 chars for utf8mb4)
+            // Sanitize index name (alphanumeric and underscore only)
+            $safe_index_name = preg_replace( '/[^a-zA-Z0-9_]/', '', $index_name );
+
             // phpcs:ignore WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
             $wpdb->query(
-                $wpdb->prepare(
-                    "ALTER TABLE {$wpdb->postmeta} ADD INDEX %i (meta_key(191), meta_value(191))",
-                    $index_name
-                )
+                "ALTER TABLE {$wpdb->postmeta} ADD INDEX {$safe_index_name} (meta_key(191), meta_value(191))"
             );
 
             if ( ! $wpdb->last_error ) {
