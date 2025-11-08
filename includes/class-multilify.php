@@ -141,8 +141,34 @@ class Multilify {
      * Register settings
      */
     public function register_settings() {
-        register_setting( 'multilify_settings', 'multilify_languages' );
-        register_setting( 'multilify_settings', 'multilify_default_language' );
+        register_setting( 'multilify_settings', 'multilify_languages', array(
+            'sanitize_callback' => array( $this, 'sanitize_languages' )
+        ) );
+        register_setting( 'multilify_settings', 'multilify_default_language', array(
+            'sanitize_callback' => 'sanitize_key'
+        ) );
+    }
+
+    /**
+     * Sanitize languages array
+     */
+    public function sanitize_languages( $languages ) {
+        if ( ! is_array( $languages ) ) {
+            return array();
+        }
+
+        $sanitized = array();
+        foreach ( $languages as $language ) {
+            if ( is_array( $language ) && isset( $language['code'], $language['name'], $language['flag'] ) ) {
+                $sanitized[] = array(
+                    'code' => sanitize_key( $language['code'] ),
+                    'name' => sanitize_text_field( $language['name'] ),
+                    'flag' => sanitize_text_field( $language['flag'] )
+                );
+            }
+        }
+
+        return $sanitized;
     }
 
     /**
