@@ -103,8 +103,8 @@ class Multilify {
         }
 
         // Check URL for language code - sanitize REQUEST_URI for security
-        $request_uri = isset( $_SERVER['REQUEST_URI'] ) ? esc_url_raw( $_SERVER['REQUEST_URI'] ) : '';
-        $url_path = trim( parse_url( $request_uri, PHP_URL_PATH ), '/' );
+        $request_uri = isset( $_SERVER['REQUEST_URI'] ) ? esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '';
+        $url_path = trim( wp_parse_url( $request_uri, PHP_URL_PATH ), '/' );
         $path_parts = explode( '/', $url_path );
 
         $languages = $this->get_languages();
@@ -206,16 +206,24 @@ class Multilify {
     private function handle_admin_actions() {
         check_admin_referer( 'multilify_action' );
 
-        $action = sanitize_text_field( $_POST['multilify_action'] );
+        if ( ! isset( $_POST['multilify_action'] ) ) {
+            return;
+        }
+
+        $action = sanitize_text_field( wp_unslash( $_POST['multilify_action'] ) );
         $languages = $this->get_languages();
         $needs_flush = false;
 
         switch ( $action ) {
             case 'add_language':
+                if ( ! isset( $_POST['lang_code'], $_POST['lang_name'], $_POST['lang_flag'] ) ) {
+                    break;
+                }
+
                 $new_lang = array(
-                    'code' => sanitize_key( $_POST['lang_code'] ),
-                    'name' => sanitize_text_field( $_POST['lang_name'] ),
-                    'flag' => sanitize_text_field( $_POST['lang_flag'] )
+                    'code' => sanitize_key( wp_unslash( $_POST['lang_code'] ) ),
+                    'name' => sanitize_text_field( wp_unslash( $_POST['lang_name'] ) ),
+                    'flag' => sanitize_text_field( wp_unslash( $_POST['lang_flag'] ) )
                 );
 
                 // Validate language code
@@ -227,7 +235,11 @@ class Multilify {
                 break;
 
             case 'delete_language':
-                $lang_code = sanitize_key( $_POST['lang_code'] );
+                if ( ! isset( $_POST['lang_code'] ) ) {
+                    break;
+                }
+
+                $lang_code = sanitize_key( wp_unslash( $_POST['lang_code'] ) );
                 $languages = array_filter( $languages, function( $lang ) use ( $lang_code ) {
                     return $lang['code'] !== $lang_code;
                 });
@@ -236,7 +248,11 @@ class Multilify {
                 break;
 
             case 'set_default':
-                $default_lang = sanitize_key( $_POST['default_language'] );
+                if ( ! isset( $_POST['default_language'] ) ) {
+                    break;
+                }
+
+                $default_lang = sanitize_key( wp_unslash( $_POST['default_language'] ) );
                 update_option( 'multilify_default_language', $default_lang );
                 // Default language change doesn't need rewrite flush
                 break;
@@ -247,6 +263,10 @@ class Multilify {
             // Set a transient flag instead of immediate flush for better performance
             set_transient( 'multilify_flush_rewrite_rules', 1, 60 );
         }
+
+        // Redirect to prevent form resubmission
+        wp_safe_redirect( add_query_arg( 'multilify_updated', '1', admin_url( 'admin.php?page=multilify' ) ) );
+        exit;
     }
 
     /**
@@ -368,6 +388,7 @@ class Multilify {
 
             // If not in cache, query database
             if ( false === $post_id ) {
+                // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
                 $post_id = $wpdb->get_var( $wpdb->prepare(
                     "SELECT post_id FROM {$wpdb->postmeta}
                     WHERE meta_key = %s AND meta_value = %s
@@ -375,12 +396,6 @@ class Multilify {
                     '_multilang_slug_' . $lang,
                     $slug
                 ) );
-
-                // Handle database errors
-                if ( $wpdb->last_error ) {
-                    error_log( 'Multilify DB Error: ' . $wpdb->last_error );
-                    return $query_vars;
-                }
 
                 // Cache the result (even if null) for 1 hour
                 wp_cache_set( $cache_key, $post_id ? $post_id : 'not_found', 'multilify', HOUR_IN_SECONDS );
@@ -482,15 +497,16 @@ class Multilify {
 
         if ( ! $index_exists ) {
             // Create composite index for meta_key and meta_value (first 191 chars for utf8mb4)
+            // phpcs:ignore WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
             $wpdb->query(
-                "ALTER TABLE {$wpdb->postmeta}
-                ADD INDEX {$index_name} (meta_key(191), meta_value(191))"
+                $wpdb->prepare(
+                    "ALTER TABLE {$wpdb->postmeta} ADD INDEX %i (meta_key(191), meta_value(191))",
+                    $index_name
+                )
             );
 
             if ( ! $wpdb->last_error ) {
                 update_option( 'multilify_db_indexes_created', true );
-            } else {
-                error_log( 'Multilify Index Creation Error: ' . $wpdb->last_error );
             }
         } else {
             // Index already exists, mark as created

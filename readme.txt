@@ -1,6 +1,6 @@
 === Multilify ===
 Contributors: kadirermantr
-Tags: multilingual, translation, language, i18n, localization, seo, wpml alternative
+Tags: multilingual, translation, language, i18n, localization
 Requires at least: 5.8
 Tested up to: 6.8
 Requires PHP: 7.4
@@ -8,7 +8,7 @@ Stable tag: 1.0.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-A powerful multilingual content management system for WordPress. Create unlimited language versions with custom slugs, SEO optimization, and performance caching.
+Powerful multilingual content management for WordPress with custom slugs and SEO optimization.
 
 == Description ==
 

@@ -44,8 +44,8 @@ if ( ! defined( 'ABSPATH' ) ) {
             <strong>Content</strong>
         </label>
         <?php
-        $editor_id = 'multilang_content_' . $lang_code;
-        $settings = array(
+        $multilify_editor_id = 'multilang_content_' . $lang_code;
+        $multilify_settings = array(
             'textarea_name' => 'multilang_content_' . $lang_code,
             'textarea_rows' => 10,
             'media_buttons' => true,
@@ -54,7 +54,7 @@ if ( ! defined( 'ABSPATH' ) ) {
                 'toolbar1' => 'formatselect,bold,italic,underline,bullist,numlist,blockquote,alignleft,aligncenter,alignright,link,unlink,wp_more,spellchecker,fullscreen,wp_adv',
             ),
         );
-        wp_editor( $content, $editor_id, $settings );
+        wp_editor( $content, $multilify_editor_id, $multilify_settings );
         ?>
     </div>
 </div>
