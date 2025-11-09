@@ -77,6 +77,10 @@ function multilify_activate() {
         update_option( 'multilify_default_language', 'en' );
     }
 
+    // Setup rewrite rules before flushing
+    $multilify = multilify();
+    $multilify->setup_rewrite_rules();
+
     // Flush rewrite rules on activation.
     flush_rewrite_rules();
 }

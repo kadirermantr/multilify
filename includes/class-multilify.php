@@ -58,6 +58,10 @@ class Multilify {
         add_filter( 'page_link', array( $this, 'filter_permalink' ), 10, 2 );
         add_filter( 'post_type_link', array( $this, 'filter_permalink' ), 10, 2 );
 
+        // Title filters for <title> tag
+        add_filter( 'wp_title', array( $this, 'filter_wp_title' ), 10, 3 );
+        add_filter( 'document_title_parts', array( $this, 'filter_document_title_parts' ), 10, 1 );
+
         // Language detection
         add_action( 'template_redirect', array( $this, 'handle_language_redirect' ) );
     }
@@ -385,40 +389,40 @@ class Multilify {
 
             // Create cache key
             $cache_key = 'multilang_slug_' . md5( $lang . '_' . $slug );
-            $post_id = wp_cache_get( $cache_key, 'multilify' );
+            $cached_data = wp_cache_get( $cache_key, 'multilify' );
 
             // If not in cache, query database
-            if ( false === $post_id ) {
+            if ( false === $cached_data ) {
                 // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-                $post_id = $wpdb->get_var( $wpdb->prepare(
-                    "SELECT post_id FROM {$wpdb->postmeta}
-                    WHERE meta_key = %s AND meta_value = %s
+                $result = $wpdb->get_row( $wpdb->prepare(
+                    "SELECT p.ID, p.post_name, p.post_type, p.post_status
+                    FROM {$wpdb->postmeta} pm
+                    INNER JOIN {$wpdb->posts} p ON pm.post_id = p.ID
+                    WHERE pm.meta_key = %s AND pm.meta_value = %s
+                    AND p.post_status = 'publish'
                     LIMIT 1",
                     '_multilang_slug_' . $lang,
                     $slug
                 ) );
 
                 // Cache the result (even if null) for 1 hour
-                wp_cache_set( $cache_key, $post_id ? $post_id : 'not_found', 'multilify', HOUR_IN_SECONDS );
+                $cached_data = $result ? $result : 'not_found';
+                wp_cache_set( $cache_key, $cached_data, 'multilify', HOUR_IN_SECONDS );
             }
 
             // Handle cached "not found"
-            if ( 'not_found' === $post_id ) {
-                $post_id = null;
+            if ( 'not_found' === $cached_data ) {
+                $cached_data = null;
             }
 
-            if ( $post_id ) {
-                // Get the real post
-                $post = get_post( $post_id );
-
-                if ( $post && 'publish' === $post->post_status ) {
-                    // Replace the slug with the real post slug
-                    if ( isset( $query_vars['name'] ) ) {
-                        $query_vars['name'] = $post->post_name;
-                    }
-                    if ( isset( $query_vars['pagename'] ) ) {
-                        $query_vars['pagename'] = $post->post_name;
-                    }
+            if ( $cached_data ) {
+                // Replace the slug with the real post slug based on post_type
+                if ( 'page' === $cached_data->post_type ) {
+                    $query_vars['pagename'] = $cached_data->post_name;
+                    unset( $query_vars['name'] );
+                } else {
+                    $query_vars['name'] = $cached_data->post_name;
+                    unset( $query_vars['pagename'] );
                 }
             }
         }
@@ -442,17 +446,17 @@ class Multilify {
                 'top'
             );
 
-            // Pages with language prefix
-            add_rewrite_rule(
-                '^' . $lang_code . '/(.+?)/?$',
-                'index.php?pagename=$matches[1]&lang=' . $lang_code,
-                'top'
-            );
-
-            // Posts with language prefix
+            // Single level slugs (posts) with language prefix
             add_rewrite_rule(
                 '^' . $lang_code . '/([^/]+)/?$',
                 'index.php?name=$matches[1]&lang=' . $lang_code,
+                'top'
+            );
+
+            // Multi-level slugs (pages/hierarchical) with language prefix
+            add_rewrite_rule(
+                '^' . $lang_code . '/(.+)/?$',
+                'index.php?pagename=$matches[1]&lang=' . $lang_code,
                 'top'
             );
         }
@@ -683,5 +687,55 @@ class Multilify {
         </div>
         <?php
         return ob_get_clean();
+    }
+
+    /**
+     * Filter wp_title for <title> tag
+     */
+    public function filter_wp_title( $title, $sep = '', $seplocation = '' ) {
+        if ( is_admin() ) {
+            return $title;
+        }
+
+        $post_id = get_the_ID();
+        if ( ! $post_id ) {
+            return $title;
+        }
+
+        $lang = $this->get_current_language();
+        $translated_title = get_post_meta( $post_id, '_multilang_title_' . $lang, true );
+
+        if ( ! empty( $translated_title ) ) {
+            // Replace the post title part in wp_title
+            $original_title = get_the_title( $post_id );
+            if ( ! empty( $original_title ) ) {
+                $title = str_replace( $original_title, $translated_title, $title );
+            }
+        }
+
+        return $title;
+    }
+
+    /**
+     * Filter document_title_parts for modern WordPress
+     */
+    public function filter_document_title_parts( $title_parts ) {
+        if ( is_admin() ) {
+            return $title_parts;
+        }
+
+        $post_id = get_the_ID();
+        if ( ! $post_id ) {
+            return $title_parts;
+        }
+
+        $lang = $this->get_current_language();
+        $translated_title = get_post_meta( $post_id, '_multilang_title_' . $lang, true );
+
+        if ( ! empty( $translated_title ) && isset( $title_parts['title'] ) ) {
+            $title_parts['title'] = $translated_title;
+        }
+
+        return $title_parts;
     }
 }
