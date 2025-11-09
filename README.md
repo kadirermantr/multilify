@@ -46,4 +46,5 @@ Found a bug or have a feature idea? Please [open an issue](https://github.com/ka
 
 - Thanks to the WordPress community
 - Inspired by Polylang and WPML
+- Developed with assistance from [Claude AI](https://claude.ai) by Anthropic
 - Built with ❤️ for the open source community
