@@ -7,8 +7,8 @@
  *
  * @package Multilify
  * @version 1.0.0
- * @author Your Name
- * @link https://multilify.com
+ * @author Kadir Erman
+ * @link https://kadirerman.com
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
