@@ -4,7 +4,7 @@ Tags: multilingual, translation, language, i18n, localization
 Requires at least: 5.8
 Tested up to: 6.8
 Requires PHP: 7.4
-Stable tag: 1.0.0
+Stable tag: 1.0.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -148,6 +148,11 @@ You can get support through the WordPress.org support forums or by contacting us
 
 == Changelog ==
 
+= 1.0.1 =
+* Added plugin icon for WordPress.org directory
+* Added Plugin URI (https://multilify.vercel.app)
+* Updated support section with website and GitHub links
+
 = 1.0.0 =
 * Initial release
 * Unlimited language support
@@ -162,12 +167,17 @@ You can get support through the WordPress.org support forums or by contacting us
 
 == Upgrade Notice ==
 
+= 1.0.1 =
+Minor update: Added plugin icon and website links.
+
 = 1.0.0 =
 Initial release of Multilify.
 
 == Support ==
 
-For support, please visit the [WordPress.org support forums](https://wordpress.org/support/plugin/multilify/).
+* **Website:** [https://multilify.vercel.app](https://multilify.vercel.app)
+* **Support Forums:** [WordPress.org support forums](https://wordpress.org/support/plugin/multilify/)
+* **GitHub:** [github.com/kadirermantr/multilify](https://github.com/kadirermantr/multilify)
 
 == Contributing ==
 
