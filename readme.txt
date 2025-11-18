@@ -1,5 +1,5 @@
 === Multilify ===
-Contributors: kadirermantr
+Contributors: kadirerman
 Tags: multilingual, translation, language, i18n, localization
 Requires at least: 5.8
 Tested up to: 6.8
