@@ -37,6 +37,8 @@ class Multilify {
         // Admin hooks
         add_action( 'admin_menu', array( $this, 'add_admin_menu' ) );
         add_action( 'admin_init', array( $this, 'register_settings' ) );
+        // Handle form submissions before any output so redirects work (avoids "headers already sent").
+        add_action( 'admin_init', array( $this, 'handle_admin_actions' ) );
         add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_assets' ) );
 
         // Meta boxes for posts and pages
@@ -45,6 +47,7 @@ class Multilify {
 
         // Frontend hooks
         add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_frontend_assets' ) );
+        add_shortcode( 'multilify_switcher', array( $this, 'switcher_shortcode' ) );
         add_action( 'init', array( $this, 'setup_rewrite_rules' ) );
         add_action( 'init', array( $this, 'maybe_flush_rewrite_rules' ) );
         add_action( 'init', array( $this, 'maybe_create_db_indexes' ) );
@@ -201,12 +204,6 @@ class Multilify {
             return;
         }
 
-        // Handle form submissions (nonce is verified inside handle_admin_actions)
-        // phpcs:ignore WordPress.Security.NonceVerification.Missing
-        if ( isset( $_POST['multilify_action'] ) ) {
-            $this->handle_admin_actions();
-        }
-
         $languages = $this->get_languages();
         $default_language = $this->get_default_language();
 
@@ -216,16 +213,23 @@ class Multilify {
     /**
      * Handle admin actions (add, edit, delete languages)
      */
-    private function handle_admin_actions() {
-        check_admin_referer( 'multilify_action' );
-
+    public function handle_admin_actions() {
+        // Only act on our own form submissions; this runs on every admin_init.
+        // phpcs:ignore WordPress.Security.NonceVerification.Missing
         if ( ! isset( $_POST['multilify_action'] ) ) {
             return;
         }
 
+        if ( ! current_user_can( 'manage_options' ) ) {
+            return;
+        }
+
+        check_admin_referer( 'multilify_action' );
+
         $action = sanitize_text_field( wp_unslash( $_POST['multilify_action'] ) );
         $languages = $this->get_languages();
         $needs_flush = false;
+        $error = '';
 
         switch ( $action ) {
             case 'add_language':
@@ -246,10 +250,52 @@ class Multilify {
                 }
 
                 // Validate language code
-                if ( preg_match( '/^[a-z]{2,5}$/', $new_lang['code'] ) ) {
-                    $languages[] = $new_lang;
+                if ( ! preg_match( '/^[a-z]{2,5}$/', $new_lang['code'] ) ) {
+                    $error = 'invalid_code';
+                    break;
+                }
+
+                // Reject duplicates: a language code must be unique.
+                if ( $this->language_code_exists( $new_lang['code'], $languages ) ) {
+                    $error = 'duplicate_code';
+                    break;
+                }
+
+                $languages[] = $new_lang;
+                update_option( 'multilify_languages', $languages );
+                $needs_flush = true;
+                break;
+
+            case 'edit_language':
+                if ( ! isset( $_POST['lang_code'], $_POST['lang_name'], $_POST['lang_flag'] ) ) {
+                    break;
+                }
+
+                $edit_code = sanitize_key( wp_unslash( $_POST['lang_code'] ) );
+                $edit_name = trim( sanitize_text_field( wp_unslash( $_POST['lang_name'] ) ) );
+                $edit_flag = sanitize_text_field( wp_unslash( $_POST['lang_flag'] ) );
+
+                // Name is optional; fall back to the code.
+                if ( '' === $edit_name ) {
+                    $edit_name = $edit_code;
+                }
+
+                // The code is immutable (translation meta is keyed by it); only name/flag change.
+                $found = false;
+                foreach ( $languages as &$lang ) {
+                    if ( $lang['code'] === $edit_code ) {
+                        $lang['name'] = $edit_name;
+                        $lang['flag'] = $edit_flag;
+                        $found = true;
+                        break;
+                    }
+                }
+                unset( $lang );
+
+                if ( $found ) {
                     update_option( 'multilify_languages', $languages );
-                    $needs_flush = true;
+                } else {
+                    $error = 'not_found';
                 }
                 break;
 
@@ -284,8 +330,31 @@ class Multilify {
         }
 
         // Redirect to prevent form resubmission
-        wp_safe_redirect( add_query_arg( 'multilify_updated', '1', admin_url( 'admin.php?page=multilify' ) ) );
+        if ( '' !== $error ) {
+            $redirect = add_query_arg( 'multilify_error', $error, admin_url( 'admin.php?page=multilify' ) );
+        } else {
+            $redirect = add_query_arg( 'multilify_updated', '1', admin_url( 'admin.php?page=multilify' ) );
+        }
+
+        wp_safe_redirect( $redirect );
         exit;
+    }
+
+    /**
+     * Check whether a language code already exists.
+     *
+     * @param string $code      Language code to look for.
+     * @param array  $languages Existing languages list.
+     * @return bool
+     */
+    private function language_code_exists( $code, $languages ) {
+        foreach ( $languages as $language ) {
+            if ( isset( $language['code'] ) && $language['code'] === $code ) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -671,6 +740,27 @@ class Multilify {
     }
 
     /**
+     * Shortcode handler for [multilify_switcher].
+     *
+     * Supports show_name and show_flag attributes, e.g.
+     * [multilify_switcher show_name="false"].
+     *
+     * @param array $atts Shortcode attributes.
+     * @return string
+     */
+    public function switcher_shortcode( $atts ) {
+        $atts = shortcode_atts( array(
+            'show_flag' => 'true',
+            'show_name' => 'true',
+        ), $atts, 'multilify_switcher' );
+
+        return $this->get_language_switcher( array(
+            'show_flag' => filter_var( $atts['show_flag'], FILTER_VALIDATE_BOOLEAN ),
+            'show_name' => filter_var( $atts['show_name'], FILTER_VALIDATE_BOOLEAN ),
+        ) );
+    }
+
+    /**
      * Get language switcher HTML
      */
     public function get_language_switcher( $args = array() ) {
@@ -710,7 +800,7 @@ class Multilify {
                     $slug = get_post_meta( $current_post_id, '_multilang_slug_' . $lang_code, true );
                     if ( empty( $slug ) ) {
                         $post = get_post( $current_post_id );
-                        $slug = $post->post_name;
+                        $slug = ( $post instanceof WP_Post ) ? $post->post_name : '';
                     }
                     $url = home_url( '/' . $lang_code . '/' . $slug . '/' );
                 } else {

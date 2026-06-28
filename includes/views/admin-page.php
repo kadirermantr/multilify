@@ -19,6 +19,25 @@ if ( ! defined( 'ABSPATH' ) ) {
         </div>
     <?php endif; ?>
 
+    <?php
+    // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+    if ( isset( $_GET['multilify_error'] ) ) :
+        // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+        $multilify_error = sanitize_key( wp_unslash( $_GET['multilify_error'] ) );
+        $multilify_error_messages = array(
+            'duplicate_code' => 'A language with this code already exists. Each language code must be unique.',
+            'invalid_code'   => 'Invalid language code. Use 2-5 lowercase letters (e.g. tr, en, de).',
+            'not_found'      => 'The language you tried to edit was not found.',
+        );
+        $multilify_error_text = isset( $multilify_error_messages[ $multilify_error ] )
+            ? $multilify_error_messages[ $multilify_error ]
+            : 'Something went wrong. Please try again.';
+        ?>
+        <div class="notice notice-error is-dismissible">
+            <p><?php echo esc_html( $multilify_error_text ); ?></p>
+        </div>
+    <?php endif; ?>
+
     <div class="multilify-container">
         <!-- Current Languages Section -->
         <div class="multilify-section">
@@ -58,11 +77,41 @@ if ( ! defined( 'ABSPATH' ) ) {
                                     </form>
                                 </td>
                                 <td>
+                                    <button type="button" class="button button-small multilify-edit-toggle" data-code="<?php echo esc_attr( $multilify_language['code'] ); ?>">Edit</button>
                                     <form method="post" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this language?');">
                                         <?php wp_nonce_field( 'multilify_action' ); ?>
                                         <input type="hidden" name="multilify_action" value="delete_language">
                                         <input type="hidden" name="lang_code" value="<?php echo esc_attr( $multilify_language['code'] ); ?>">
                                         <button type="submit" class="button button-small button-link-delete">Delete</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            <tr class="multilify-edit-row" id="multilify-edit-<?php echo esc_attr( $multilify_language['code'] ); ?>" style="display: none;">
+                                <td colspan="5">
+                                    <form method="post" class="multilify-edit-form">
+                                        <?php wp_nonce_field( 'multilify_action' ); ?>
+                                        <input type="hidden" name="multilify_action" value="edit_language">
+                                        <input type="hidden" name="lang_code" value="<?php echo esc_attr( $multilify_language['code'] ); ?>">
+
+                                        <div class="multilify-field multilify-field--code">
+                                            <label>Code</label>
+                                            <input type="text" value="<?php echo esc_attr( $multilify_language['code'] ); ?>" disabled>
+                                        </div>
+
+                                        <div class="multilify-field multilify-field--name">
+                                            <label>Name</label>
+                                            <input type="text" name="lang_name" value="<?php echo esc_attr( $multilify_language['name'] ); ?>" placeholder="Leave empty to use the code">
+                                        </div>
+
+                                        <div class="multilify-field multilify-field--flag">
+                                            <label>Flag</label>
+                                            <input type="text" name="lang_flag" value="<?php echo esc_attr( $multilify_language['flag'] ); ?>" maxlength="10">
+                                        </div>
+
+                                        <div class="multilify-field multilify-field--actions">
+                                            <button type="submit" class="button button-primary button-small">Save</button>
+                                            <button type="button" class="button button-small multilify-edit-cancel" data-code="<?php echo esc_attr( $multilify_language['code'] ); ?>">Cancel</button>
+                                        </div>
                                     </form>
                                 </td>
                             </tr>

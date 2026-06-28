@@ -23,6 +23,18 @@
             }
         });
 
+        // Toggle inline edit row for an existing language
+        $('.multilify-edit-toggle').on('click', function() {
+            var code = $(this).data('code');
+            $('#multilify-edit-' + code).toggle();
+        });
+
+        // Cancel inline edit
+        $('.multilify-edit-cancel').on('click', function() {
+            var code = $(this).data('code');
+            $('#multilify-edit-' + code).hide();
+        });
+
         // Auto-generate slug from title
         $('[id^="multilang_title_"]').on('blur', function() {
             var langCode = $(this).attr('id').replace('multilang_title_', '');
