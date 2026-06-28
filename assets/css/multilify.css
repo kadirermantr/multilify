@@ -1,0 +1,34 @@
+/* Multilify language switcher (frontend) */
+
+.wp-multilang-switcher {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+
+.wp-multilang-switcher .lang-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    text-decoration: none;
+    line-height: 1.2;
+}
+
+.wp-multilang-switcher .lang-link:hover,
+.wp-multilang-switcher .lang-link:focus {
+    text-decoration: none;
+}
+
+.wp-multilang-switcher .lang-link.active {
+    font-weight: 600;
+}
+
+.wp-multilang-switcher .flag {
+    display: inline-flex;
+    line-height: 1;
+}
+
+.wp-multilang-switcher .name {
+    text-decoration: none;
+}

@@ -4,7 +4,7 @@ Tags: multilingual, translation, language, i18n, localization
 Requires at least: 5.8
 Tested up to: 6.8
 Requires PHP: 7.4
-Stable tag: 1.0.1
+Stable tag: 1.0.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -77,6 +77,12 @@ Add the language switcher to your theme using:
 
 Or use the shortcode: `[multilify_switcher]`
 
+To show flags only (no language name):
+
+`<?php if ( function_exists( 'multilify_switcher' ) ) multilify_switcher( array( 'show_name' => false ) ); ?>`
+
+The language name is optional. If you leave it empty when adding a language, the language code is used as a fallback.
+
 == Installation ==
 
 = Automatic Installation =
@@ -148,6 +154,11 @@ You can get support through the WordPress.org support forums or by contacting us
 
 == Changelog ==
 
+= 1.0.2 =
+* Added flag-only language switcher support via show_name and show_flag arguments
+* Made the language name optional (falls back to the language code when left empty)
+* Fixed an empty/underlined language label appearing in the switcher
+
 = 1.0.1 =
 * Added plugin icon for WordPress.org directory
 * Added Plugin URI (https://multilify.vercel.app)
@@ -166,6 +177,9 @@ You can get support through the WordPress.org support forums or by contacting us
 * Translation meta boxes
 
 == Upgrade Notice ==
+
+= 1.0.2 =
+Adds flag-only switcher support and makes the language name optional.
 
 = 1.0.1 =
 Minor update: Added plugin icon and website links.
