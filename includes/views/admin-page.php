@@ -105,9 +105,8 @@ if ( ! defined( 'ABSPATH' ) ) {
                                    id="lang_name"
                                    name="lang_name"
                                    class="regular-text"
-                                   placeholder="Türkçe, English, Deutsch..."
-                                   required>
-                            <p class="description">Full language name</p>
+                                   placeholder="Türkçe, English, Deutsch...">
+                            <p class="description">Full language name (optional). Leave empty to use the language code, or hide it in the switcher with <code>show_name="false"</code>.</p>
                         </td>
                     </tr>
                     <tr>

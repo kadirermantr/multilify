@@ -46,11 +46,18 @@ multilify();
 
 /**
  * Helper function for language switcher.
+ *
+ * @param array $args {
+ *     Optional. Display arguments.
+ *
+ *     @type bool $show_flag Whether to show the flag. Default true.
+ *     @type bool $show_name Whether to show the language name. Default true.
+ * }
  */
-function multilify_switcher() {
+function multilify_switcher( $args = array() ) {
     // Output is already escaped in get_language_switcher method
     // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-    echo multilify()->get_language_switcher();
+    echo multilify()->get_language_switcher( $args );
 }
 
 /**
