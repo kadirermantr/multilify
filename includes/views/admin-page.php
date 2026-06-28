@@ -92,23 +92,26 @@ if ( ! defined( 'ABSPATH' ) ) {
                                         <?php wp_nonce_field( 'multilify_action' ); ?>
                                         <input type="hidden" name="multilify_action" value="edit_language">
                                         <input type="hidden" name="lang_code" value="<?php echo esc_attr( $multilify_language['code'] ); ?>">
-                                        <label>
-                                            Code
-                                            <input type="text" value="<?php echo esc_attr( $multilify_language['code'] ); ?>" disabled class="small-text">
-                                        </label>
-                                        &nbsp;&nbsp;
-                                        <label>
-                                            Name
-                                            <input type="text" name="lang_name" value="<?php echo esc_attr( $multilify_language['name'] ); ?>" class="regular-text" placeholder="Leave empty to use the code">
-                                        </label>
-                                        &nbsp;&nbsp;
-                                        <label>
-                                            Flag
+
+                                        <div class="multilify-field multilify-field--code">
+                                            <label>Code</label>
+                                            <input type="text" value="<?php echo esc_attr( $multilify_language['code'] ); ?>" disabled>
+                                        </div>
+
+                                        <div class="multilify-field multilify-field--name">
+                                            <label>Name</label>
+                                            <input type="text" name="lang_name" value="<?php echo esc_attr( $multilify_language['name'] ); ?>" placeholder="Leave empty to use the code">
+                                        </div>
+
+                                        <div class="multilify-field multilify-field--flag">
+                                            <label>Flag</label>
                                             <input type="text" name="lang_flag" value="<?php echo esc_attr( $multilify_language['flag'] ); ?>" maxlength="10">
-                                        </label>
-                                        &nbsp;&nbsp;
-                                        <button type="submit" class="button button-primary button-small">Save</button>
-                                        <button type="button" class="button button-small multilify-edit-cancel" data-code="<?php echo esc_attr( $multilify_language['code'] ); ?>">Cancel</button>
+                                        </div>
+
+                                        <div class="multilify-field multilify-field--actions">
+                                            <button type="submit" class="button button-primary button-small">Save</button>
+                                            <button type="button" class="button button-small multilify-edit-cancel" data-code="<?php echo esc_attr( $multilify_language['code'] ); ?>">Cancel</button>
+                                        </div>
                                     </form>
                                 </td>
                             </tr>

@@ -740,6 +740,27 @@ class Multilify {
     }
 
     /**
+     * Shortcode handler for [multilify_switcher].
+     *
+     * Supports show_name and show_flag attributes, e.g.
+     * [multilify_switcher show_name="false"].
+     *
+     * @param array $atts Shortcode attributes.
+     * @return string
+     */
+    public function switcher_shortcode( $atts ) {
+        $atts = shortcode_atts( array(
+            'show_flag' => 'true',
+            'show_name' => 'true',
+        ), $atts, 'multilify_switcher' );
+
+        return $this->get_language_switcher( array(
+            'show_flag' => filter_var( $atts['show_flag'], FILTER_VALIDATE_BOOLEAN ),
+            'show_name' => filter_var( $atts['show_name'], FILTER_VALIDATE_BOOLEAN ),
+        ) );
+    }
+
+    /**
      * Get language switcher HTML
      */
     public function get_language_switcher( $args = array() ) {

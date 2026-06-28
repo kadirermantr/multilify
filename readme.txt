@@ -2,9 +2,9 @@
 Contributors: kadirerman
 Tags: multilingual, translation, language, i18n, localization
 Requires at least: 5.8
-Tested up to: 6.8
+Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 1.0.2
+Stable tag: 1.0.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -22,7 +22,10 @@ Powerful multilingual content management for WordPress with custom slugs and SEO
 * **Performance First** - Advanced caching system for fast page loads
 * **Database Indexed** - Optimized database queries for better performance
 * **Visual Editor** - Translate content using familiar WordPress editor
-* **Language Switcher** - Built-in language switcher widget
+* **Language Switcher** - Built-in switcher with flag-only or flag + name display
+* **Editable Languages** - Edit a language's name and flag anytime from the admin
+* **Optional Names** - Leave the name empty to fall back to the language code
+* **Shortcode & Template Tag** - Drop the switcher anywhere with `[multilify_switcher]`
 * **Auto Detection** - Automatic browser language detection
 * **Developer Friendly** - Clean code with hooks and filters
 
@@ -81,7 +84,11 @@ To show flags only (no language name):
 
 `<?php if ( function_exists( 'multilify_switcher' ) ) multilify_switcher( array( 'show_name' => false ) ); ?>`
 
-The language name is optional. If you leave it empty when adding a language, the language code is used as a fallback.
+Or with the shortcode:
+
+`[multilify_switcher show_name="false"]`
+
+The language name is optional. If you leave it empty when adding a language, the language code is used as a fallback. You can also edit a language's name and flag at any time from the Multilify settings page.
 
 == Installation ==
 
@@ -154,6 +161,14 @@ You can get support through the WordPress.org support forums or by contacting us
 
 == Changelog ==
 
+= 1.0.3 =
+* Added the ability to edit existing languages (name and flag) from the admin
+* Prevented adding a language with a code that already exists (shows an error)
+* Registered the [multilify_switcher] shortcode (supports show_name and show_flag)
+* Fixed a blank settings page after saving (form handling moved to admin_init so redirects work)
+* Fixed PHP warnings in the language switcher when a post object was unavailable
+* Tested up to WordPress 6.9
+
 = 1.0.2 =
 * Added flag-only language switcher support via show_name and show_flag arguments
 * Made the language name optional (falls back to the language code when left empty)
@@ -177,6 +192,9 @@ You can get support through the WordPress.org support forums or by contacting us
 * Translation meta boxes
 
 == Upgrade Notice ==
+
+= 1.0.3 =
+Adds language editing, duplicate-code protection, the [multilify_switcher] shortcode, and fixes a blank settings page after saving.
 
 = 1.0.2 =
 Adds flag-only switcher support and makes the language name optional.
