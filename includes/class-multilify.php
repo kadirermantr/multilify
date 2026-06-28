@@ -44,6 +44,7 @@ class Multilify {
         add_action( 'save_post', array( $this, 'save_translation_meta' ) );
 
         // Frontend hooks
+        add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_frontend_assets' ) );
         add_action( 'init', array( $this, 'setup_rewrite_rules' ) );
         add_action( 'init', array( $this, 'maybe_flush_rewrite_rules' ) );
         add_action( 'init', array( $this, 'maybe_create_db_indexes' ) );
@@ -186,6 +187,13 @@ class Multilify {
     }
 
     /**
+     * Enqueue frontend assets (language switcher styles).
+     */
+    public function enqueue_frontend_assets() {
+        wp_enqueue_style( 'multilify', MULTILIFY_ASSETS_URL . 'css/multilify.css', array(), MULTILIFY_VERSION );
+    }
+
+    /**
      * Render admin settings page
      */
     public function render_admin_page() {
@@ -230,6 +238,12 @@ class Multilify {
                     'name' => sanitize_text_field( wp_unslash( $_POST['lang_name'] ) ),
                     'flag' => sanitize_text_field( wp_unslash( $_POST['lang_flag'] ) )
                 );
+
+                // Name is optional; fall back to the code so it is never an empty/whitespace string.
+                $new_lang['name'] = trim( $new_lang['name'] );
+                if ( '' === $new_lang['name'] ) {
+                    $new_lang['name'] = $new_lang['code'];
+                }
 
                 // Validate language code
                 if ( preg_match( '/^[a-z]{2,5}$/', $new_lang['code'] ) ) {
@@ -283,9 +297,15 @@ class Multilify {
 
         foreach ( $post_types as $post_type ) {
             foreach ( $languages as $language ) {
+                // Name is optional; fall back to the code so the meta box title is never blank.
+                $language_label = isset( $language['name'] ) ? trim( (string) $language['name'] ) : '';
+                if ( '' === $language_label ) {
+                    $language_label = $language['code'];
+                }
+
                 add_meta_box(
                     'multilify_' . $language['code'],
-                    $language['flag'] . ' ' . $language['name'] . ' Translation',
+                    $language['flag'] . ' ' . $language_label . ' Translation',
                     array( $this, 'render_translation_meta_box' ),
                     $post_type,
                     'normal',
@@ -653,7 +673,20 @@ class Multilify {
     /**
      * Get language switcher HTML
      */
-    public function get_language_switcher() {
+    public function get_language_switcher( $args = array() ) {
+        $args = wp_parse_args( $args, array(
+            'show_flag' => true,
+            'show_name' => true,
+        ) );
+
+        $show_flag = ! empty( $args['show_flag'] );
+        $show_name = ! empty( $args['show_name'] );
+
+        // Always keep at least one visible element so links aren't empty.
+        if ( ! $show_flag && ! $show_name ) {
+            $show_name = true;
+        }
+
         $languages = $this->get_languages();
         $current_lang = $this->get_current_language();
         $current_post_id = get_the_ID();
@@ -664,6 +697,13 @@ class Multilify {
             <?php foreach ( $languages as $language ) :
                 $lang_code = $language['code'];
                 $is_current = ( $lang_code === $current_lang );
+
+                // Name is optional; fall back to the language code so the label is never blank.
+                $lang_flag = isset( $language['flag'] ) ? trim( (string) $language['flag'] ) : '';
+                $lang_name = isset( $language['name'] ) ? trim( (string) $language['name'] ) : '';
+                if ( '' === $lang_name ) {
+                    $lang_name = $lang_code;
+                }
 
                 // Build URL for this language
                 if ( $current_post_id ) {
@@ -680,8 +720,12 @@ class Multilify {
                 <a href="<?php echo esc_url( $url ); ?>"
                    class="lang-link <?php echo $is_current ? 'active' : ''; ?>"
                    data-lang="<?php echo esc_attr( $lang_code ); ?>">
-                    <span class="flag"><?php echo esc_html( $language['flag'] ); ?></span>
-                    <span class="name"><?php echo esc_html( $language['name'] ); ?></span>
+                    <?php if ( $show_flag && '' !== $lang_flag ) : ?>
+                        <span class="flag"><?php echo esc_html( $lang_flag ); ?></span>
+                    <?php endif; ?>
+                    <?php if ( $show_name ) : ?>
+                        <span class="name"><?php echo esc_html( $lang_name ); ?></span>
+                    <?php endif; ?>
                 </a>
             <?php endforeach; ?>
         </div>
