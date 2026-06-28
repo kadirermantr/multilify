@@ -1,6 +1,6 @@
 # Multilify
 
-![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
+![Version](https://img.shields.io/badge/version-1.0.1-blue.svg)
 ![WordPress](https://img.shields.io/badge/wordpress-5.8%2B-brightgreen.svg)
 ![PHP](https://img.shields.io/badge/php-7.4%2B-purple.svg)
 ![License](https://img.shields.io/badge/license-GPL--2.0-orange.svg)
@@ -40,11 +40,10 @@ We welcome contributions from the community! Whether it's bug reports, feature r
 
 ## Bug Reports & Feature Requests
 
-Found a bug or have a feature idea? Please [open an issue](https://github.com/kadirerman/multilify/issues) on GitHub.
+Found a bug or have a feature idea? Please [open an issue](https://github.com/kadirermantr/multilify/issues) on GitHub.
 
 ## Acknowledgments
 
 - Thanks to the WordPress community
 - Inspired by Polylang and WPML
-- Developed with assistance from [Claude AI](https://claude.ai) by Anthropic
 - Built with ❤️ for the open source community
