@@ -2,9 +2,9 @@
 Contributors: kadirerman
 Tags: multilingual, translation, language, i18n, localization
 Requires at least: 5.8
-Tested up to: 6.9
+Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.0.3
+Stable tag: 1.0.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -161,6 +161,12 @@ You can get support through the WordPress.org support forums or by contacting us
 
 == Changelog ==
 
+= 1.0.4 =
+* Tested up to WordPress 7.1
+* Verified compatibility with the always-iframed post editor introduced in WordPress 7.1
+* Verified compatibility with the jQuery UI 1.14.2 update shipped in WordPress 7.1
+* No functional changes
+
 = 1.0.3 =
 * Added the ability to edit existing languages (name and flag) from the admin
 * Prevented adding a language with a code that already exists (shows an error)
@@ -192,6 +198,9 @@ You can get support through the WordPress.org support forums or by contacting us
 * Translation meta boxes
 
 == Upgrade Notice ==
+
+= 1.0.4 =
+Compatibility release for WordPress 7.1. No functional changes.
 
 = 1.0.3 =
 Adds language editing, duplicate-code protection, the [multilify_switcher] shortcode, and fixes a blank settings page after saving.
