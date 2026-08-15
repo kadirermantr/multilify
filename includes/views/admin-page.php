@@ -1,7 +1,10 @@
 <?php
 /**
- * Admin page for language management
+ * Admin page for language management.
+ *
+ * @package Multilify
  */
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }

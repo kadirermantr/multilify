@@ -55,7 +55,7 @@ multilify();
  * }
  */
 function multilify_switcher( $args = array() ) {
-	// Output is already escaped in get_language_switcher method
+	// Output is already escaped in get_language_switcher method.
     // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 	echo multilify()->get_language_switcher( $args );
 }
@@ -85,7 +85,7 @@ function multilify_activate() {
 		update_option( 'multilify_default_language', 'en' );
 	}
 
-	// Setup rewrite rules before flushing
+	// Setup rewrite rules before flushing.
 	$multilify = multilify();
 	$multilify->setup_rewrite_rules();
 
@@ -105,6 +105,10 @@ register_deactivation_hook( __FILE__, 'multilify_deactivate' );
 
 /**
  * Add plugin action links (Settings, View details).
+ *
+ * @param array  $links Existing plugin action links.
+ * @param string $file  Plugin file path relative to the plugins directory.
+ * @return array Filtered plugin action links.
  */
 function multilify_plugin_action_links( $links, $file ) {
 	if ( plugin_basename( __FILE__ ) === $file ) {

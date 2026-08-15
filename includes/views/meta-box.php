@@ -1,7 +1,10 @@
 <?php
 /**
- * Translation meta box view
+ * Translation meta box view.
+ *
+ * @package Multilify
  */
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }

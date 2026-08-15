@@ -12,12 +12,26 @@
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
-	exit; // Exit if accessed directly
+	exit; // Exit if accessed directly.
 }
 
+/**
+ * Core plugin class handling languages, routing and translated content.
+ */
 class Multilify {
 
-	private static $instance  = null;
+	/**
+	 * Singleton instance.
+	 *
+	 * @var Multilify|null
+	 */
+	private static $instance = null;
+
+	/**
+	 * Language code detected for the current request.
+	 *
+	 * @var string|null
+	 */
 	private $current_language = null;
 
 	/**
@@ -34,18 +48,18 @@ class Multilify {
 	 * Constructor
 	 */
 	private function __construct() {
-		// Admin hooks
+		// Admin hooks.
 		add_action( 'admin_menu', array( $this, 'add_admin_menu' ) );
 		add_action( 'admin_init', array( $this, 'register_settings' ) );
 		// Handle form submissions before any output so redirects work (avoids "headers already sent").
 		add_action( 'admin_init', array( $this, 'handle_admin_actions' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_assets' ) );
 
-		// Meta boxes for posts and pages
+		// Meta boxes for posts and pages.
 		add_action( 'add_meta_boxes', array( $this, 'add_translation_meta_boxes' ) );
 		add_action( 'save_post', array( $this, 'save_translation_meta' ) );
 
-		// Frontend hooks
+		// Frontend hooks.
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_frontend_assets' ) );
 		add_shortcode( 'multilify_switcher', array( $this, 'switcher_shortcode' ) );
 		add_action( 'init', array( $this, 'setup_rewrite_rules' ) );
@@ -57,17 +71,14 @@ class Multilify {
 		add_filter( 'the_title', array( $this, 'filter_title' ), 10, 2 );
 		add_filter( 'the_content', array( $this, 'filter_content' ) );
 
-		// Permalink filters - multiple hooks for all link types
+		// Permalink filters - multiple hooks for all link types.
 		add_filter( 'post_link', array( $this, 'filter_permalink' ), 10, 2 );
 		add_filter( 'page_link', array( $this, 'filter_permalink' ), 10, 2 );
 		add_filter( 'post_type_link', array( $this, 'filter_permalink' ), 10, 2 );
 
-		// Title filters for <title> tag
+		// Title filters for <title> tag.
 		add_filter( 'wp_title', array( $this, 'filter_wp_title' ), 10, 3 );
 		add_filter( 'document_title_parts', array( $this, 'filter_document_title_parts' ), 10, 1 );
-
-		// Language detection
-		add_action( 'template_redirect', array( $this, 'handle_language_redirect' ) );
 	}
 
 	/**
@@ -76,7 +87,7 @@ class Multilify {
 	public function get_languages() {
 		$languages = get_option( 'multilify_languages', array() );
 		if ( empty( $languages ) ) {
-			// Default languages
+			// Default languages.
 			$languages = array(
 				array(
 					'code' => 'tr',
@@ -110,7 +121,7 @@ class Multilify {
 			return $this->current_language;
 		}
 
-		// Check URL for language code - sanitize REQUEST_URI for security
+		// Check URL for language code - sanitize REQUEST_URI for security.
 		$request_uri = isset( $_SERVER['REQUEST_URI'] ) ? esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '';
 		$url_path    = trim( wp_parse_url( $request_uri, PHP_URL_PATH ), '/' );
 		$path_parts  = explode( '/', $url_path );
@@ -118,7 +129,7 @@ class Multilify {
 		$languages      = $this->get_languages();
 		$language_codes = wp_list_pluck( $languages, 'code' );
 
-		// Validate language code format (2-5 lowercase letters)
+		// Validate language code format (2-5 lowercase letters).
 		if ( ! empty( $path_parts[0] ) &&
 			preg_match( '/^[a-z]{2,5}$/', $path_parts[0] ) &&
 			in_array( $path_parts[0], $language_codes, true ) ) {
@@ -167,6 +178,9 @@ class Multilify {
 
 	/**
 	 * Sanitize languages array
+	 *
+	 * @param mixed $languages Raw languages value submitted from the settings form.
+	 * @return array Sanitized list of languages.
 	 */
 	public function sanitize_languages( $languages ) {
 		if ( ! is_array( $languages ) ) {
@@ -189,6 +203,8 @@ class Multilify {
 
 	/**
 	 * Enqueue admin assets
+	 *
+	 * @param string $hook Current admin page hook suffix.
 	 */
 	public function enqueue_admin_assets( $hook ) {
 		if ( 'toplevel_page_multilify' === $hook || 'post.php' === $hook || 'post-new.php' === $hook ) {
@@ -257,7 +273,7 @@ class Multilify {
 					$new_lang['name'] = $new_lang['code'];
 				}
 
-				// Validate language code
+				// Validate language code.
 				if ( ! preg_match( '/^[a-z]{2,5}$/', $new_lang['code'] ) ) {
 					$error = 'invalid_code';
 					break;
@@ -330,17 +346,17 @@ class Multilify {
 
 				$default_lang = sanitize_key( wp_unslash( $_POST['default_language'] ) );
 				update_option( 'multilify_default_language', $default_lang );
-				// Default language change doesn't need rewrite flush
+				// Default language change doesn't need rewrite flush.
 				break;
 		}
 
-		// Only flush rewrite rules when languages are added/deleted
+		// Only flush rewrite rules when languages are added/deleted.
 		if ( $needs_flush ) {
-			// Set a transient flag instead of immediate flush for better performance
+			// Set a transient flag instead of immediate flush for better performance.
 			set_transient( 'multilify_flush_rewrite_rules', 1, 60 );
 		}
 
-		// Redirect to prevent form resubmission
+		// Redirect to prevent form resubmission.
 		if ( '' !== $error ) {
 			$redirect = add_query_arg( 'multilify_error', $error, admin_url( 'admin.php?page=multilify' ) );
 		} else {
@@ -398,12 +414,15 @@ class Multilify {
 
 	/**
 	 * Render translation meta box
+	 *
+	 * @param WP_Post $post    Post being edited.
+	 * @param array   $metabox Meta box registration arguments.
 	 */
 	public function render_translation_meta_box( $post, $metabox ) {
 		$language  = $metabox['args']['language'];
 		$lang_code = $language['code'];
 
-		// Get saved translations
+		// Get saved translations.
 		$title   = get_post_meta( $post->ID, '_multilang_title_' . $lang_code, true );
 		$content = get_post_meta( $post->ID, '_multilang_content_' . $lang_code, true );
 		$slug    = get_post_meta( $post->ID, '_multilang_slug_' . $lang_code, true );
@@ -415,14 +434,16 @@ class Multilify {
 
 	/**
 	 * Save translation meta
+	 *
+	 * @param int $post_id Post being saved.
 	 */
 	public function save_translation_meta( $post_id ) {
-		// Check if autosave
+		// Check if autosave.
 		if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
 			return;
 		}
 
-		// Check user permissions
+		// Check user permissions.
 		if ( ! current_user_can( 'edit_post', $post_id ) ) {
 			return;
 		}
@@ -432,30 +453,30 @@ class Multilify {
 		foreach ( $languages as $language ) {
 			$lang_code = $language['code'];
 
-			// Verify nonce
+			// Verify nonce.
 			if ( ! isset( $_POST[ 'multilify_nonce_' . $lang_code ] ) ||
 				! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST[ 'multilify_nonce_' . $lang_code ] ) ), 'multilify_save_' . $lang_code ) ) {
 				continue;
 			}
 
-			// Save title
+			// Save title.
 			if ( isset( $_POST[ 'multilang_title_' . $lang_code ] ) ) {
 				update_post_meta( $post_id, '_multilang_title_' . $lang_code, sanitize_text_field( wp_unslash( $_POST[ 'multilang_title_' . $lang_code ] ) ) );
 			}
 
-			// Save content
+			// Save content.
 			if ( isset( $_POST[ 'multilang_content_' . $lang_code ] ) ) {
 				update_post_meta( $post_id, '_multilang_content_' . $lang_code, wp_kses_post( wp_unslash( $_POST[ 'multilang_content_' . $lang_code ] ) ) );
 			}
 
-			// Save slug and clear cache
+			// Save slug and clear cache.
 			if ( isset( $_POST[ 'multilang_slug_' . $lang_code ] ) ) {
 				$new_slug = sanitize_title( wp_unslash( $_POST[ 'multilang_slug_' . $lang_code ] ) );
 				$old_slug = get_post_meta( $post_id, '_multilang_slug_' . $lang_code, true );
 
 				update_post_meta( $post_id, '_multilang_slug_' . $lang_code, $new_slug );
 
-				// Clear cache for both old and new slugs
+				// Clear cache for both old and new slugs.
 				if ( $old_slug ) {
 					$old_cache_key = 'multilang_slug_' . md5( $lang_code . '_' . $old_slug );
 					wp_cache_delete( $old_cache_key, 'multilify' );
@@ -470,6 +491,9 @@ class Multilify {
 
 	/**
 	 * Add custom query vars
+	 *
+	 * @param array $vars Registered public query variables.
+	 * @return array Query variables including the language variable.
 	 */
 	public function add_query_vars( $vars ) {
 		$vars[] = 'lang';
@@ -478,20 +502,23 @@ class Multilify {
 
 	/**
 	 * Filter request to convert custom slugs to real post slugs
+	 *
+	 * @param array $query_vars Query variables for the current request.
+	 * @return array Query variables with translated slugs resolved.
 	 */
 	public function filter_request( $query_vars ) {
 		global $wpdb;
 
-		// Check if we have a language and a slug
+		// Check if we have a language and a slug.
 		if ( isset( $query_vars['lang'] ) && ( isset( $query_vars['name'] ) || isset( $query_vars['pagename'] ) ) ) {
 			$lang = sanitize_key( $query_vars['lang'] );
 			$slug = isset( $query_vars['name'] ) ? sanitize_title( $query_vars['name'] ) : sanitize_title( $query_vars['pagename'] );
 
-			// Create cache key
+			// Create cache key.
 			$cache_key   = 'multilang_slug_' . md5( $lang . '_' . $slug );
 			$cached_data = wp_cache_get( $cache_key, 'multilify' );
 
-			// If not in cache, query database
+			// If not in cache, query database.
 			if ( false === $cached_data ) {
                 // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 				$result = $wpdb->get_row(
@@ -507,18 +534,18 @@ class Multilify {
 					)
 				);
 
-				// Cache the result (even if null) for 1 hour
+				// Cache the result (even if null) for 1 hour.
 				$cached_data = $result ? $result : 'not_found';
 				wp_cache_set( $cache_key, $cached_data, 'multilify', HOUR_IN_SECONDS );
 			}
 
-			// Handle cached "not found"
+			// Handle cached "not found".
 			if ( 'not_found' === $cached_data ) {
 				$cached_data = null;
 			}
 
 			if ( $cached_data ) {
-				// Replace the slug with the real post slug based on post_type
+				// Replace the slug with the real post slug based on post_type.
 				if ( 'page' === $cached_data->post_type ) {
 					$query_vars['pagename'] = $cached_data->post_name;
 					unset( $query_vars['name'] );
@@ -541,21 +568,21 @@ class Multilify {
 		foreach ( $languages as $language ) {
 			$lang_code = $language['code'];
 
-			// Home page with language
+			// Home page with language.
 			add_rewrite_rule(
 				'^' . $lang_code . '/?$',
 				'index.php?lang=' . $lang_code,
 				'top'
 			);
 
-			// Single level slugs (posts) with language prefix
+			// Single level slugs (posts) with language prefix.
 			add_rewrite_rule(
 				'^' . $lang_code . '/([^/]+)/?$',
 				'index.php?name=$matches[1]&lang=' . $lang_code,
 				'top'
 			);
 
-			// Multi-level slugs (pages/hierarchical) with language prefix
+			// Multi-level slugs (pages/hierarchical) with language prefix.
 			add_rewrite_rule(
 				'^' . $lang_code . '/(.+)/?$',
 				'index.php?pagename=$matches[1]&lang=' . $lang_code,
@@ -563,7 +590,7 @@ class Multilify {
 			);
 		}
 
-		// Add lang query var
+		// Add lang query var.
 		add_rewrite_tag( '%lang%', '([^&]+)' );
 	}
 
@@ -584,16 +611,16 @@ class Multilify {
 	public function maybe_create_db_indexes() {
 		global $wpdb;
 
-		// Check if indexes already created
+		// Check if indexes already created.
 		if ( get_option( 'multilify_db_indexes_created' ) ) {
 			return;
 		}
 
-		// Create index on meta_key and meta_value for faster slug lookups
+		// Create index on meta_key and meta_value for faster slug lookups.
 		$index_name = 'multilify_slug_lookup';
 
-		// Check if index exists
-		// Schema information queries must access INFORMATION_SCHEMA directly
+		// Check if index exists.
+		// Schema information queries must access INFORMATION_SCHEMA directly.
         // phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery
         // phpcs:disable WordPress.DB.DirectDatabaseQuery.NoCaching
 		$index_exists = $wpdb->get_var(
@@ -610,12 +637,12 @@ class Multilify {
         // phpcs:enable WordPress.DB.DirectDatabaseQuery.NoCaching
 
 		if ( ! $index_exists ) {
-			// Create composite index for meta_key and meta_value (first 191 chars for utf8mb4)
-			// Sanitize index name (alphanumeric and underscore only)
+			// Create composite index for meta_key and meta_value (first 191 chars for utf8mb4).
+			// Sanitize index name (alphanumeric and underscore only).
 			$safe_index_name = preg_replace( '/[^a-zA-Z0-9_]/', '', $index_name );
 
-			// Index name is manually sanitized above (only alphanumeric and underscore allowed)
-			// Schema changes require direct queries and cannot use prepared statements for DDL
+			// Index name is manually sanitized above (only alphanumeric and underscore allowed).
+			// Schema changes require direct queries and cannot use prepared statements for DDL.
             // phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery
             // phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange
             // phpcs:disable WordPress.DB.DirectDatabaseQuery.NoCaching
@@ -634,13 +661,16 @@ class Multilify {
 				update_option( 'multilify_db_indexes_created', true );
 			}
 		} else {
-			// Index already exists, mark as created
+			// Index already exists, mark as created.
 			update_option( 'multilify_db_indexes_created', true );
 		}
 	}
 
 	/**
 	 * Detect language from URL
+	 *
+	 * @param WP_Query $query Query being prepared.
+	 * @return WP_Query Query adjusted for the detected language.
 	 */
 	public function detect_language( $query ) {
 		if ( ! is_admin() && $query->is_main_query() ) {
@@ -648,7 +678,7 @@ class Multilify {
 			if ( $lang ) {
 				$this->current_language = $lang;
 
-				// If only language is set (no pagename or name), show home page
+				// If only language is set (no pagename or name), show home page.
 				if ( ! get_query_var( 'pagename' ) && ! get_query_var( 'name' ) && ! get_query_var( 'p' ) ) {
 					$query->is_home       = true;
 					$query->is_front_page = true;
@@ -660,41 +690,11 @@ class Multilify {
 	}
 
 	/**
-	 * Handle language redirect based on browser
-	 */
-	public function handle_language_redirect() {
-		// Disable automatic redirect for now to prevent issues
-		// Users can manually select language from switcher
-		return;
-
-		/*
-		Optional: Enable browser-based redirect
-		if ( ! is_front_page() && ! is_home() ) {
-			return;
-		}
-
-		$current_lang = $this->get_current_language();
-		$default_lang = $this->get_default_language();
-
-		if ( $current_lang !== $default_lang ) {
-			return;
-		}
-
-		if ( isset( $_SERVER['HTTP_ACCEPT_LANGUAGE'] ) && ! isset( $_COOKIE['multilify_preference'] ) ) {
-			$browser_lang = substr( $_SERVER['HTTP_ACCEPT_LANGUAGE'], 0, 2 );
-			$languages = $this->get_languages();
-			$language_codes = wp_list_pluck( $languages, 'code' );
-
-			if ( in_array( $browser_lang, $language_codes ) && $browser_lang !== $default_lang ) {
-				wp_redirect( home_url( '/' . $browser_lang . '/' ) );
-				exit;
-			}
-		}
-		*/
-	}
-
-	/**
 	 * Filter post title
+	 *
+	 * @param string   $title   Original post title.
+	 * @param int|null $post_id Post the title belongs to.
+	 * @return string Translated title when available, original title otherwise.
 	 */
 	public function filter_title( $title, $post_id = null ) {
 		if ( ! $post_id || is_admin() ) {
@@ -713,6 +713,9 @@ class Multilify {
 
 	/**
 	 * Filter post content
+	 *
+	 * @param string $content Original post content.
+	 * @return string Translated content when available, original content otherwise.
 	 */
 	public function filter_content( $content ) {
 		if ( is_admin() ) {
@@ -732,6 +735,10 @@ class Multilify {
 
 	/**
 	 * Filter permalink
+	 *
+	 * @param string  $url  Original post permalink.
+	 * @param WP_Post $post Post the permalink belongs to.
+	 * @return string Language-aware permalink.
 	 */
 	public function filter_permalink( $url, $post ) {
 		if ( is_admin() ) {
@@ -741,14 +748,14 @@ class Multilify {
 		$lang         = $this->get_current_language();
 		$default_lang = $this->get_default_language();
 
-		// Get custom slug for this language
+		// Get custom slug for this language.
 		$custom_slug = get_post_meta( $post->ID, '_multilang_slug_' . $lang, true );
 
 		if ( ! empty( $custom_slug ) ) {
-			// Use custom slug with language prefix
+			// Use custom slug with language prefix.
 			$url = home_url( '/' . $lang . '/' . $custom_slug . '/' );
 		} else {
-			// Use default slug with language prefix
+			// Use default slug with language prefix.
 			$url = home_url( '/' . $lang . '/' . $post->post_name . '/' );
 		}
 
@@ -784,6 +791,14 @@ class Multilify {
 
 	/**
 	 * Get language switcher HTML
+	 *
+	 * @param array $args {
+	 *     Optional. Display arguments.
+	 *
+	 *     @type bool $show_flag Whether to show the flag. Default true.
+	 *     @type bool $show_name Whether to show the language name. Default true.
+	 * }
+	 * @return string Language switcher markup.
 	 */
 	public function get_language_switcher( $args = array() ) {
 		$args = wp_parse_args(
@@ -821,7 +836,7 @@ class Multilify {
 					$lang_name = $lang_code;
 				}
 
-				// Build URL for this language
+				// Build URL for this language.
 				if ( $current_post_id ) {
 					$slug = get_post_meta( $current_post_id, '_multilang_slug_' . $lang_code, true );
 					if ( empty( $slug ) ) {
@@ -851,8 +866,13 @@ class Multilify {
 
 	/**
 	 * Filter wp_title for <title> tag
+	 *
+	 * @param string $title       Original document title.
+	 * @param string $sep         Title separator. Unused, required by the wp_title filter signature.
+	 * @param string $seplocation Separator location. Unused, required by the wp_title filter signature.
+	 * @return string Title with the translated post title substituted in.
 	 */
-	public function filter_wp_title( $title, $sep = '', $seplocation = '' ) {
+	public function filter_wp_title( $title, $sep = '', $seplocation = '' ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- Signature required by the wp_title filter.
 		if ( is_admin() ) {
 			return $title;
 		}
@@ -866,7 +886,7 @@ class Multilify {
 		$translated_title = get_post_meta( $post_id, '_multilang_title_' . $lang, true );
 
 		if ( ! empty( $translated_title ) ) {
-			// Replace the post title part in wp_title
+			// Replace the post title part in wp_title.
 			$original_title = get_the_title( $post_id );
 			if ( ! empty( $original_title ) ) {
 				$title = str_replace( $original_title, $translated_title, $title );
@@ -878,6 +898,9 @@ class Multilify {
 
 	/**
 	 * Filter document_title_parts for modern WordPress
+	 *
+	 * @param array $title_parts Parts making up the document title.
+	 * @return array Title parts with the translated title substituted in.
 	 */
 	public function filter_document_title_parts( $title_parts ) {
 		if ( is_admin() ) {
