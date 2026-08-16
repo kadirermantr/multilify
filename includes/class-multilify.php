@@ -12,864 +12,913 @@
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
-    exit; // Exit if accessed directly
+	exit; // Exit if accessed directly.
 }
 
+/**
+ * Core plugin class handling languages, routing and translated content.
+ */
 class Multilify {
 
-    private static $instance = null;
-    private $current_language = null;
+	/**
+	 * Singleton instance.
+	 *
+	 * @var Multilify|null
+	 */
+	private static $instance = null;
 
-    /**
-     * Get singleton instance
-     */
-    public static function get_instance() {
-        if ( null === self::$instance ) {
-            self::$instance = new self();
-        }
-        return self::$instance;
-    }
+	/**
+	 * Language code detected for the current request.
+	 *
+	 * @var string|null
+	 */
+	private $current_language = null;
 
-    /**
-     * Constructor
-     */
-    private function __construct() {
-        // Admin hooks
-        add_action( 'admin_menu', array( $this, 'add_admin_menu' ) );
-        add_action( 'admin_init', array( $this, 'register_settings' ) );
-        // Handle form submissions before any output so redirects work (avoids "headers already sent").
-        add_action( 'admin_init', array( $this, 'handle_admin_actions' ) );
-        add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_assets' ) );
+	/**
+	 * Get singleton instance
+	 */
+	public static function get_instance() {
+		if ( null === self::$instance ) {
+			self::$instance = new self();
+		}
+		return self::$instance;
+	}
 
-        // Meta boxes for posts and pages
-        add_action( 'add_meta_boxes', array( $this, 'add_translation_meta_boxes' ) );
-        add_action( 'save_post', array( $this, 'save_translation_meta' ) );
+	/**
+	 * Constructor
+	 */
+	private function __construct() {
+		// Admin hooks.
+		add_action( 'admin_menu', array( $this, 'add_admin_menu' ) );
+		add_action( 'admin_init', array( $this, 'register_settings' ) );
+		// Handle form submissions before any output so redirects work (avoids "headers already sent").
+		add_action( 'admin_init', array( $this, 'handle_admin_actions' ) );
+		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_assets' ) );
 
-        // Frontend hooks
-        add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_frontend_assets' ) );
-        add_shortcode( 'multilify_switcher', array( $this, 'switcher_shortcode' ) );
-        add_action( 'init', array( $this, 'setup_rewrite_rules' ) );
-        add_action( 'init', array( $this, 'maybe_flush_rewrite_rules' ) );
-        add_action( 'init', array( $this, 'maybe_create_db_indexes' ) );
-        add_filter( 'query_vars', array( $this, 'add_query_vars' ) );
-        add_filter( 'request', array( $this, 'filter_request' ), 10, 1 );
-        add_filter( 'pre_get_posts', array( $this, 'detect_language' ) );
-        add_filter( 'the_title', array( $this, 'filter_title' ), 10, 2 );
-        add_filter( 'the_content', array( $this, 'filter_content' ) );
+		// Meta boxes for posts and pages.
+		add_action( 'add_meta_boxes', array( $this, 'add_translation_meta_boxes' ) );
+		add_action( 'save_post', array( $this, 'save_translation_meta' ) );
 
-        // Permalink filters - multiple hooks for all link types
-        add_filter( 'post_link', array( $this, 'filter_permalink' ), 10, 2 );
-        add_filter( 'page_link', array( $this, 'filter_permalink' ), 10, 2 );
-        add_filter( 'post_type_link', array( $this, 'filter_permalink' ), 10, 2 );
+		// Frontend hooks.
+		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_frontend_assets' ) );
+		add_shortcode( 'multilify_switcher', array( $this, 'switcher_shortcode' ) );
+		add_action( 'init', array( $this, 'setup_rewrite_rules' ) );
+		add_action( 'init', array( $this, 'maybe_flush_rewrite_rules' ) );
+		add_action( 'init', array( $this, 'maybe_create_db_indexes' ) );
+		add_filter( 'query_vars', array( $this, 'add_query_vars' ) );
+		add_filter( 'request', array( $this, 'filter_request' ), 10, 1 );
+		add_filter( 'pre_get_posts', array( $this, 'detect_language' ) );
+		add_filter( 'the_title', array( $this, 'filter_title' ), 10, 2 );
+		add_filter( 'the_content', array( $this, 'filter_content' ) );
 
-        // Title filters for <title> tag
-        add_filter( 'wp_title', array( $this, 'filter_wp_title' ), 10, 3 );
-        add_filter( 'document_title_parts', array( $this, 'filter_document_title_parts' ), 10, 1 );
+		// Permalink filters - multiple hooks for all link types.
+		add_filter( 'post_link', array( $this, 'filter_permalink' ), 10, 2 );
+		add_filter( 'page_link', array( $this, 'filter_permalink' ), 10, 2 );
+		add_filter( 'post_type_link', array( $this, 'filter_permalink' ), 10, 2 );
 
-        // Language detection
-        add_action( 'template_redirect', array( $this, 'handle_language_redirect' ) );
-    }
+		// Title filters for <title> tag.
+		add_filter( 'wp_title', array( $this, 'filter_wp_title' ), 10, 3 );
+		add_filter( 'document_title_parts', array( $this, 'filter_document_title_parts' ), 10, 1 );
+	}
 
-    /**
-     * Get all configured languages
-     */
-    public function get_languages() {
-        $languages = get_option( 'multilify_languages', array() );
-        if ( empty( $languages ) ) {
-            // Default languages
-            $languages = array(
-                array(
-                    'code' => 'tr',
-                    'name' => 'Türkçe',
-                    'flag' => '🇹🇷'
-                ),
-                array(
-                    'code' => 'en',
-                    'name' => 'English',
-                    'flag' => '🇬🇧'
-                )
-            );
-            update_option( 'multilify_languages', $languages );
-        }
-        return $languages;
-    }
+	/**
+	 * Get all configured languages
+	 */
+	public function get_languages() {
+		$languages = get_option( 'multilify_languages', array() );
+		if ( empty( $languages ) ) {
+			// Default languages.
+			$languages = array(
+				array(
+					'code' => 'tr',
+					'name' => 'Türkçe',
+					'flag' => '🇹🇷',
+				),
+				array(
+					'code' => 'en',
+					'name' => 'English',
+					'flag' => '🇬🇧',
+				),
+			);
+			update_option( 'multilify_languages', $languages );
+		}
+		return $languages;
+	}
 
-    /**
-     * Get default language
-     */
-    public function get_default_language() {
-        $default = get_option( 'multilify_default_language', 'tr' );
-        return $default;
-    }
+	/**
+	 * Get default language
+	 */
+	public function get_default_language() {
+		$default = get_option( 'multilify_default_language', 'tr' );
+		return $default;
+	}
 
-    /**
-     * Get current language
-     */
-    public function get_current_language() {
-        if ( null !== $this->current_language ) {
-            return $this->current_language;
-        }
+	/**
+	 * Get current language
+	 */
+	public function get_current_language() {
+		if ( null !== $this->current_language ) {
+			return $this->current_language;
+		}
 
-        // Check URL for language code - sanitize REQUEST_URI for security
-        $request_uri = isset( $_SERVER['REQUEST_URI'] ) ? esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '';
-        $url_path = trim( wp_parse_url( $request_uri, PHP_URL_PATH ), '/' );
-        $path_parts = explode( '/', $url_path );
+		// Check URL for language code - sanitize REQUEST_URI for security.
+		$request_uri = isset( $_SERVER['REQUEST_URI'] ) ? esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '';
+		$url_path    = trim( wp_parse_url( $request_uri, PHP_URL_PATH ), '/' );
+		$path_parts  = explode( '/', $url_path );
 
-        $languages = $this->get_languages();
-        $language_codes = wp_list_pluck( $languages, 'code' );
+		$languages      = $this->get_languages();
+		$language_codes = wp_list_pluck( $languages, 'code' );
 
-        // Validate language code format (2-5 lowercase letters)
-        if ( ! empty( $path_parts[0] ) &&
-             preg_match( '/^[a-z]{2,5}$/', $path_parts[0] ) &&
-             in_array( $path_parts[0], $language_codes, true ) ) {
-            $this->current_language = sanitize_key( $path_parts[0] );
-        } else {
-            $this->current_language = $this->get_default_language();
-        }
+		// Validate language code format (2-5 lowercase letters).
+		if ( ! empty( $path_parts[0] ) &&
+			preg_match( '/^[a-z]{2,5}$/', $path_parts[0] ) &&
+			in_array( $path_parts[0], $language_codes, true ) ) {
+			$this->current_language = sanitize_key( $path_parts[0] );
+		} else {
+			$this->current_language = $this->get_default_language();
+		}
 
-        return $this->current_language;
-    }
+		return $this->current_language;
+	}
 
-    /**
-     * Add admin menu
-     */
-    public function add_admin_menu() {
-        add_menu_page(
-            'Multilify - Language Management',
-            'Multilify',
-            'manage_options',
-            'multilify',
-            array( $this, 'render_admin_page' ),
-            'dashicons-translation',
-            30
-        );
-    }
+	/**
+	 * Add admin menu
+	 */
+	public function add_admin_menu() {
+		add_menu_page(
+			'Multilify - Language Management',
+			'Multilify',
+			'manage_options',
+			'multilify',
+			array( $this, 'render_admin_page' ),
+			'dashicons-translation',
+			30
+		);
+	}
 
-    /**
-     * Register settings
-     */
-    public function register_settings() {
-        register_setting( 'multilify_settings', 'multilify_languages', array(
-            'sanitize_callback' => array( $this, 'sanitize_languages' )
-        ) );
-        register_setting( 'multilify_settings', 'multilify_default_language', array(
-            'sanitize_callback' => 'sanitize_key'
-        ) );
-    }
+	/**
+	 * Register settings
+	 */
+	public function register_settings() {
+		register_setting(
+			'multilify_settings',
+			'multilify_languages',
+			array(
+				'sanitize_callback' => array( $this, 'sanitize_languages' ),
+			)
+		);
+		register_setting(
+			'multilify_settings',
+			'multilify_default_language',
+			array(
+				'sanitize_callback' => 'sanitize_key',
+			)
+		);
+	}
 
-    /**
-     * Sanitize languages array
-     */
-    public function sanitize_languages( $languages ) {
-        if ( ! is_array( $languages ) ) {
-            return array();
-        }
+	/**
+	 * Sanitize languages array
+	 *
+	 * @param mixed $languages Raw languages value submitted from the settings form.
+	 * @return array Sanitized list of languages.
+	 */
+	public function sanitize_languages( $languages ) {
+		if ( ! is_array( $languages ) ) {
+			return array();
+		}
 
-        $sanitized = array();
-        foreach ( $languages as $language ) {
-            if ( is_array( $language ) && isset( $language['code'], $language['name'], $language['flag'] ) ) {
-                $sanitized[] = array(
-                    'code' => sanitize_key( $language['code'] ),
-                    'name' => sanitize_text_field( $language['name'] ),
-                    'flag' => sanitize_text_field( $language['flag'] )
-                );
-            }
-        }
+		$sanitized = array();
+		foreach ( $languages as $language ) {
+			if ( is_array( $language ) && isset( $language['code'], $language['name'], $language['flag'] ) ) {
+				$sanitized[] = array(
+					'code' => sanitize_key( $language['code'] ),
+					'name' => sanitize_text_field( $language['name'] ),
+					'flag' => sanitize_text_field( $language['flag'] ),
+				);
+			}
+		}
 
-        return $sanitized;
-    }
+		return $sanitized;
+	}
 
-    /**
-     * Enqueue admin assets
-     */
-    public function enqueue_admin_assets( $hook ) {
-        if ( 'toplevel_page_multilify' === $hook || 'post.php' === $hook || 'post-new.php' === $hook ) {
-            wp_enqueue_style( 'multilify-admin', MULTILIFY_ASSETS_URL . 'css/multilify-admin.css', array(), MULTILIFY_VERSION );
-            wp_enqueue_script( 'multilify-admin', MULTILIFY_ASSETS_URL . 'js/multilify-admin.js', array( 'jquery' ), MULTILIFY_VERSION, true );
-        }
-    }
+	/**
+	 * Enqueue admin assets
+	 *
+	 * @param string $hook Current admin page hook suffix.
+	 */
+	public function enqueue_admin_assets( $hook ) {
+		if ( 'toplevel_page_multilify' === $hook || 'post.php' === $hook || 'post-new.php' === $hook ) {
+			wp_enqueue_style( 'multilify-admin', MULTILIFY_ASSETS_URL . 'css/multilify-admin.css', array(), MULTILIFY_VERSION );
+			wp_enqueue_script( 'multilify-admin', MULTILIFY_ASSETS_URL . 'js/multilify-admin.js', array( 'jquery' ), MULTILIFY_VERSION, true );
+		}
+	}
 
-    /**
-     * Enqueue frontend assets (language switcher styles).
-     */
-    public function enqueue_frontend_assets() {
-        wp_enqueue_style( 'multilify', MULTILIFY_ASSETS_URL . 'css/multilify.css', array(), MULTILIFY_VERSION );
-    }
+	/**
+	 * Enqueue frontend assets (language switcher styles).
+	 */
+	public function enqueue_frontend_assets() {
+		wp_enqueue_style( 'multilify', MULTILIFY_ASSETS_URL . 'css/multilify.css', array(), MULTILIFY_VERSION );
+	}
 
-    /**
-     * Render admin settings page
-     */
-    public function render_admin_page() {
-        if ( ! current_user_can( 'manage_options' ) ) {
-            return;
-        }
+	/**
+	 * Render admin settings page
+	 */
+	public function render_admin_page() {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			return;
+		}
 
-        $languages = $this->get_languages();
-        $default_language = $this->get_default_language();
+		$languages        = $this->get_languages();
+		$default_language = $this->get_default_language();
 
-        include MULTILIFY_INCLUDES_DIR . 'views/admin-page.php';
-    }
+		include MULTILIFY_INCLUDES_DIR . 'views/admin-page.php';
+	}
 
-    /**
-     * Handle admin actions (add, edit, delete languages)
-     */
-    public function handle_admin_actions() {
-        // Only act on our own form submissions; this runs on every admin_init.
+	/**
+	 * Handle admin actions (add, edit, delete languages)
+	 */
+	public function handle_admin_actions() {
+		// Only act on our own form submissions; this runs on every admin_init.
         // phpcs:ignore WordPress.Security.NonceVerification.Missing
-        if ( ! isset( $_POST['multilify_action'] ) ) {
-            return;
-        }
+		if ( ! isset( $_POST['multilify_action'] ) ) {
+			return;
+		}
 
-        if ( ! current_user_can( 'manage_options' ) ) {
-            return;
-        }
+		if ( ! current_user_can( 'manage_options' ) ) {
+			return;
+		}
 
-        check_admin_referer( 'multilify_action' );
+		check_admin_referer( 'multilify_action' );
 
-        $action = sanitize_text_field( wp_unslash( $_POST['multilify_action'] ) );
-        $languages = $this->get_languages();
-        $needs_flush = false;
-        $error = '';
+		$action      = sanitize_text_field( wp_unslash( $_POST['multilify_action'] ) );
+		$languages   = $this->get_languages();
+		$needs_flush = false;
+		$error       = '';
 
-        switch ( $action ) {
-            case 'add_language':
-                if ( ! isset( $_POST['lang_code'], $_POST['lang_name'], $_POST['lang_flag'] ) ) {
-                    break;
-                }
+		switch ( $action ) {
+			case 'add_language':
+				if ( ! isset( $_POST['lang_code'], $_POST['lang_name'], $_POST['lang_flag'] ) ) {
+					break;
+				}
 
-                $new_lang = array(
-                    'code' => sanitize_key( wp_unslash( $_POST['lang_code'] ) ),
-                    'name' => sanitize_text_field( wp_unslash( $_POST['lang_name'] ) ),
-                    'flag' => sanitize_text_field( wp_unslash( $_POST['lang_flag'] ) )
-                );
+				$new_lang = array(
+					'code' => sanitize_key( wp_unslash( $_POST['lang_code'] ) ),
+					'name' => sanitize_text_field( wp_unslash( $_POST['lang_name'] ) ),
+					'flag' => sanitize_text_field( wp_unslash( $_POST['lang_flag'] ) ),
+				);
 
-                // Name is optional; fall back to the code so it is never an empty/whitespace string.
-                $new_lang['name'] = trim( $new_lang['name'] );
-                if ( '' === $new_lang['name'] ) {
-                    $new_lang['name'] = $new_lang['code'];
-                }
+				// Name is optional; fall back to the code so it is never an empty/whitespace string.
+				$new_lang['name'] = trim( $new_lang['name'] );
+				if ( '' === $new_lang['name'] ) {
+					$new_lang['name'] = $new_lang['code'];
+				}
 
-                // Validate language code
-                if ( ! preg_match( '/^[a-z]{2,5}$/', $new_lang['code'] ) ) {
-                    $error = 'invalid_code';
-                    break;
-                }
+				// Validate language code.
+				if ( ! preg_match( '/^[a-z]{2,5}$/', $new_lang['code'] ) ) {
+					$error = 'invalid_code';
+					break;
+				}
 
-                // Reject duplicates: a language code must be unique.
-                if ( $this->language_code_exists( $new_lang['code'], $languages ) ) {
-                    $error = 'duplicate_code';
-                    break;
-                }
+				// Reject duplicates: a language code must be unique.
+				if ( $this->language_code_exists( $new_lang['code'], $languages ) ) {
+					$error = 'duplicate_code';
+					break;
+				}
 
-                $languages[] = $new_lang;
-                update_option( 'multilify_languages', $languages );
-                $needs_flush = true;
-                break;
+				$languages[] = $new_lang;
+				update_option( 'multilify_languages', $languages );
+				$needs_flush = true;
+				break;
 
-            case 'edit_language':
-                if ( ! isset( $_POST['lang_code'], $_POST['lang_name'], $_POST['lang_flag'] ) ) {
-                    break;
-                }
+			case 'edit_language':
+				if ( ! isset( $_POST['lang_code'], $_POST['lang_name'], $_POST['lang_flag'] ) ) {
+					break;
+				}
 
-                $edit_code = sanitize_key( wp_unslash( $_POST['lang_code'] ) );
-                $edit_name = trim( sanitize_text_field( wp_unslash( $_POST['lang_name'] ) ) );
-                $edit_flag = sanitize_text_field( wp_unslash( $_POST['lang_flag'] ) );
+				$edit_code = sanitize_key( wp_unslash( $_POST['lang_code'] ) );
+				$edit_name = trim( sanitize_text_field( wp_unslash( $_POST['lang_name'] ) ) );
+				$edit_flag = sanitize_text_field( wp_unslash( $_POST['lang_flag'] ) );
 
-                // Name is optional; fall back to the code.
-                if ( '' === $edit_name ) {
-                    $edit_name = $edit_code;
-                }
+				// Name is optional; fall back to the code.
+				if ( '' === $edit_name ) {
+					$edit_name = $edit_code;
+				}
 
-                // The code is immutable (translation meta is keyed by it); only name/flag change.
-                $found = false;
-                foreach ( $languages as &$lang ) {
-                    if ( $lang['code'] === $edit_code ) {
-                        $lang['name'] = $edit_name;
-                        $lang['flag'] = $edit_flag;
-                        $found = true;
-                        break;
-                    }
-                }
-                unset( $lang );
+				// The code is immutable (translation meta is keyed by it); only name/flag change.
+				$found = false;
+				foreach ( $languages as &$lang ) {
+					if ( $lang['code'] === $edit_code ) {
+						$lang['name'] = $edit_name;
+						$lang['flag'] = $edit_flag;
+						$found        = true;
+						break;
+					}
+				}
+				unset( $lang );
 
-                if ( $found ) {
-                    update_option( 'multilify_languages', $languages );
-                } else {
-                    $error = 'not_found';
-                }
-                break;
+				if ( $found ) {
+					update_option( 'multilify_languages', $languages );
+				} else {
+					$error = 'not_found';
+				}
+				break;
 
-            case 'delete_language':
-                if ( ! isset( $_POST['lang_code'] ) ) {
-                    break;
-                }
+			case 'delete_language':
+				if ( ! isset( $_POST['lang_code'] ) ) {
+					break;
+				}
 
-                $lang_code = sanitize_key( wp_unslash( $_POST['lang_code'] ) );
-                $languages = array_filter( $languages, function( $lang ) use ( $lang_code ) {
-                    return $lang['code'] !== $lang_code;
-                });
-                update_option( 'multilify_languages', array_values( $languages ) );
-                $needs_flush = true;
-                break;
+				$lang_code = sanitize_key( wp_unslash( $_POST['lang_code'] ) );
+				$languages = array_filter(
+					$languages,
+					function ( $lang ) use ( $lang_code ) {
+						return $lang['code'] !== $lang_code;
+					}
+				);
+				update_option( 'multilify_languages', array_values( $languages ) );
+				$needs_flush = true;
+				break;
 
-            case 'set_default':
-                if ( ! isset( $_POST['default_language'] ) ) {
-                    break;
-                }
+			case 'set_default':
+				if ( ! isset( $_POST['default_language'] ) ) {
+					break;
+				}
 
-                $default_lang = sanitize_key( wp_unslash( $_POST['default_language'] ) );
-                update_option( 'multilify_default_language', $default_lang );
-                // Default language change doesn't need rewrite flush
-                break;
-        }
+				$default_lang = sanitize_key( wp_unslash( $_POST['default_language'] ) );
+				update_option( 'multilify_default_language', $default_lang );
+				// Default language change doesn't need rewrite flush.
+				break;
+		}
 
-        // Only flush rewrite rules when languages are added/deleted
-        if ( $needs_flush ) {
-            // Set a transient flag instead of immediate flush for better performance
-            set_transient( 'multilify_flush_rewrite_rules', 1, 60 );
-        }
+		// Only flush rewrite rules when languages are added/deleted.
+		if ( $needs_flush ) {
+			// Set a transient flag instead of immediate flush for better performance.
+			set_transient( 'multilify_flush_rewrite_rules', 1, 60 );
+		}
 
-        // Redirect to prevent form resubmission
-        if ( '' !== $error ) {
-            $redirect = add_query_arg( 'multilify_error', $error, admin_url( 'admin.php?page=multilify' ) );
-        } else {
-            $redirect = add_query_arg( 'multilify_updated', '1', admin_url( 'admin.php?page=multilify' ) );
-        }
+		// Redirect to prevent form resubmission.
+		if ( '' !== $error ) {
+			$redirect = add_query_arg( 'multilify_error', $error, admin_url( 'admin.php?page=multilify' ) );
+		} else {
+			$redirect = add_query_arg( 'multilify_updated', '1', admin_url( 'admin.php?page=multilify' ) );
+		}
 
-        wp_safe_redirect( $redirect );
-        exit;
-    }
+		wp_safe_redirect( $redirect );
+		exit;
+	}
 
-    /**
-     * Check whether a language code already exists.
-     *
-     * @param string $code      Language code to look for.
-     * @param array  $languages Existing languages list.
-     * @return bool
-     */
-    private function language_code_exists( $code, $languages ) {
-        foreach ( $languages as $language ) {
-            if ( isset( $language['code'] ) && $language['code'] === $code ) {
-                return true;
-            }
-        }
+	/**
+	 * Check whether a language code already exists.
+	 *
+	 * @param string $code      Language code to look for.
+	 * @param array  $languages Existing languages list.
+	 * @return bool
+	 */
+	private function language_code_exists( $code, $languages ) {
+		foreach ( $languages as $language ) {
+			if ( isset( $language['code'] ) && $language['code'] === $code ) {
+				return true;
+			}
+		}
 
-        return false;
-    }
+		return false;
+	}
 
-    /**
-     * Add translation meta boxes
-     */
-    public function add_translation_meta_boxes() {
-        $post_types = array( 'post', 'page' );
-        $languages = $this->get_languages();
+	/**
+	 * Add translation meta boxes
+	 */
+	public function add_translation_meta_boxes() {
+		$post_types = array( 'post', 'page' );
+		$languages  = $this->get_languages();
 
-        foreach ( $post_types as $post_type ) {
-            foreach ( $languages as $language ) {
-                // Name is optional; fall back to the code so the meta box title is never blank.
-                $language_label = isset( $language['name'] ) ? trim( (string) $language['name'] ) : '';
-                if ( '' === $language_label ) {
-                    $language_label = $language['code'];
-                }
+		foreach ( $post_types as $post_type ) {
+			foreach ( $languages as $language ) {
+				// Name is optional; fall back to the code so the meta box title is never blank.
+				$language_label = isset( $language['name'] ) ? trim( (string) $language['name'] ) : '';
+				if ( '' === $language_label ) {
+					$language_label = $language['code'];
+				}
 
-                add_meta_box(
-                    'multilify_' . $language['code'],
-                    $language['flag'] . ' ' . $language_label . ' Translation',
-                    array( $this, 'render_translation_meta_box' ),
-                    $post_type,
-                    'normal',
-                    'high',
-                    array( 'language' => $language )
-                );
-            }
-        }
-    }
+				add_meta_box(
+					'multilify_' . $language['code'],
+					$language['flag'] . ' ' . $language_label . ' Translation',
+					array( $this, 'render_translation_meta_box' ),
+					$post_type,
+					'normal',
+					'high',
+					array( 'language' => $language )
+				);
+			}
+		}
+	}
 
-    /**
-     * Render translation meta box
-     */
-    public function render_translation_meta_box( $post, $metabox ) {
-        $language = $metabox['args']['language'];
-        $lang_code = $language['code'];
+	/**
+	 * Render translation meta box
+	 *
+	 * @param WP_Post $post    Post being edited.
+	 * @param array   $metabox Meta box registration arguments.
+	 */
+	public function render_translation_meta_box( $post, $metabox ) {
+		$language  = $metabox['args']['language'];
+		$lang_code = $language['code'];
 
-        // Get saved translations
-        $title = get_post_meta( $post->ID, '_multilang_title_' . $lang_code, true );
-        $content = get_post_meta( $post->ID, '_multilang_content_' . $lang_code, true );
-        $slug = get_post_meta( $post->ID, '_multilang_slug_' . $lang_code, true );
+		// Get saved translations.
+		$title   = get_post_meta( $post->ID, '_multilang_title_' . $lang_code, true );
+		$content = get_post_meta( $post->ID, '_multilang_content_' . $lang_code, true );
+		$slug    = get_post_meta( $post->ID, '_multilang_slug_' . $lang_code, true );
 
-        wp_nonce_field( 'multilify_save_' . $lang_code, 'multilify_nonce_' . $lang_code );
+		wp_nonce_field( 'multilify_save_' . $lang_code, 'multilify_nonce_' . $lang_code );
 
-        include MULTILIFY_INCLUDES_DIR . 'views/meta-box.php';
-    }
+		include MULTILIFY_INCLUDES_DIR . 'views/meta-box.php';
+	}
 
-    /**
-     * Save translation meta
-     */
-    public function save_translation_meta( $post_id ) {
-        // Check if autosave
-        if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
-            return;
-        }
+	/**
+	 * Save translation meta
+	 *
+	 * @param int $post_id Post being saved.
+	 */
+	public function save_translation_meta( $post_id ) {
+		// Check if autosave.
+		if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
+			return;
+		}
 
-        // Check user permissions
-        if ( ! current_user_can( 'edit_post', $post_id ) ) {
-            return;
-        }
+		// Check user permissions.
+		if ( ! current_user_can( 'edit_post', $post_id ) ) {
+			return;
+		}
 
-        $languages = $this->get_languages();
+		$languages = $this->get_languages();
 
-        foreach ( $languages as $language ) {
-            $lang_code = $language['code'];
+		foreach ( $languages as $language ) {
+			$lang_code = $language['code'];
 
-            // Verify nonce
-            if ( ! isset( $_POST[ 'multilify_nonce_' . $lang_code ] ) ||
-                 ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST[ 'multilify_nonce_' . $lang_code ] ) ), 'multilify_save_' . $lang_code ) ) {
-                continue;
-            }
+			// Verify nonce.
+			if ( ! isset( $_POST[ 'multilify_nonce_' . $lang_code ] ) ||
+				! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST[ 'multilify_nonce_' . $lang_code ] ) ), 'multilify_save_' . $lang_code ) ) {
+				continue;
+			}
 
-            // Save title
-            if ( isset( $_POST[ 'multilang_title_' . $lang_code ] ) ) {
-                update_post_meta( $post_id, '_multilang_title_' . $lang_code, sanitize_text_field( wp_unslash( $_POST[ 'multilang_title_' . $lang_code ] ) ) );
-            }
+			// Save title.
+			if ( isset( $_POST[ 'multilang_title_' . $lang_code ] ) ) {
+				update_post_meta( $post_id, '_multilang_title_' . $lang_code, sanitize_text_field( wp_unslash( $_POST[ 'multilang_title_' . $lang_code ] ) ) );
+			}
 
-            // Save content
-            if ( isset( $_POST[ 'multilang_content_' . $lang_code ] ) ) {
-                update_post_meta( $post_id, '_multilang_content_' . $lang_code, wp_kses_post( wp_unslash( $_POST[ 'multilang_content_' . $lang_code ] ) ) );
-            }
+			// Save content.
+			if ( isset( $_POST[ 'multilang_content_' . $lang_code ] ) ) {
+				update_post_meta( $post_id, '_multilang_content_' . $lang_code, wp_kses_post( wp_unslash( $_POST[ 'multilang_content_' . $lang_code ] ) ) );
+			}
 
-            // Save slug and clear cache
-            if ( isset( $_POST[ 'multilang_slug_' . $lang_code ] ) ) {
-                $new_slug = sanitize_title( wp_unslash( $_POST[ 'multilang_slug_' . $lang_code ] ) );
-                $old_slug = get_post_meta( $post_id, '_multilang_slug_' . $lang_code, true );
+			// Save slug and clear cache.
+			if ( isset( $_POST[ 'multilang_slug_' . $lang_code ] ) ) {
+				$new_slug = sanitize_title( wp_unslash( $_POST[ 'multilang_slug_' . $lang_code ] ) );
+				$old_slug = get_post_meta( $post_id, '_multilang_slug_' . $lang_code, true );
 
-                update_post_meta( $post_id, '_multilang_slug_' . $lang_code, $new_slug );
+				update_post_meta( $post_id, '_multilang_slug_' . $lang_code, $new_slug );
 
-                // Clear cache for both old and new slugs
-                if ( $old_slug ) {
-                    $old_cache_key = 'multilang_slug_' . md5( $lang_code . '_' . $old_slug );
-                    wp_cache_delete( $old_cache_key, 'multilify' );
-                }
-                if ( $new_slug ) {
-                    $new_cache_key = 'multilang_slug_' . md5( $lang_code . '_' . $new_slug );
-                    wp_cache_delete( $new_cache_key, 'multilify' );
-                }
-            }
-        }
-    }
+				// Clear cache for both old and new slugs.
+				if ( $old_slug ) {
+					$old_cache_key = 'multilang_slug_' . md5( $lang_code . '_' . $old_slug );
+					wp_cache_delete( $old_cache_key, 'multilify' );
+				}
+				if ( $new_slug ) {
+					$new_cache_key = 'multilang_slug_' . md5( $lang_code . '_' . $new_slug );
+					wp_cache_delete( $new_cache_key, 'multilify' );
+				}
+			}
+		}
+	}
 
-    /**
-     * Add custom query vars
-     */
-    public function add_query_vars( $vars ) {
-        $vars[] = 'lang';
-        return $vars;
-    }
+	/**
+	 * Add custom query vars
+	 *
+	 * @param array $vars Registered public query variables.
+	 * @return array Query variables including the language variable.
+	 */
+	public function add_query_vars( $vars ) {
+		$vars[] = 'lang';
+		return $vars;
+	}
 
-    /**
-     * Filter request to convert custom slugs to real post slugs
-     */
-    public function filter_request( $query_vars ) {
-        global $wpdb;
+	/**
+	 * Filter request to convert custom slugs to real post slugs
+	 *
+	 * @param array $query_vars Query variables for the current request.
+	 * @return array Query variables with translated slugs resolved.
+	 */
+	public function filter_request( $query_vars ) {
+		global $wpdb;
 
-        // Check if we have a language and a slug
-        if ( isset( $query_vars['lang'] ) && ( isset( $query_vars['name'] ) || isset( $query_vars['pagename'] ) ) ) {
-            $lang = sanitize_key( $query_vars['lang'] );
-            $slug = isset( $query_vars['name'] ) ? sanitize_title( $query_vars['name'] ) : sanitize_title( $query_vars['pagename'] );
+		// Check if we have a language and a slug.
+		if ( isset( $query_vars['lang'] ) && ( isset( $query_vars['name'] ) || isset( $query_vars['pagename'] ) ) ) {
+			$lang = sanitize_key( $query_vars['lang'] );
+			$slug = isset( $query_vars['name'] ) ? sanitize_title( $query_vars['name'] ) : sanitize_title( $query_vars['pagename'] );
 
-            // Create cache key
-            $cache_key = 'multilang_slug_' . md5( $lang . '_' . $slug );
-            $cached_data = wp_cache_get( $cache_key, 'multilify' );
+			// Create cache key.
+			$cache_key   = 'multilang_slug_' . md5( $lang . '_' . $slug );
+			$cached_data = wp_cache_get( $cache_key, 'multilify' );
 
-            // If not in cache, query database
-            if ( false === $cached_data ) {
+			// If not in cache, query database.
+			if ( false === $cached_data ) {
                 // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-                $result = $wpdb->get_row( $wpdb->prepare(
-                    "SELECT p.ID, p.post_name, p.post_type, p.post_status
+				$result = $wpdb->get_row(
+					$wpdb->prepare(
+						"SELECT p.ID, p.post_name, p.post_type, p.post_status
                     FROM {$wpdb->postmeta} pm
                     INNER JOIN {$wpdb->posts} p ON pm.post_id = p.ID
                     WHERE pm.meta_key = %s AND pm.meta_value = %s
                     AND p.post_status = 'publish'
                     LIMIT 1",
-                    '_multilang_slug_' . $lang,
-                    $slug
-                ) );
+						'_multilang_slug_' . $lang,
+						$slug
+					)
+				);
 
-                // Cache the result (even if null) for 1 hour
-                $cached_data = $result ? $result : 'not_found';
-                wp_cache_set( $cache_key, $cached_data, 'multilify', HOUR_IN_SECONDS );
-            }
+				// Cache the result (even if null) for 1 hour.
+				$cached_data = $result ? $result : 'not_found';
+				wp_cache_set( $cache_key, $cached_data, 'multilify', HOUR_IN_SECONDS );
+			}
 
-            // Handle cached "not found"
-            if ( 'not_found' === $cached_data ) {
-                $cached_data = null;
-            }
+			// Handle cached "not found".
+			if ( 'not_found' === $cached_data ) {
+				$cached_data = null;
+			}
 
-            if ( $cached_data ) {
-                // Replace the slug with the real post slug based on post_type
-                if ( 'page' === $cached_data->post_type ) {
-                    $query_vars['pagename'] = $cached_data->post_name;
-                    unset( $query_vars['name'] );
-                } else {
-                    $query_vars['name'] = $cached_data->post_name;
-                    unset( $query_vars['pagename'] );
-                }
-            }
-        }
+			if ( $cached_data ) {
+				// Replace the slug with the real post slug based on post_type.
+				if ( 'page' === $cached_data->post_type ) {
+					$query_vars['pagename'] = $cached_data->post_name;
+					unset( $query_vars['name'] );
+				} else {
+					$query_vars['name'] = $cached_data->post_name;
+					unset( $query_vars['pagename'] );
+				}
+			}
+		}
 
-        return $query_vars;
-    }
+		return $query_vars;
+	}
 
-    /**
-     * Setup rewrite rules
-     */
-    public function setup_rewrite_rules() {
-        $languages = $this->get_languages();
+	/**
+	 * Setup rewrite rules
+	 */
+	public function setup_rewrite_rules() {
+		$languages = $this->get_languages();
 
-        foreach ( $languages as $language ) {
-            $lang_code = $language['code'];
+		foreach ( $languages as $language ) {
+			$lang_code = $language['code'];
 
-            // Home page with language
-            add_rewrite_rule(
-                '^' . $lang_code . '/?$',
-                'index.php?lang=' . $lang_code,
-                'top'
-            );
+			// Home page with language.
+			add_rewrite_rule(
+				'^' . $lang_code . '/?$',
+				'index.php?lang=' . $lang_code,
+				'top'
+			);
 
-            // Single level slugs (posts) with language prefix
-            add_rewrite_rule(
-                '^' . $lang_code . '/([^/]+)/?$',
-                'index.php?name=$matches[1]&lang=' . $lang_code,
-                'top'
-            );
+			// Single level slugs (posts) with language prefix.
+			add_rewrite_rule(
+				'^' . $lang_code . '/([^/]+)/?$',
+				'index.php?name=$matches[1]&lang=' . $lang_code,
+				'top'
+			);
 
-            // Multi-level slugs (pages/hierarchical) with language prefix
-            add_rewrite_rule(
-                '^' . $lang_code . '/(.+)/?$',
-                'index.php?pagename=$matches[1]&lang=' . $lang_code,
-                'top'
-            );
-        }
+			// Multi-level slugs (pages/hierarchical) with language prefix.
+			add_rewrite_rule(
+				'^' . $lang_code . '/(.+)/?$',
+				'index.php?pagename=$matches[1]&lang=' . $lang_code,
+				'top'
+			);
+		}
 
-        // Add lang query var
-        add_rewrite_tag( '%lang%', '([^&]+)' );
-    }
+		// Add lang query var.
+		add_rewrite_tag( '%lang%', '([^&]+)' );
+	}
 
-    /**
-     * Maybe flush rewrite rules if flag is set
-     */
-    public function maybe_flush_rewrite_rules() {
-        if ( get_transient( 'multilify_flush_rewrite_rules' ) ) {
-            flush_rewrite_rules();
-            delete_transient( 'multilify_flush_rewrite_rules' );
-        }
-    }
+	/**
+	 * Maybe flush rewrite rules if flag is set
+	 */
+	public function maybe_flush_rewrite_rules() {
+		if ( get_transient( 'multilify_flush_rewrite_rules' ) ) {
+			flush_rewrite_rules();
+			delete_transient( 'multilify_flush_rewrite_rules' );
+		}
+	}
 
-    /**
-     * Create database indexes for better performance
-     * Only runs once after first activation
-     */
-    public function maybe_create_db_indexes() {
-        global $wpdb;
+	/**
+	 * Create database indexes for better performance
+	 * Only runs once after first activation
+	 */
+	public function maybe_create_db_indexes() {
+		global $wpdb;
 
-        // Check if indexes already created
-        if ( get_option( 'multilify_db_indexes_created' ) ) {
-            return;
-        }
+		// Check if indexes already created.
+		if ( get_option( 'multilify_db_indexes_created' ) ) {
+			return;
+		}
 
-        // Create index on meta_key and meta_value for faster slug lookups
-        $index_name = 'multilify_slug_lookup';
+		// Create index on meta_key and meta_value for faster slug lookups.
+		$index_name = 'multilify_slug_lookup';
 
-        // Check if index exists
-        // Schema information queries must access INFORMATION_SCHEMA directly
+		// Check if index exists.
+		// Schema information queries must access INFORMATION_SCHEMA directly.
         // phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery
         // phpcs:disable WordPress.DB.DirectDatabaseQuery.NoCaching
-        $index_exists = $wpdb->get_var( $wpdb->prepare(
-            "SELECT COUNT(1) FROM INFORMATION_SCHEMA.STATISTICS
+		$index_exists = $wpdb->get_var(
+			$wpdb->prepare(
+				'SELECT COUNT(1) FROM INFORMATION_SCHEMA.STATISTICS
             WHERE table_schema = DATABASE()
             AND table_name = %s
-            AND index_name = %s",
-            $wpdb->postmeta,
-            $index_name
-        ) );
+            AND index_name = %s',
+				$wpdb->postmeta,
+				$index_name
+			)
+		);
         // phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery
         // phpcs:enable WordPress.DB.DirectDatabaseQuery.NoCaching
 
-        if ( ! $index_exists ) {
-            // Create composite index for meta_key and meta_value (first 191 chars for utf8mb4)
-            // Sanitize index name (alphanumeric and underscore only)
-            $safe_index_name = preg_replace( '/[^a-zA-Z0-9_]/', '', $index_name );
+		if ( ! $index_exists ) {
+			// Create composite index for meta_key and meta_value (first 191 chars for utf8mb4).
+			// Sanitize index name (alphanumeric and underscore only).
+			$safe_index_name = preg_replace( '/[^a-zA-Z0-9_]/', '', $index_name );
 
-            // Index name is manually sanitized above (only alphanumeric and underscore allowed)
-            // Schema changes require direct queries and cannot use prepared statements for DDL
+			// Index name is manually sanitized above (only alphanumeric and underscore allowed).
+			// Schema changes require direct queries and cannot use prepared statements for DDL.
             // phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery
             // phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange
             // phpcs:disable WordPress.DB.DirectDatabaseQuery.NoCaching
             // phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
             // phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter
-            $wpdb->query(
-                "ALTER TABLE {$wpdb->postmeta} ADD INDEX {$safe_index_name} (meta_key(191), meta_value(191))"
-            );
+			$wpdb->query(
+				"ALTER TABLE {$wpdb->postmeta} ADD INDEX {$safe_index_name} (meta_key(191), meta_value(191))"
+			);
             // phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery
             // phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange
             // phpcs:enable WordPress.DB.DirectDatabaseQuery.NoCaching
             // phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
             // phpcs:enable PluginCheck.Security.DirectDB.UnescapedDBParameter
 
-            if ( ! $wpdb->last_error ) {
-                update_option( 'multilify_db_indexes_created', true );
-            }
-        } else {
-            // Index already exists, mark as created
-            update_option( 'multilify_db_indexes_created', true );
-        }
-    }
+			if ( ! $wpdb->last_error ) {
+				update_option( 'multilify_db_indexes_created', true );
+			}
+		} else {
+			// Index already exists, mark as created.
+			update_option( 'multilify_db_indexes_created', true );
+		}
+	}
 
-    /**
-     * Detect language from URL
-     */
-    public function detect_language( $query ) {
-        if ( ! is_admin() && $query->is_main_query() ) {
-            $lang = get_query_var( 'lang' );
-            if ( $lang ) {
-                $this->current_language = $lang;
+	/**
+	 * Detect language from URL
+	 *
+	 * @param WP_Query $query Query being prepared.
+	 * @return WP_Query Query adjusted for the detected language.
+	 */
+	public function detect_language( $query ) {
+		if ( ! is_admin() && $query->is_main_query() ) {
+			$lang = get_query_var( 'lang' );
+			if ( $lang ) {
+				$this->current_language = $lang;
 
-                // If only language is set (no pagename or name), show home page
-                if ( ! get_query_var( 'pagename' ) && ! get_query_var( 'name' ) && ! get_query_var( 'p' ) ) {
-                    $query->is_home = true;
-                    $query->is_front_page = true;
-                    $query->is_404 = false;
-                }
-            }
-        }
-        return $query;
-    }
+				// If only language is set (no pagename or name), show home page.
+				if ( ! get_query_var( 'pagename' ) && ! get_query_var( 'name' ) && ! get_query_var( 'p' ) ) {
+					$query->is_home       = true;
+					$query->is_front_page = true;
+					$query->is_404        = false;
+				}
+			}
+		}
+		return $query;
+	}
 
-    /**
-     * Handle language redirect based on browser
-     */
-    public function handle_language_redirect() {
-        // Disable automatic redirect for now to prevent issues
-        // Users can manually select language from switcher
-        return;
+	/**
+	 * Filter post title
+	 *
+	 * @param string   $title   Original post title.
+	 * @param int|null $post_id Post the title belongs to.
+	 * @return string Translated title when available, original title otherwise.
+	 */
+	public function filter_title( $title, $post_id = null ) {
+		if ( ! $post_id || is_admin() ) {
+			return $title;
+		}
 
-        /* Optional: Enable browser-based redirect
-        if ( ! is_front_page() && ! is_home() ) {
-            return;
-        }
+		$lang             = $this->get_current_language();
+		$translated_title = get_post_meta( $post_id, '_multilang_title_' . $lang, true );
 
-        $current_lang = $this->get_current_language();
-        $default_lang = $this->get_default_language();
+		if ( ! empty( $translated_title ) ) {
+			return $translated_title;
+		}
 
-        if ( $current_lang !== $default_lang ) {
-            return;
-        }
+		return $title;
+	}
 
-        if ( isset( $_SERVER['HTTP_ACCEPT_LANGUAGE'] ) && ! isset( $_COOKIE['multilify_preference'] ) ) {
-            $browser_lang = substr( $_SERVER['HTTP_ACCEPT_LANGUAGE'], 0, 2 );
-            $languages = $this->get_languages();
-            $language_codes = wp_list_pluck( $languages, 'code' );
+	/**
+	 * Filter post content
+	 *
+	 * @param string $content Original post content.
+	 * @return string Translated content when available, original content otherwise.
+	 */
+	public function filter_content( $content ) {
+		if ( is_admin() ) {
+			return $content;
+		}
 
-            if ( in_array( $browser_lang, $language_codes ) && $browser_lang !== $default_lang ) {
-                wp_redirect( home_url( '/' . $browser_lang . '/' ) );
-                exit;
-            }
-        }
-        */
-    }
+		$post_id            = get_the_ID();
+		$lang               = $this->get_current_language();
+		$translated_content = get_post_meta( $post_id, '_multilang_content_' . $lang, true );
 
-    /**
-     * Filter post title
-     */
-    public function filter_title( $title, $post_id = null ) {
-        if ( ! $post_id || is_admin() ) {
-            return $title;
-        }
+		if ( ! empty( $translated_content ) ) {
+			return $translated_content;
+		}
 
-        $lang = $this->get_current_language();
-        $translated_title = get_post_meta( $post_id, '_multilang_title_' . $lang, true );
+		return $content;
+	}
 
-        if ( ! empty( $translated_title ) ) {
-            return $translated_title;
-        }
+	/**
+	 * Filter permalink
+	 *
+	 * @param string  $url  Original post permalink.
+	 * @param WP_Post $post Post the permalink belongs to.
+	 * @return string Language-aware permalink.
+	 */
+	public function filter_permalink( $url, $post ) {
+		if ( is_admin() ) {
+			return $url;
+		}
 
-        return $title;
-    }
+		$lang         = $this->get_current_language();
+		$default_lang = $this->get_default_language();
 
-    /**
-     * Filter post content
-     */
-    public function filter_content( $content ) {
-        if ( is_admin() ) {
-            return $content;
-        }
+		// Get custom slug for this language.
+		$custom_slug = get_post_meta( $post->ID, '_multilang_slug_' . $lang, true );
 
-        $post_id = get_the_ID();
-        $lang = $this->get_current_language();
-        $translated_content = get_post_meta( $post_id, '_multilang_content_' . $lang, true );
+		if ( ! empty( $custom_slug ) ) {
+			// Use custom slug with language prefix.
+			$url = home_url( '/' . $lang . '/' . $custom_slug . '/' );
+		} else {
+			// Use default slug with language prefix.
+			$url = home_url( '/' . $lang . '/' . $post->post_name . '/' );
+		}
 
-        if ( ! empty( $translated_content ) ) {
-            return $translated_content;
-        }
+		return $url;
+	}
 
-        return $content;
-    }
+	/**
+	 * Shortcode handler for [multilify_switcher].
+	 *
+	 * Supports show_name and show_flag attributes, e.g.
+	 * [multilify_switcher show_name="false"].
+	 *
+	 * @param array $atts Shortcode attributes.
+	 * @return string
+	 */
+	public function switcher_shortcode( $atts ) {
+		$atts = shortcode_atts(
+			array(
+				'show_flag' => 'true',
+				'show_name' => 'true',
+			),
+			$atts,
+			'multilify_switcher'
+		);
 
-    /**
-     * Filter permalink
-     */
-    public function filter_permalink( $url, $post ) {
-        if ( is_admin() ) {
-            return $url;
-        }
+		return $this->get_language_switcher(
+			array(
+				'show_flag' => filter_var( $atts['show_flag'], FILTER_VALIDATE_BOOLEAN ),
+				'show_name' => filter_var( $atts['show_name'], FILTER_VALIDATE_BOOLEAN ),
+			)
+		);
+	}
 
-        $lang = $this->get_current_language();
-        $default_lang = $this->get_default_language();
+	/**
+	 * Get language switcher HTML
+	 *
+	 * @param array $args {
+	 *     Optional. Display arguments.
+	 *
+	 *     @type bool $show_flag Whether to show the flag. Default true.
+	 *     @type bool $show_name Whether to show the language name. Default true.
+	 * }
+	 * @return string Language switcher markup.
+	 */
+	public function get_language_switcher( $args = array() ) {
+		$args = wp_parse_args(
+			$args,
+			array(
+				'show_flag' => true,
+				'show_name' => true,
+			)
+		);
 
-        // Get custom slug for this language
-        $custom_slug = get_post_meta( $post->ID, '_multilang_slug_' . $lang, true );
+		$show_flag = ! empty( $args['show_flag'] );
+		$show_name = ! empty( $args['show_name'] );
 
-        if ( ! empty( $custom_slug ) ) {
-            // Use custom slug with language prefix
-            $url = home_url( '/' . $lang . '/' . $custom_slug . '/' );
-        } else {
-            // Use default slug with language prefix
-            $url = home_url( '/' . $lang . '/' . $post->post_name . '/' );
-        }
+		// Always keep at least one visible element so links aren't empty.
+		if ( ! $show_flag && ! $show_name ) {
+			$show_name = true;
+		}
 
-        return $url;
-    }
+		$languages       = $this->get_languages();
+		$current_lang    = $this->get_current_language();
+		$current_post_id = get_the_ID();
 
-    /**
-     * Shortcode handler for [multilify_switcher].
-     *
-     * Supports show_name and show_flag attributes, e.g.
-     * [multilify_switcher show_name="false"].
-     *
-     * @param array $atts Shortcode attributes.
-     * @return string
-     */
-    public function switcher_shortcode( $atts ) {
-        $atts = shortcode_atts( array(
-            'show_flag' => 'true',
-            'show_name' => 'true',
-        ), $atts, 'multilify_switcher' );
+		ob_start();
+		?>
+		<div class="wp-multilang-switcher">
+			<?php
+			foreach ( $languages as $language ) :
+				$lang_code  = $language['code'];
+				$is_current = ( $lang_code === $current_lang );
 
-        return $this->get_language_switcher( array(
-            'show_flag' => filter_var( $atts['show_flag'], FILTER_VALIDATE_BOOLEAN ),
-            'show_name' => filter_var( $atts['show_name'], FILTER_VALIDATE_BOOLEAN ),
-        ) );
-    }
+				// Name is optional; fall back to the language code so the label is never blank.
+				$lang_flag = isset( $language['flag'] ) ? trim( (string) $language['flag'] ) : '';
+				$lang_name = isset( $language['name'] ) ? trim( (string) $language['name'] ) : '';
+				if ( '' === $lang_name ) {
+					$lang_name = $lang_code;
+				}
 
-    /**
-     * Get language switcher HTML
-     */
-    public function get_language_switcher( $args = array() ) {
-        $args = wp_parse_args( $args, array(
-            'show_flag' => true,
-            'show_name' => true,
-        ) );
+				// Build URL for this language.
+				if ( $current_post_id ) {
+					$slug = get_post_meta( $current_post_id, '_multilang_slug_' . $lang_code, true );
+					if ( empty( $slug ) ) {
+						$post = get_post( $current_post_id );
+						$slug = ( $post instanceof WP_Post ) ? $post->post_name : '';
+					}
+					$url = home_url( '/' . $lang_code . '/' . $slug . '/' );
+				} else {
+					$url = home_url( '/' . $lang_code . '/' );
+				}
+				?>
+				<a href="<?php echo esc_url( $url ); ?>"
+					class="lang-link <?php echo $is_current ? 'active' : ''; ?>"
+					data-lang="<?php echo esc_attr( $lang_code ); ?>">
+					<?php if ( $show_flag && '' !== $lang_flag ) : ?>
+						<span class="flag"><?php echo esc_html( $lang_flag ); ?></span>
+					<?php endif; ?>
+					<?php if ( $show_name ) : ?>
+						<span class="name"><?php echo esc_html( $lang_name ); ?></span>
+					<?php endif; ?>
+				</a>
+			<?php endforeach; ?>
+		</div>
+		<?php
+		return ob_get_clean();
+	}
 
-        $show_flag = ! empty( $args['show_flag'] );
-        $show_name = ! empty( $args['show_name'] );
+	/**
+	 * Filter wp_title for <title> tag
+	 *
+	 * @param string $title       Original document title.
+	 * @param string $sep         Title separator. Unused, required by the wp_title filter signature.
+	 * @param string $seplocation Separator location. Unused, required by the wp_title filter signature.
+	 * @return string Title with the translated post title substituted in.
+	 */
+	public function filter_wp_title( $title, $sep = '', $seplocation = '' ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- Signature required by the wp_title filter.
+		if ( is_admin() ) {
+			return $title;
+		}
 
-        // Always keep at least one visible element so links aren't empty.
-        if ( ! $show_flag && ! $show_name ) {
-            $show_name = true;
-        }
+		$post_id = get_the_ID();
+		if ( ! $post_id ) {
+			return $title;
+		}
 
-        $languages = $this->get_languages();
-        $current_lang = $this->get_current_language();
-        $current_post_id = get_the_ID();
+		$lang             = $this->get_current_language();
+		$translated_title = get_post_meta( $post_id, '_multilang_title_' . $lang, true );
 
-        ob_start();
-        ?>
-        <div class="wp-multilang-switcher">
-            <?php foreach ( $languages as $language ) :
-                $lang_code = $language['code'];
-                $is_current = ( $lang_code === $current_lang );
+		if ( ! empty( $translated_title ) ) {
+			// Replace the post title part in wp_title.
+			$original_title = get_the_title( $post_id );
+			if ( ! empty( $original_title ) ) {
+				$title = str_replace( $original_title, $translated_title, $title );
+			}
+		}
 
-                // Name is optional; fall back to the language code so the label is never blank.
-                $lang_flag = isset( $language['flag'] ) ? trim( (string) $language['flag'] ) : '';
-                $lang_name = isset( $language['name'] ) ? trim( (string) $language['name'] ) : '';
-                if ( '' === $lang_name ) {
-                    $lang_name = $lang_code;
-                }
+		return $title;
+	}
 
-                // Build URL for this language
-                if ( $current_post_id ) {
-                    $slug = get_post_meta( $current_post_id, '_multilang_slug_' . $lang_code, true );
-                    if ( empty( $slug ) ) {
-                        $post = get_post( $current_post_id );
-                        $slug = ( $post instanceof WP_Post ) ? $post->post_name : '';
-                    }
-                    $url = home_url( '/' . $lang_code . '/' . $slug . '/' );
-                } else {
-                    $url = home_url( '/' . $lang_code . '/' );
-                }
-                ?>
-                <a href="<?php echo esc_url( $url ); ?>"
-                   class="lang-link <?php echo $is_current ? 'active' : ''; ?>"
-                   data-lang="<?php echo esc_attr( $lang_code ); ?>">
-                    <?php if ( $show_flag && '' !== $lang_flag ) : ?>
-                        <span class="flag"><?php echo esc_html( $lang_flag ); ?></span>
-                    <?php endif; ?>
-                    <?php if ( $show_name ) : ?>
-                        <span class="name"><?php echo esc_html( $lang_name ); ?></span>
-                    <?php endif; ?>
-                </a>
-            <?php endforeach; ?>
-        </div>
-        <?php
-        return ob_get_clean();
-    }
+	/**
+	 * Filter document_title_parts for modern WordPress
+	 *
+	 * @param array $title_parts Parts making up the document title.
+	 * @return array Title parts with the translated title substituted in.
+	 */
+	public function filter_document_title_parts( $title_parts ) {
+		if ( is_admin() ) {
+			return $title_parts;
+		}
 
-    /**
-     * Filter wp_title for <title> tag
-     */
-    public function filter_wp_title( $title, $sep = '', $seplocation = '' ) {
-        if ( is_admin() ) {
-            return $title;
-        }
+		$post_id = get_the_ID();
+		if ( ! $post_id ) {
+			return $title_parts;
+		}
 
-        $post_id = get_the_ID();
-        if ( ! $post_id ) {
-            return $title;
-        }
+		$lang             = $this->get_current_language();
+		$translated_title = get_post_meta( $post_id, '_multilang_title_' . $lang, true );
 
-        $lang = $this->get_current_language();
-        $translated_title = get_post_meta( $post_id, '_multilang_title_' . $lang, true );
+		if ( ! empty( $translated_title ) && isset( $title_parts['title'] ) ) {
+			$title_parts['title'] = $translated_title;
+		}
 
-        if ( ! empty( $translated_title ) ) {
-            // Replace the post title part in wp_title
-            $original_title = get_the_title( $post_id );
-            if ( ! empty( $original_title ) ) {
-                $title = str_replace( $original_title, $translated_title, $title );
-            }
-        }
-
-        return $title;
-    }
-
-    /**
-     * Filter document_title_parts for modern WordPress
-     */
-    public function filter_document_title_parts( $title_parts ) {
-        if ( is_admin() ) {
-            return $title_parts;
-        }
-
-        $post_id = get_the_ID();
-        if ( ! $post_id ) {
-            return $title_parts;
-        }
-
-        $lang = $this->get_current_language();
-        $translated_title = get_post_meta( $post_id, '_multilang_title_' . $lang, true );
-
-        if ( ! empty( $translated_title ) && isset( $title_parts['title'] ) ) {
-            $title_parts['title'] = $translated_title;
-        }
-
-        return $title_parts;
-    }
+		return $title_parts;
+	}
 }

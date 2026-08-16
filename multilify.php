@@ -18,7 +18,7 @@
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
-    exit;
+	exit;
 }
 
 // Define plugin constants.
@@ -38,7 +38,7 @@ require_once MULTILIFY_INCLUDES_DIR . 'class-multilify.php';
  * Initialize the plugin.
  */
 function multilify() {
-    return Multilify::get_instance();
+	return Multilify::get_instance();
 }
 
 // Start the plugin.
@@ -55,42 +55,42 @@ multilify();
  * }
  */
 function multilify_switcher( $args = array() ) {
-    // Output is already escaped in get_language_switcher method
+	// Output is already escaped in get_language_switcher method.
     // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-    echo multilify()->get_language_switcher( $args );
+	echo multilify()->get_language_switcher( $args );
 }
 
 /**
  * Activation hook.
  */
 function multilify_activate() {
-    // Set default options if they don't exist.
-    if ( ! get_option( 'multilify_languages' ) ) {
-        $default_languages = array(
-            array(
-                'code' => 'en',
-                'name' => 'English',
-                'flag' => '🇬🇧'
-            ),
-            array(
-                'code' => 'tr',
-                'name' => 'Türkçe',
-                'flag' => '🇹🇷'
-            )
-        );
-        update_option( 'multilify_languages', $default_languages );
-    }
+	// Set default options if they don't exist.
+	if ( ! get_option( 'multilify_languages' ) ) {
+		$default_languages = array(
+			array(
+				'code' => 'en',
+				'name' => 'English',
+				'flag' => '🇬🇧',
+			),
+			array(
+				'code' => 'tr',
+				'name' => 'Türkçe',
+				'flag' => '🇹🇷',
+			),
+		);
+		update_option( 'multilify_languages', $default_languages );
+	}
 
-    if ( ! get_option( 'multilify_default_language' ) ) {
-        update_option( 'multilify_default_language', 'en' );
-    }
+	if ( ! get_option( 'multilify_default_language' ) ) {
+		update_option( 'multilify_default_language', 'en' );
+	}
 
-    // Setup rewrite rules before flushing
-    $multilify = multilify();
-    $multilify->setup_rewrite_rules();
+	// Setup rewrite rules before flushing.
+	$multilify = multilify();
+	$multilify->setup_rewrite_rules();
 
-    // Flush rewrite rules on activation.
-    flush_rewrite_rules();
+	// Flush rewrite rules on activation.
+	flush_rewrite_rules();
 }
 register_activation_hook( __FILE__, 'multilify_activate' );
 
@@ -98,20 +98,23 @@ register_activation_hook( __FILE__, 'multilify_activate' );
  * Deactivation hook.
  */
 function multilify_deactivate() {
-    // Flush rewrite rules on deactivation.
-    flush_rewrite_rules();
+	// Flush rewrite rules on deactivation.
+	flush_rewrite_rules();
 }
 register_deactivation_hook( __FILE__, 'multilify_deactivate' );
 
 /**
  * Add plugin action links (Settings, View details).
+ *
+ * @param array  $links Existing plugin action links.
+ * @param string $file  Plugin file path relative to the plugins directory.
+ * @return array Filtered plugin action links.
  */
 function multilify_plugin_action_links( $links, $file ) {
-    if ( plugin_basename( __FILE__ ) === $file ) {
-        $settings_link = '<a href="' . admin_url( 'admin.php?page=multilify' ) . '">Settings</a>';
-        array_unshift( $links, $settings_link );
-    }
-    return $links;
+	if ( plugin_basename( __FILE__ ) === $file ) {
+		$settings_link = '<a href="' . admin_url( 'admin.php?page=multilify' ) . '">Settings</a>';
+		array_unshift( $links, $settings_link );
+	}
+	return $links;
 }
 add_filter( 'plugin_action_links', 'multilify_plugin_action_links', 10, 2 );
-
