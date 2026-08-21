@@ -783,12 +783,19 @@ class Multilify {
 	/**
 	 * Filter permalink
 	 *
-	 * @param string  $url  Original post permalink.
-	 * @param WP_Post $post Post the permalink belongs to.
+	 * @param string      $url  Original post permalink.
+	 * @param WP_Post|int $post Post the permalink belongs to. The page_link filter passes an ID.
 	 * @return string Language-aware permalink.
 	 */
 	public function filter_permalink( $url, $post ) {
 		if ( is_admin() ) {
+			return $url;
+		}
+
+		// page_link passes a post ID while post_link and post_type_link pass a WP_Post.
+		$post = get_post( $post );
+
+		if ( ! $post instanceof WP_Post ) {
 			return $url;
 		}
 
