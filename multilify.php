@@ -3,7 +3,7 @@
  * Plugin Name: Multilify
  * Plugin URI: https://multilify.vercel.app
  * Description: A powerful multilingual content management system for WordPress. Supports unlimited languages with custom slugs, SEO optimization, and performance caching.
- * Version: 1.0.4
+ * Version: 1.0.5
  * Requires at least: 5.8
  * Requires PHP: 7.4
  * Author: Kadir Erman
@@ -22,7 +22,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Define plugin constants.
-define( 'MULTILIFY_VERSION', '1.0.4' );
+define( 'MULTILIFY_VERSION', '1.0.5' );
 define( 'MULTILIFY_PLUGIN_FILE', __FILE__ );
 define( 'MULTILIFY_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'MULTILIFY_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
@@ -112,7 +112,7 @@ register_deactivation_hook( __FILE__, 'multilify_deactivate' );
  */
 function multilify_plugin_action_links( $links, $file ) {
 	if ( plugin_basename( __FILE__ ) === $file ) {
-		$settings_link = '<a href="' . admin_url( 'admin.php?page=multilify' ) . '">Settings</a>';
+		$settings_link = '<a href="' . admin_url( 'admin.php?page=multilify' ) . '">' . esc_html__( 'Settings', 'multilify' ) . '</a>';
 		array_unshift( $links, $settings_link );
 	}
 	return $links;
