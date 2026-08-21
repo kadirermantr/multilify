@@ -48,6 +48,9 @@ class Multilify {
 	 * Constructor
 	 */
 	private function __construct() {
+		// Translations.
+		add_action( 'init', array( $this, 'load_textdomain' ) );
+
 		// Admin hooks.
 		add_action( 'admin_menu', array( $this, 'add_admin_menu' ) );
 		add_action( 'admin_init', array( $this, 'register_settings' ) );
@@ -79,6 +82,13 @@ class Multilify {
 		// Title filters for <title> tag.
 		add_filter( 'wp_title', array( $this, 'filter_wp_title' ), 10, 3 );
 		add_filter( 'document_title_parts', array( $this, 'filter_document_title_parts' ), 10, 1 );
+	}
+
+	/**
+	 * Load the plugin translations.
+	 */
+	public function load_textdomain() {
+		load_plugin_textdomain( 'multilify', false, dirname( plugin_basename( MULTILIFY_PLUGIN_FILE ) ) . '/languages' );
 	}
 
 	/**
@@ -146,8 +156,8 @@ class Multilify {
 	 */
 	public function add_admin_menu() {
 		add_menu_page(
-			'Multilify - Language Management',
-			'Multilify',
+			__( 'Multilify - Language Management', 'multilify' ),
+			__( 'Multilify', 'multilify' ),
 			'manage_options',
 			'multilify',
 			array( $this, 'render_admin_page' ),
@@ -210,6 +220,13 @@ class Multilify {
 		if ( 'toplevel_page_multilify' === $hook || 'post.php' === $hook || 'post-new.php' === $hook ) {
 			wp_enqueue_style( 'multilify-admin', MULTILIFY_ASSETS_URL . 'css/multilify-admin.css', array(), MULTILIFY_VERSION );
 			wp_enqueue_script( 'multilify-admin', MULTILIFY_ASSETS_URL . 'js/multilify-admin.js', array( 'jquery' ), MULTILIFY_VERSION, true );
+			wp_localize_script(
+				'multilify-admin',
+				'multilifyAdmin',
+				array(
+					'confirmDelete' => __( 'Are you sure you want to delete this language? This action cannot be undone.', 'multilify' ),
+				)
+			);
 		}
 	}
 
@@ -329,6 +346,18 @@ class Multilify {
 				}
 
 				$lang_code = sanitize_key( wp_unslash( $_POST['lang_code'] ) );
+
+				// The default language must always resolve to a real entry.
+				if ( $lang_code === $this->get_default_language() ) {
+					$error = 'delete_default';
+					break;
+				}
+
+				if ( ! $this->language_code_exists( $lang_code, $languages ) ) {
+					$error = 'not_found';
+					break;
+				}
+
 				$languages = array_filter(
 					$languages,
 					function ( $lang ) use ( $lang_code ) {
@@ -345,6 +374,13 @@ class Multilify {
 				}
 
 				$default_lang = sanitize_key( wp_unslash( $_POST['default_language'] ) );
+
+				// Only an existing language may become the default.
+				if ( ! $this->language_code_exists( $default_lang, $languages ) ) {
+					$error = 'not_found';
+					break;
+				}
+
 				update_option( 'multilify_default_language', $default_lang );
 				// Default language change doesn't need rewrite flush.
 				break;
@@ -401,7 +437,12 @@ class Multilify {
 
 				add_meta_box(
 					'multilify_' . $language['code'],
-					$language['flag'] . ' ' . $language_label . ' Translation',
+					sprintf(
+						/* translators: 1: language flag emoji, 2: language name. */
+						__( '%1$s %2$s Translation', 'multilify' ),
+						$language['flag'],
+						$language_label
+					),
 					array( $this, 'render_translation_meta_box' ),
 					$post_type,
 					'normal',
@@ -722,7 +763,13 @@ class Multilify {
 			return $content;
 		}
 
-		$post_id            = get_the_ID();
+		$post_id = get_the_ID();
+
+		// Outside the loop there is no reliable post to translate.
+		if ( ! $post_id ) {
+			return $content;
+		}
+
 		$lang               = $this->get_current_language();
 		$translated_content = get_post_meta( $post_id, '_multilang_content_' . $lang, true );
 
@@ -750,16 +797,14 @@ class Multilify {
 
 		// Get custom slug for this language.
 		$custom_slug = get_post_meta( $post->ID, '_multilang_slug_' . $lang, true );
+		$slug        = ! empty( $custom_slug ) ? $custom_slug : $post->post_name;
 
-		if ( ! empty( $custom_slug ) ) {
-			// Use custom slug with language prefix.
-			$url = home_url( '/' . $lang . '/' . $custom_slug . '/' );
-		} else {
-			// Use default slug with language prefix.
-			$url = home_url( '/' . $lang . '/' . $post->post_name . '/' );
+		// The default language keeps WordPress' own URL so each post has a single canonical address.
+		if ( $lang === $default_lang ) {
+			return empty( $custom_slug ) ? $url : home_url( '/' . $slug . '/' );
 		}
 
-		return $url;
+		return home_url( '/' . $lang . '/' . $slug . '/' );
 	}
 
 	/**
@@ -819,11 +864,13 @@ class Multilify {
 
 		$languages       = $this->get_languages();
 		$current_lang    = $this->get_current_language();
+		$default_lang    = $this->get_default_language();
 		$current_post_id = get_the_ID();
 
 		ob_start();
 		?>
-		<div class="wp-multilang-switcher">
+		<nav class="wp-multilang-switcher" aria-label="<?php esc_attr_e( 'Language switcher', 'multilify' ); ?>">
+			<ul>
 			<?php
 			foreach ( $languages as $language ) :
 				$lang_code  = $language['code'];
@@ -836,30 +883,42 @@ class Multilify {
 					$lang_name = $lang_code;
 				}
 
-				// Build URL for this language.
+				// Build URL for this language; the default language has no prefix.
+				$is_default = ( $lang_code === $default_lang );
+
 				if ( $current_post_id ) {
 					$slug = get_post_meta( $current_post_id, '_multilang_slug_' . $lang_code, true );
 					if ( empty( $slug ) ) {
 						$post = get_post( $current_post_id );
 						$slug = ( $post instanceof WP_Post ) ? $post->post_name : '';
 					}
-					$url = home_url( '/' . $lang_code . '/' . $slug . '/' );
+					$url = $is_default
+						? home_url( '/' . $slug . '/' )
+						: home_url( '/' . $lang_code . '/' . $slug . '/' );
 				} else {
-					$url = home_url( '/' . $lang_code . '/' );
+					$url = $is_default ? home_url( '/' ) : home_url( '/' . $lang_code . '/' );
 				}
 				?>
-				<a href="<?php echo esc_url( $url ); ?>"
-					class="lang-link <?php echo $is_current ? 'active' : ''; ?>"
-					data-lang="<?php echo esc_attr( $lang_code ); ?>">
-					<?php if ( $show_flag && '' !== $lang_flag ) : ?>
-						<span class="flag"><?php echo esc_html( $lang_flag ); ?></span>
-					<?php endif; ?>
-					<?php if ( $show_name ) : ?>
-						<span class="name"><?php echo esc_html( $lang_name ); ?></span>
-					<?php endif; ?>
-				</a>
+				<li>
+					<a href="<?php echo esc_url( $url ); ?>"
+						class="lang-link <?php echo $is_current ? 'active' : ''; ?>"
+						hreflang="<?php echo esc_attr( $lang_code ); ?>"
+						lang="<?php echo esc_attr( $lang_code ); ?>"
+						data-lang="<?php echo esc_attr( $lang_code ); ?>"
+						<?php echo $is_current ? ' aria-current="true"' : ''; ?>>
+						<?php if ( $show_flag && '' !== $lang_flag ) : ?>
+							<span class="flag" aria-hidden="true"><?php echo esc_html( $lang_flag ); ?></span>
+						<?php endif; ?>
+						<?php if ( $show_name ) : ?>
+							<span class="name"><?php echo esc_html( $lang_name ); ?></span>
+						<?php else : ?>
+							<span class="screen-reader-text"><?php echo esc_html( $lang_name ); ?></span>
+						<?php endif; ?>
+					</a>
+				</li>
 			<?php endforeach; ?>
-		</div>
+			</ul>
+		</nav>
 		<?php
 		return ob_get_clean();
 	}

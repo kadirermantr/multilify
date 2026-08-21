@@ -1,9 +1,11 @@
 /**
- * Multilang Admin JavaScript
+ * Multilify admin JavaScript.
  */
 
 (function($) {
     'use strict';
+
+    var l10n = window.multilifyAdmin || {};
 
     $(document).ready(function() {
 
@@ -17,7 +19,7 @@
 
         // Confirm delete
         $('.button-link-delete').on('click', function(e) {
-            if (!confirm('Are you sure you want to delete this language? This action cannot be undone.')) {
+            if (!window.confirm(l10n.confirmDelete)) {
                 e.preventDefault();
                 return false;
             }
@@ -26,13 +28,26 @@
         // Toggle inline edit row for an existing language
         $('.multilify-edit-toggle').on('click', function() {
             var code = $(this).data('code');
-            $('#multilify-edit-' + code).toggle();
+            var $row = $('#multilify-edit-' + code);
+            var isOpen = $row.is(':visible');
+
+            $row.toggle();
+            $(this).attr('aria-expanded', !isOpen);
+
+            // Move focus into the form so keyboard users land where they expect.
+            if (!isOpen) {
+                $row.find('input[name="lang_name"]').trigger('focus');
+            }
         });
 
         // Cancel inline edit
         $('.multilify-edit-cancel').on('click', function() {
             var code = $(this).data('code');
+
             $('#multilify-edit-' + code).hide();
+            $('.multilify-edit-toggle[data-code="' + code + '"]')
+                .attr('aria-expanded', 'false')
+                .trigger('focus');
         });
 
         // Auto-generate slug from title
@@ -42,45 +57,33 @@
 
             // Only auto-generate if slug is empty
             if (slugField.val() === '') {
-                var title = $(this).val();
-                var slug = generateSlug(title);
-                slugField.val(slug);
+                slugField.val(generateSlug($(this).val()));
             }
         });
 
         // Generate slug helper function
         function generateSlug(text) {
+            var map = {
+                'ğ': 'g', 'Ğ': 'g',
+                'ü': 'u', 'Ü': 'u',
+                'ş': 's', 'Ş': 's',
+                'ı': 'i', 'İ': 'i',
+                'ö': 'o', 'Ö': 'o',
+                'ç': 'c', 'Ç': 'c',
+                'ä': 'a', 'Ä': 'a',
+                'ß': 'ss'
+            };
+
+            // Transliterate before lowercasing so Turkish İ/I map correctly.
             return text
-                .toLowerCase()
                 .trim()
-                // Turkish characters
-                .replace(/ğ/g, 'g')
-                .replace(/ü/g, 'u')
-                .replace(/ş/g, 's')
-                .replace(/ı/g, 'i')
-                .replace(/ö/g, 'o')
-                .replace(/ç/g, 'c')
-                // German characters
-                .replace(/ä/g, 'a')
-                .replace(/ö/g, 'o')
-                .replace(/ü/g, 'u')
-                .replace(/ß/g, 'ss')
-                // Other special characters
+                .replace(/[ğĞüÜşŞıİöÖçÇäÄß]/g, function(ch) {
+                    return map[ch];
+                })
+                .toLowerCase()
                 .replace(/[^\w\s-]/g, '')
                 .replace(/[\s_-]+/g, '-')
                 .replace(/^-+|-+$/g, '');
-        }
-
-        // Smooth scroll to error
-        if ($('.error').length) {
-            $('html, body').animate({
-                scrollTop: $('.error').first().offset().top - 100
-            }, 500);
-        }
-
-        // Add tooltips
-        if (typeof jQuery.fn.tooltip !== 'undefined') {
-            $('[data-tooltip]').tooltip();
         }
 
         // Language switcher cookie handler

@@ -4,7 +4,7 @@ Tags: multilingual, translation, language, i18n, localization
 Requires at least: 5.8
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.0.4
+Stable tag: 1.0.5
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -161,6 +161,15 @@ You can get support through the WordPress.org support forums or by contacting us
 
 == Changelog ==
 
+= 1.0.5 =
+* The default language no longer gets a URL prefix, so each post has a single canonical address
+* Added uninstall cleanup that removes plugin options, translation meta and the lookup index
+* Made the plugin translatable: interface strings now use the multilify text domain and a .pot template ships in /languages
+* The default language can no longer be deleted, and only an existing language can be set as default
+* Language switcher is now a nav list with hreflang, aria-current and a screen-reader label when only flags are shown
+* Fixed the delete confirmation appearing twice
+* Added a LICENSE file (GPL v2)
+
 = 1.0.4 =
 * Tested up to WordPress 7.1
 * Verified compatibility with the always-iframed post editor introduced in WordPress 7.1
@@ -198,6 +207,9 @@ You can get support through the WordPress.org support forums or by contacting us
 * Translation meta boxes
 
 == Upgrade Notice ==
+
+= 1.0.5 =
+URLs in the default language lose their /{lang}/ prefix in this release. If you rely on the prefixed form, add redirects before updating.
 
 = 1.0.4 =
 Compatibility release for WordPress 7.1. No functional changes.

@@ -12,39 +12,39 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 <div class="multilify-meta-box">
 	<p class="description">
-		Enter content for this language. If left empty, the default language content will be displayed.
+		<?php esc_html_e( 'Enter content for this language. If left empty, the default language content will be displayed.', 'multilify' ); ?>
 	</p>
 
 	<div class="multilify-field">
 		<label for="multilang_title_<?php echo esc_attr( $lang_code ); ?>">
-			<strong>Title</strong>
+			<strong><?php esc_html_e( 'Title', 'multilify' ); ?></strong>
 		</label>
 		<input type="text"
 				id="multilang_title_<?php echo esc_attr( $lang_code ); ?>"
 				name="multilang_title_<?php echo esc_attr( $lang_code ); ?>"
 				value="<?php echo esc_attr( $title ); ?>"
 				class="widefat"
-				placeholder="Enter title in this language...">
+				placeholder="<?php esc_attr_e( 'Enter title in this language...', 'multilify' ); ?>">
 	</div>
 
 	<div class="multilify-field">
 		<label for="multilang_slug_<?php echo esc_attr( $lang_code ); ?>">
-			<strong>Slug (URL)</strong>
+			<strong><?php esc_html_e( 'Slug (URL)', 'multilify' ); ?></strong>
 		</label>
 		<input type="text"
 				id="multilang_slug_<?php echo esc_attr( $lang_code ); ?>"
 				name="multilang_slug_<?php echo esc_attr( $lang_code ); ?>"
 				value="<?php echo esc_attr( $slug ); ?>"
 				class="widefat"
-				placeholder="example-page, beispiel-seite, ornek-sayfa...">
+				placeholder="<?php esc_attr_e( 'example-page, beispiel-seite, ornek-sayfa...', 'multilify' ); ?>">
 		<p class="description">
-			Custom slug for the URL. If left empty, the main content slug will be used.
+			<?php esc_html_e( 'Custom slug for the URL. If left empty, the main content slug will be used.', 'multilify' ); ?>
 		</p>
 	</div>
 
 	<div class="multilify-field">
 		<label for="multilang_content_<?php echo esc_attr( $lang_code ); ?>">
-			<strong>Content</strong>
+			<strong><?php esc_html_e( 'Content', 'multilify' ); ?></strong>
 		</label>
 		<?php
 		$multilify_editor_id = 'multilang_content_' . $lang_code;

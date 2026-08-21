@@ -1,10 +1,18 @@
 /* Multilify language switcher (frontend) */
 
-.wp-multilang-switcher {
+.wp-multilang-switcher ul {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.wp-multilang-switcher li {
+    margin: 0;
+    padding: 0;
 }
 
 .wp-multilang-switcher .lang-link {
@@ -15,9 +23,14 @@
     line-height: 1.2;
 }
 
-.wp-multilang-switcher .lang-link:hover,
-.wp-multilang-switcher .lang-link:focus {
+.wp-multilang-switcher .lang-link:hover {
     text-decoration: none;
+}
+
+/* Keep a visible focus ring for keyboard users. */
+.wp-multilang-switcher .lang-link:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
 }
 
 .wp-multilang-switcher .lang-link.active {
@@ -31,4 +44,17 @@
 
 .wp-multilang-switcher .name {
     text-decoration: none;
+}
+
+/* Accessible label when only the flag is shown; matches core's helper. */
+.wp-multilang-switcher .screen-reader-text {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
 }
