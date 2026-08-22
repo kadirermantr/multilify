@@ -63,6 +63,8 @@
 
         // Generate slug helper function
         function generateSlug(text) {
+            text = (text === null || text === undefined) ? '' : String(text);
+
             var map = {
                 'ğ': 'g', 'Ğ': 'g',
                 'ü': 'u', 'Ü': 'u',
@@ -86,12 +88,6 @@
                 .replace(/^-+|-+$/g, '');
         }
 
-        // Language switcher cookie handler
-        $('.wp-multilang-switcher .lang-link').on('click', function() {
-            var lang = $(this).data('lang');
-            // Set cookie for language preference
-            document.cookie = 'wp_multilang_preference=' + lang + '; path=/; max-age=2592000'; // 30 days
-        });
 
     });
 
