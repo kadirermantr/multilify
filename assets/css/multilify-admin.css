@@ -1,238 +1,741 @@
 /**
- * Multilang Admin Styles
+ * Multilify admin styles.
+ *
+ * The interface borrows from bilingual dictionaries: language codes are set as
+ * typographic objects in a monospaced face, entries sit on a ruled column, and
+ * colour is spent only on state. Everything is scoped under .multilify-admin so
+ * the plugin never leaks styles into the rest of wp-admin.
  */
 
 .multilify-admin {
-    padding: 20px;
+	--mlf-ink: #14171c;
+	--mlf-ink-soft: #5b6470;
+	--mlf-ink-faint: #646d78;
+	--mlf-rule: #dfe3e8;
+	--mlf-rule-strong: #c3cad3;
+	--mlf-surface: #fff;
+	--mlf-surface-sunken: #f6f7f9;
+	--mlf-accent: #2f4b7c;
+	--mlf-accent-soft: #eaf0f8;
+	--mlf-positive: #1d6f42;
+	--mlf-positive-soft: #e6f4ec;
+	--mlf-danger: #a4262c;
+	--mlf-danger-soft: #fbeaea;
+	--mlf-radius: 6px;
+	--mlf-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+
+	margin-right: 20px;
+	color: var(--mlf-ink);
 }
 
-.multilify-container {
-    max-width: 1200px;
+/* ---------------------------------------------------------------- masthead */
+
+/* Title and tally share the top line; the lede runs full width beneath them,
+   so it never wraps early just because the tally is sitting beside it. */
+.multilify-masthead {
+	display: grid;
+	grid-template-columns: 1fr auto;
+	align-items: baseline;
+	gap: 6px 32px;
+	padding: 0 0 18px;
+	border-bottom: 2px solid var(--mlf-ink);
+	margin: 8px 0 28px;
 }
+
+.multilify-masthead__lede {
+	grid-column: 1 / -1;
+}
+
+.multilify-masthead h1 {
+	margin: 0;
+	padding: 0;
+	font-size: 28px;
+	line-height: 1.15;
+	font-weight: 600;
+	letter-spacing: -0.015em;
+	color: var(--mlf-ink);
+}
+
+.multilify-masthead__lede {
+	margin: 0;
+	font-size: 13px;
+	color: var(--mlf-ink-soft);
+}
+
+/* The count reads as a dictionary's entry tally. */
+.multilify-tally {
+	font-family: var(--mlf-mono);
+	font-size: 12px;
+	letter-spacing: 0.04em;
+	color: var(--mlf-ink-faint);
+	white-space: nowrap;
+}
+
+.multilify-tally strong {
+	color: var(--mlf-ink);
+	font-weight: 600;
+}
+
+/* ---------------------------------------------------------------- sections */
 
 .multilify-section {
-    background: #fff;
-    padding: 25px;
-    margin: 20px 0;
-    border: 1px solid #ccd0d4;
-    box-shadow: 0 1px 1px rgba(0,0,0,.04);
-    border-radius: 4px;
+	background: var(--mlf-surface);
+	border: 1px solid var(--mlf-rule);
+	border-radius: var(--mlf-radius);
+	padding: 22px 24px 24px;
+	margin: 0 0 22px;
 }
 
-.multilify-section h2 {
-    margin-top: 0;
-    padding-bottom: 15px;
-    border-bottom: 2px solid #2271b1;
-    color: #1d2327;
+.multilify-section > h2 {
+	margin: 0 0 4px;
+	padding: 0;
+	font-size: 15px;
+	font-weight: 600;
+	letter-spacing: 0.01em;
+	color: var(--mlf-ink);
+	border: 0;
 }
 
-.multilify-form .form-table th {
-    padding: 20px 10px 20px 0;
-    width: 200px;
+.multilify-section__note {
+	margin: 0 0 18px;
+	font-size: 13px;
+	color: var(--mlf-ink-soft);
 }
 
-.multilify-form .form-table td {
-    padding: 20px 10px;
+/* ------------------------------------------------------------ entry column */
+
+.multilify-entries {
+	border-top: 1px solid var(--mlf-rule);
 }
 
-/* Language Switcher Styles */
-.multilify-switcher {
-    display: inline-flex;
-    gap: 10px;
-    flex-wrap: wrap;
-    padding: 10px;
-    background: #f6f7f7;
-    border-radius: 6px;
-    border: 1px solid #dcdcde;
+.multilify-entry {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) auto;
+	align-items: center;
+	gap: 16px;
+	padding: 14px 0;
+	border-bottom: 1px solid var(--mlf-rule);
 }
 
-.multilify-switcher .lang-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 8px 15px;
-    background: #fff;
-    border: 2px solid #dcdcde;
-    border-radius: 4px;
-    text-decoration: none;
-    color: #2c3338;
-    font-weight: 500;
-    transition: all 0.2s ease;
+.multilify-entry__headword {
+	display: flex;
+	align-items: center;
+	gap: 14px;
+	min-width: 0;
 }
 
-.multilify-switcher .lang-link:hover {
-    border-color: #2271b1;
-    color: #2271b1;
-    transform: translateY(-2px);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+/* The signature element: the language code set as a fixed-width token. */
+.multilify-code {
+	flex: none;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 56px;
+	padding: 7px 10px;
+	font-family: var(--mlf-mono);
+	font-size: 14px;
+	font-weight: 600;
+	letter-spacing: 0.06em;
+	color: var(--mlf-accent);
+	background: var(--mlf-accent-soft);
+	border: 1px solid transparent;
+	border-radius: 4px;
 }
 
-.multilify-switcher .lang-link.active {
-    background: #2271b1;
-    border-color: #2271b1;
-    color: #fff;
-    font-weight: 600;
+.multilify-entry--default .multilify-code {
+	color: var(--mlf-positive);
+	background: var(--mlf-positive-soft);
+	border-color: currentColor;
 }
 
-.multilify-switcher .flag {
-    font-size: 20px;
-    line-height: 1;
+.multilify-entry__gloss {
+	min-width: 0;
 }
 
-.multilify-switcher .name {
-    font-size: 14px;
+.multilify-entry__name {
+	display: block;
+	font-size: 14px;
+	font-weight: 500;
+	line-height: 1.3;
+	color: var(--mlf-ink);
+	overflow-wrap: anywhere;
 }
 
-/* Meta Box Styles */
-.multilify-meta-box {
-    padding: 15px 0;
+.multilify-entry__meta {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin-top: 3px;
+	font-size: 12px;
+	color: var(--mlf-ink-faint);
 }
 
-.multilify-field {
-    margin-bottom: 25px;
+.multilify-flag {
+	font-size: 16px;
+	line-height: 1;
 }
 
-.multilify-field label {
-    display: block;
-    margin-bottom: 10px;
-    font-size: 14px;
-    color: #1d2327;
+.multilify-badge {
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+	padding: 2px 8px;
+	font-size: 11px;
+	font-weight: 600;
+	letter-spacing: 0.02em;
+	border-radius: 999px;
+	color: var(--mlf-positive);
+	background: var(--mlf-positive-soft);
 }
 
-.multilify-field input[type="text"],
-.multilify-field textarea {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #8c8f94;
-    border-radius: 4px;
-    font-size: 14px;
+.multilify-entry__actions {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	flex-wrap: wrap;
+	justify-content: flex-end;
 }
 
-.multilify-field input[type="text"]:focus,
-.multilify-field textarea:focus {
-    border-color: #2271b1;
-    outline: none;
-    box-shadow: 0 0 0 1px #2271b1;
+.multilify-entry__actions form {
+	display: inline;
+	margin: 0;
 }
 
-.multilify-field .description {
-    margin-top: 8px;
-    color: #646970;
-    font-size: 13px;
-    font-style: italic;
+.multilify-empty {
+	padding: 28px 0 30px;
+	text-align: center;
+	color: var(--mlf-ink-soft);
+	font-size: 13px;
+	border-bottom: 1px solid var(--mlf-rule);
 }
 
-/* Admin Instructions */
-.multilify-instructions {
-    line-height: 1.7;
-    color: #2c3338;
+/* --------------------------------------------------------------- edit form */
+
+.multilify-editrow {
+	padding: 16px 0 18px;
+	border-bottom: 1px solid var(--mlf-rule);
+	background: var(--mlf-surface-sunken);
+	box-shadow: inset 3px 0 0 var(--mlf-accent);
+	padding-left: 16px;
 }
 
-.multilify-instructions h3 {
-    color: #2271b1;
-    margin-top: 25px;
-    margin-bottom: 12px;
-    font-size: 16px;
+.multilify-editrow[hidden] {
+	display: none;
 }
 
-.multilify-instructions ul {
-    margin-left: 25px;
-    list-style-type: disc;
+.multilify-editform {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: flex-end;
+	gap: 14px;
 }
 
-.multilify-instructions li {
-    margin-bottom: 8px;
+.multilify-editform .multilify-field {
+	display: flex;
+	flex-direction: column;
+	gap: 5px;
+	margin: 0;
 }
 
-.multilify-instructions pre {
-    background: #f6f7f7;
-    padding: 15px;
-    border-left: 4px solid #2271b1;
-    overflow-x: auto;
-    border-radius: 4px;
-    margin: 15px 0;
+.multilify-editform label {
+	font-size: 11px;
+	font-weight: 600;
+	letter-spacing: 0.04em;
+	color: var(--mlf-ink-soft);
 }
 
-.multilify-instructions code {
-    background: #f6f7f7;
-    padding: 3px 8px;
-    border-radius: 3px;
-    font-size: 13px;
-    font-family: 'Courier New', Courier, monospace;
-    color: #d63638;
+.multilify-editform input[type="text"] {
+	height: 32px;
+	padding: 0 9px;
+	border: 1px solid var(--mlf-rule-strong);
+	border-radius: 4px;
+	background: var(--mlf-surface);
+	color: var(--mlf-ink);
+	font-size: 13px;
 }
 
-/* Inline edit row */
-.multilify-edit-row > td {
-    background: #f6f7f7;
-    border-left: 3px solid #2271b1;
+.multilify-editform input[type="text"]:focus {
+	border-color: var(--mlf-accent);
+	box-shadow: 0 0 0 1px var(--mlf-accent);
+	outline: 2px solid transparent;
 }
 
-.multilify-edit-form {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: flex-end;
-    gap: 16px;
-    padding: 6px 4px;
+.multilify-editform input[disabled] {
+	font-family: var(--mlf-mono);
+	text-align: center;
+	color: var(--mlf-ink-faint);
+	background: var(--mlf-surface-sunken);
 }
 
-.multilify-field {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-.multilify-field label {
-    font-size: 12px;
-    font-weight: 600;
-    color: #50575e;
-}
-
-.multilify-field input {
-    height: 32px;
-}
-
-.multilify-field--code input {
-    width: 70px;
-    background: #f0f0f1;
-    color: #646970;
-    text-align: center;
-}
-
-.multilify-field--name input {
-    width: 220px;
-}
-
-.multilify-field--flag input {
-    width: 70px;
-    text-align: center;
-}
+.multilify-field--code input { width: 72px; }
+.multilify-field--name input { width: 220px; }
+.multilify-field--flag input { width: 72px; text-align: center; }
 
 .multilify-field--actions {
-    flex-direction: row;
-    align-items: center;
-    gap: 8px;
+	flex-direction: row;
+	align-items: center;
+	gap: 8px;
 }
 
-/* Responsive */
-@media (max-width: 782px) {
-    .multilify-switcher {
-        flex-direction: column;
-    }
+/* --------------------------------------------------------------- add form */
 
-    .multilify-switcher .lang-link {
-        width: 100%;
-        justify-content: center;
-    }
+/* Three named fields, so the grid is declared as three columns. auto-fit would
+   open a fourth, empty track on a wide screen and push the fields off-centre. */
+.multilify-addform {
+	display: grid;
+	grid-template-columns: minmax( 0, 15em ) minmax( 0, 20em ) auto;
+	justify-content: start;
+	gap: 20px 32px;
+	align-items: start;
+}
 
-    .multilify-edit-form {
-        flex-direction: column;
-        align-items: stretch;
-    }
+.multilify-addform .multilify-field {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	margin: 0;
+}
 
-    .multilify-field--name input,
-    .multilify-field--code input,
-    .multilify-field--flag input {
-        width: 100%;
-    }
+.multilify-addform label {
+	font-size: 12px;
+	font-weight: 600;
+	color: var(--mlf-ink);
+}
+
+.multilify-addform input[type="text"] {
+	height: 36px;
+	padding: 0 11px;
+	border: 1px solid var(--mlf-rule-strong);
+	border-radius: 4px;
+	background: var(--mlf-surface);
+	color: var(--mlf-ink);
+	font-size: 14px;
+}
+
+.multilify-addform input[type="text"]:focus {
+	border-color: var(--mlf-accent);
+	box-shadow: 0 0 0 1px var(--mlf-accent);
+	outline: 2px solid transparent;
+}
+
+.multilify-addform input#lang_code {
+	font-family: var(--mlf-mono);
+	letter-spacing: 0.06em;
+}
+
+.multilify-addform .description {
+	margin: 0;
+	font-size: 12px;
+	line-height: 1.45;
+	color: var(--mlf-ink-faint);
+	font-style: normal;
+}
+
+.multilify-admin code {
+	font-family: var(--mlf-mono);
+	font-size: 0.92em;
+	padding: 1px 5px;
+	border-radius: 3px;
+	color: var(--mlf-ink);
+	background: var(--mlf-surface-sunken);
+	border: 1px solid var(--mlf-rule);
+	white-space: nowrap;
+}
+
+.multilify-addform__submit {
+	grid-column: 1 / -1;
+	margin: 4px 0 0;
+	padding-top: 18px;
+	border-top: 1px solid var(--mlf-rule);
+}
+
+/* ------------------------------------------------------------ flag picker */
+
+.multilify-field__label {
+	font-size: 12px;
+	font-weight: 600;
+	color: var(--mlf-ink);
+}
+
+.multilify-editform .multilify-field__label {
+	font-size: 11px;
+	letter-spacing: 0.04em;
+	color: var(--mlf-ink-soft);
+}
+
+.multilify-flagpicker {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
+.multilify-flagpicker__grid {
+	display: grid;
+	grid-template-columns: repeat( 8, 34px );
+	gap: 7px;
+	padding: 3px;
+}
+
+.multilify-flagpicker__option > * {
+	pointer-events: none;
+}
+
+.multilify-flagpicker__option {
+	position: relative;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 34px;
+	height: 30px;
+	padding: 0;
+	font-size: 17px;
+	line-height: 1;
+	cursor: pointer;
+	background: var(--mlf-surface);
+	border: 1px solid var(--mlf-rule);
+	border-radius: 4px;
+	transition: border-color 0.12s ease, background-color 0.12s ease;
+}
+
+.multilify-flagpicker__option:hover {
+	border-color: var(--mlf-rule-strong);
+	background: var(--mlf-surface-sunken);
+}
+
+.multilify-flagpicker__option:focus-visible {
+	outline: 2px solid var(--mlf-accent);
+	outline-offset: 1px;
+}
+
+/* Selected state cannot rest on colour alone: the emoji already carries
+   colour, so a solid ring plus a checkmark do the signalling. */
+.multilify-flagpicker__option.is-selected {
+	border-color: var(--mlf-accent);
+	background: var(--mlf-accent-soft);
+	box-shadow: 0 0 0 2px var(--mlf-accent);
+}
+
+/* The tick is drawn from two borders rather than an embedded image, so the
+   stylesheet stays free of a data URI. */
+.multilify-flagpicker__option.is-selected::after {
+	content: "";
+	position: absolute;
+	right: -4px;
+	bottom: -4px;
+	width: 13px;
+	height: 13px;
+	border-radius: 50%;
+	background: var(--mlf-accent);
+}
+
+.multilify-flagpicker__option.is-selected::before {
+	content: "";
+	position: absolute;
+	right: 0;
+	bottom: 0;
+	z-index: 1;
+	width: 3px;
+	height: 6px;
+	border: solid #fff;
+	border-width: 0 2px 2px 0;
+	transform: translate( 0.5px, -1.5px ) rotate( 45deg );
+}
+
+.multilify-flagpicker__custom {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	font-size: 12px;
+	color: var(--mlf-ink-soft);
+}
+
+.multilify-flagpicker__custom input[type="text"] {
+	width: 62px;
+	text-align: center;
+	font-size: 15px;
+}
+
+.multilify-field--flagpicker .description {
+	margin-top: 2px;
+}
+
+/* ------------------------------------------------------------------ guide */
+
+/* Four topics on a 2x2 grid: an auto-fit track count leaves the fourth topic
+   stranded on its own row on a wide screen. */
+.multilify-guide {
+	display: grid;
+	grid-template-columns: repeat( 2, minmax( 0, 1fr ) );
+	gap: 30px 44px;
+	margin-top: 20px;
+	max-width: 1000px;
+}
+
+.multilify-guide h3 {
+	margin: 0 0 8px;
+	padding-bottom: 7px;
+	border-bottom: 1px solid var(--mlf-rule);
+	font-size: 13px;
+	font-weight: 600;
+	color: var(--mlf-ink);
+}
+
+.multilify-guide p,
+.multilify-guide li {
+	font-size: 13px;
+	line-height: 1.55;
+	color: var(--mlf-ink-soft);
+}
+
+.multilify-guide p { margin: 0 0 10px; }
+
+.multilify-guide p:last-child { margin-bottom: 0; }
+
+.multilify-guide ul {
+	margin: 0 0 10px 18px;
+	list-style: disc;
+}
+
+.multilify-guide li { margin: 0 0 6px; }
+
+.multilify-guide li:last-child { margin-bottom: 0; }
+
+.multilify-guide code,
+.multilify-guide pre {
+	font-family: var(--mlf-mono);
+	font-size: 12px;
+	background: var(--mlf-surface-sunken);
+	border: 1px solid var(--mlf-rule);
+	border-radius: 4px;
+	color: var(--mlf-ink);
+}
+
+.multilify-guide code { padding: 2px 6px; }
+
+.multilify-guide pre {
+	margin: 0 0 12px;
+	padding: 12px 14px;
+	line-height: 1.5;
+	overflow-x: auto;
+}
+
+/* --------------------------------------------------------- copyable snippet */
+
+.multilify-snippet {
+	position: relative;
+	margin-bottom: 12px;
+}
+
+.multilify-snippet pre {
+	margin: 0;
+	padding-right: 74px;
+}
+
+.multilify-copy {
+	position: absolute;
+	top: 6px;
+	right: 6px;
+	padding: 4px 9px;
+	font-size: 11px;
+	font-weight: 600;
+	line-height: 1.6;
+	color: var(--mlf-ink-soft);
+	cursor: pointer;
+	background: var(--mlf-surface);
+	border: 1px solid var(--mlf-rule-strong);
+	border-radius: 3px;
+	opacity: 0;
+	transition: opacity 0.12s ease, color 0.12s ease, border-color 0.12s ease;
+}
+
+/* The button stays out of the way until the snippet is in play, but keyboard
+   users and anyone mid-copy always get it. */
+.multilify-snippet:hover .multilify-copy,
+.multilify-copy:focus-visible,
+.multilify-copy.is-copied {
+	opacity: 1;
+}
+
+.multilify-copy:hover {
+	color: var(--mlf-accent);
+	border-color: var(--mlf-accent);
+}
+
+.multilify-copy:focus-visible {
+	outline: 2px solid var(--mlf-accent);
+	outline-offset: 1px;
+}
+
+.multilify-copy.is-copied {
+	color: var(--mlf-positive);
+	border-color: var(--mlf-positive);
+	background: var(--mlf-positive-soft);
+}
+
+/* Touch has no hover, so the control is always visible there. */
+@media ( hover: none ) {
+	.multilify-copy {
+		opacity: 1;
+	}
+}
+
+/* A code block answers the line above it, so it sits closer to that line
+   than to whatever follows. */
+.multilify-guide p + pre {
+	margin-top: -2px;
+}
+
+.multilify-guide pre code {
+	padding: 0;
+	border: 0;
+	background: none;
+}
+
+/* ----------------------------------------------------------------- dialog */
+
+.multilify-dialog {
+	position: fixed;
+	inset: 0;
+	z-index: 100200;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 20px;
+	background: rgba( 10, 13, 18, 0.55 );
+}
+
+.multilify-dialog[hidden] {
+	display: none;
+}
+
+.multilify-dialog__panel {
+	width: 100%;
+	max-width: 420px;
+	padding: 24px 26px 22px;
+	background: var(--mlf-surface);
+	border-radius: 8px;
+	box-shadow: 0 16px 44px rgba( 10, 13, 18, 0.28 );
+}
+
+.multilify-dialog__title {
+	margin: 0 0 8px;
+	padding: 0;
+	font-size: 17px;
+	font-weight: 600;
+	line-height: 1.3;
+	color: var(--mlf-ink);
+	overflow-wrap: anywhere;
+}
+
+.multilify-dialog__body {
+	margin: 0 0 20px;
+	font-size: 13px;
+	line-height: 1.55;
+	color: var(--mlf-ink-soft);
+}
+
+.multilify-dialog__actions {
+	display: flex;
+	justify-content: flex-end;
+	gap: 8px;
+}
+
+/* The destructive action is coloured, so it never reads as the safe default. */
+.multilify-dialog__delete.button-primary {
+	background: var(--mlf-danger);
+	border-color: var(--mlf-danger);
+	color: #fff;
+}
+
+.multilify-dialog__delete.button-primary:hover,
+.multilify-dialog__delete.button-primary:focus {
+	background: #8a1f24;
+	border-color: #8a1f24;
+	color: #fff;
+}
+
+/* -------------------------------------------------------------- meta box */
+
+.multilify-meta-box {
+	padding: 4px 0 2px;
+}
+
+.multilify-meta-box > .description {
+	margin: 0 0 16px;
+	font-size: 13px;
+	color: #646970;
+}
+
+.multilify-meta-box .multilify-field {
+	margin: 0 0 18px;
+}
+
+.multilify-meta-box .multilify-field label {
+	display: block;
+	margin: 0 0 6px;
+	font-size: 13px;
+	font-weight: 600;
+	color: #1d2327;
+}
+
+.multilify-meta-box .multilify-field input[type="text"] {
+	width: 100%;
+	height: 36px;
+	padding: 0 10px;
+	border: 1px solid #8c8f94;
+	border-radius: 4px;
+	font-size: 14px;
+}
+
+.multilify-meta-box .multilify-field input[type="text"]:focus {
+	border-color: #2271b1;
+	box-shadow: 0 0 0 1px #2271b1;
+	outline: 2px solid transparent;
+}
+
+.multilify-meta-box .multilify-field .description {
+	margin: 6px 0 0;
+	font-size: 12px;
+	color: #646970;
+	font-style: normal;
+}
+
+/* ------------------------------------------------------------- responsive */
+
+@media ( max-width: 782px ) {
+	.multilify-entry {
+		grid-template-columns: minmax( 0, 1fr );
+		align-items: start;
+	}
+
+	.multilify-entry__actions {
+		justify-content: flex-start;
+	}
+
+	.multilify-addform,
+	.multilify-guide {
+		grid-template-columns: minmax( 0, 1fr );
+	}
+
+	.multilify-guide {
+		gap: 28px;
+	}
+
+	.multilify-editform,
+	.multilify-editform .multilify-field {
+		width: 100%;
+	}
+
+	.multilify-field--code input,
+	.multilify-field--name input,
+	.multilify-field--flag input {
+		width: 100%;
+	}
+}
+
+@media ( prefers-reduced-motion: reduce ) {
+	.multilify-admin * {
+		transition: none !important;
+		animation: none !important;
+	}
 }
