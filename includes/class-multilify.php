@@ -264,7 +264,9 @@ class Multilify {
 				'multilify-admin',
 				'multilifyAdmin',
 				array(
-					'confirmDelete' => __( 'Are you sure you want to delete this language? This action cannot be undone.', 'multilify' ),
+					'confirmDelete' => __( 'Delete this language? Its translations stay in the database, so re-adding the same code brings them back.', 'multilify' ),
+					'copied'        => __( 'Copied', 'multilify' ),
+					'copyFailed'    => __( 'Press Ctrl+C to copy', 'multilify' ),
 				)
 			);
 		}
@@ -288,6 +290,9 @@ class Multilify {
 
 		$languages        = $this->get_languages();
 		$default_language = $this->get_default_language();
+		$translatable     = $this->count_translatable_entries();
+		$progress         = $this->get_translation_progress( $languages );
+		$flag_choices     = $this->get_flag_choices();
 
 		include MULTILIFY_INCLUDES_DIR . 'views/admin-page.php';
 	}
@@ -462,6 +467,58 @@ class Multilify {
 	}
 
 	/**
+	 * Flags offered by the picker, keyed by the language code they suit.
+	 *
+	 * A starting point rather than a closed list; the picker keeps a free text
+	 * field so any other emoji or symbol can still be used.
+	 *
+	 * @return array Map of language code to flag emoji.
+	 */
+	public function get_flag_choices() {
+		$choices = array(
+			'en' => '🇬🇧',
+			'us' => '🇺🇸',
+			'tr' => '🇹🇷',
+			'de' => '🇩🇪',
+			'fr' => '🇫🇷',
+			'es' => '🇪🇸',
+			'it' => '🇮🇹',
+			'pt' => '🇵🇹',
+			'br' => '🇧🇷',
+			'nl' => '🇳🇱',
+			'pl' => '🇵🇱',
+			'ru' => '🇷🇺',
+			'ua' => '🇺🇦',
+			'ar' => '🇸🇦',
+			'zh' => '🇨🇳',
+			'ja' => '🇯🇵',
+			'ko' => '🇰🇷',
+			'hi' => '🇮🇳',
+			'id' => '🇮🇩',
+			'gr' => '🇬🇷',
+			'se' => '🇸🇪',
+			'no' => '🇳🇴',
+			'dk' => '🇩🇰',
+			'fi' => '🇫🇮',
+			'cz' => '🇨🇿',
+			'ro' => '🇷🇴',
+			'hu' => '🇭🇺',
+			'bg' => '🇧🇬',
+			'il' => '🇮🇱',
+			'th' => '🇹🇭',
+			'vn' => '🇻🇳',
+			'az' => '🇦🇿',
+		);
+
+		/**
+		 * Filter the flags offered in the language picker.
+		 *
+		 * @param array $choices Map of language code to flag emoji.
+		 */
+		return apply_filters( 'multilify_flag_choices', $choices );
+	}
+
+	/**
 	 * Post types that get translation meta boxes.
 	 *
 	 * Filterable so custom post types, including WooCommerce products, can opt in.
@@ -477,6 +534,87 @@ class Multilify {
 		$post_types = apply_filters( 'multilify_post_types', array( 'post', 'page' ) );
 
 		return array_values( array_filter( array_map( 'sanitize_key', (array) $post_types ) ) );
+	}
+
+	/**
+	 * Count the published entries that can carry a translation.
+	 *
+	 * @return int Number of translatable entries.
+	 */
+	public function count_translatable_entries() {
+		$cached = wp_cache_get( 'translatable_total', 'multilify' );
+
+		if ( false !== $cached ) {
+			return (int) $cached;
+		}
+
+		$total = 0;
+
+		foreach ( $this->get_translatable_post_types() as $post_type ) {
+			$counts = wp_count_posts( $post_type );
+
+			if ( isset( $counts->publish ) ) {
+				$total += (int) $counts->publish;
+			}
+		}
+
+		wp_cache_set( 'translatable_total', $total, 'multilify', 5 * MINUTE_IN_SECONDS );
+
+		return $total;
+	}
+
+	/**
+	 * Count how many entries carry a title translation per language.
+	 *
+	 * Gives the settings page a real completion figure instead of asking the
+	 * user to open every post to find out.
+	 *
+	 * @param array $languages Languages to report on.
+	 * @return array Map of language code to translated entry count.
+	 */
+	public function get_translation_progress( $languages ) {
+		global $wpdb;
+
+		$cached = wp_cache_get( 'translation_progress', 'multilify' );
+
+		if ( is_array( $cached ) ) {
+			return $cached;
+		}
+
+		$progress   = array();
+		$post_types = $this->get_translatable_post_types();
+
+		if ( empty( $post_types ) ) {
+			return $progress;
+		}
+
+		$placeholders = implode( ', ', array_fill( 0, count( $post_types ), '%s' ) );
+
+		foreach ( $languages as $language ) {
+			$meta_key = '_multilang_title_' . $language['code'];
+
+			// A per-language count over indexed meta; cached for five minutes.
+            // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+			$count = $wpdb->get_var(
+                // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+				$wpdb->prepare(
+					"SELECT COUNT(1)
+                    FROM {$wpdb->postmeta} pm
+                    INNER JOIN {$wpdb->posts} p ON pm.post_id = p.ID
+                    WHERE pm.meta_key = %s
+                    AND pm.meta_value <> ''
+                    AND p.post_status = 'publish'
+                    AND p.post_type IN ( {$placeholders} )",
+					array_merge( array( $meta_key ), $post_types )
+				)
+			);
+
+			$progress[ $language['code'] ] = (int) $count;
+		}
+
+		wp_cache_set( 'translation_progress', $progress, 'multilify', 5 * MINUTE_IN_SECONDS );
+
+		return $progress;
 	}
 
 	/**
@@ -558,6 +696,10 @@ class Multilify {
 		}
 
 		$languages = $this->get_languages();
+
+		// The settings page reports completion from these counts.
+		wp_cache_delete( 'translation_progress', 'multilify' );
+		wp_cache_delete( 'translatable_total', 'multilify' );
 
 		foreach ( $languages as $language ) {
 			$lang_code = $language['code'];
@@ -1370,9 +1512,21 @@ class Multilify {
 
 		$custom_slug = get_post_meta( $post->ID, '_multilang_slug_' . $lang_code, true );
 
-		// An untranslated post in the default language keeps its canonical WordPress URL.
+		// An untranslated post in the default language keeps its canonical
+		// WordPress URL. filter_permalink() would rewrite that into the language
+		// being viewed, so it is suspended for the length of this call.
 		if ( $is_default && empty( $custom_slug ) ) {
-			return get_permalink( $post );
+			remove_filter( 'post_link', array( $this, 'filter_permalink' ), 10 );
+			remove_filter( 'page_link', array( $this, 'filter_permalink' ), 10 );
+			remove_filter( 'post_type_link', array( $this, 'filter_permalink' ), 10 );
+
+			$permalink = get_permalink( $post );
+
+			add_filter( 'post_link', array( $this, 'filter_permalink' ), 10, 2 );
+			add_filter( 'page_link', array( $this, 'filter_permalink' ), 10, 2 );
+			add_filter( 'post_type_link', array( $this, 'filter_permalink' ), 10, 2 );
+
+			return $permalink;
 		}
 
 		$path = $this->build_translated_path_for( $post, $custom_slug, $lang_code );

@@ -4,7 +4,7 @@ Tags: multilingual, translation, language, i18n, localization
 Requires at least: 5.8
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.0.5
+Stable tag: 1.1.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -17,17 +17,18 @@ Powerful multilingual content management for WordPress with custom slugs and SEO
 = Key Features =
 
 * **Unlimited Languages** - Add as many languages as you need
-* **Custom Slugs** - Set unique URLs for each language version
-* **SEO Optimized** - Built-in support for multilingual SEO best practices
-* **Performance First** - Advanced caching system for fast page loads
-* **Database Indexed** - Optimized database queries for better performance
-* **Visual Editor** - Translate content using familiar WordPress editor
+* **Custom Slugs** - Set a different URL for every language, including nested pages
+* **hreflang Tags** - `rel="alternate"` tags in `<head>`, plus `x-default`, so search engines index each language correctly
+* **Correct Page Language** - `<html lang>` and a `Content-Language` header follow the language being viewed
+* **Browser Language Detection** - First-time visitors land in the language their browser asks for; their own choice is remembered afterwards
+* **Translation Progress** - The settings page shows how many entries each language still needs
+* **Flag Picker** - Choose a flag from a grid instead of hunting for the emoji
+* **Performance First** - Object caching on the slug lookup, with an index to match
+* **Visual Editor** - Translate content using the familiar WordPress editor
 * **Language Switcher** - Built-in switcher with flag-only or flag + name display
-* **Editable Languages** - Edit a language's name and flag anytime from the admin
-* **Optional Names** - Leave the name empty to fall back to the language code
+* **Any Post Type** - Posts and pages out of the box, anything else through the `multilify_post_types` filter
 * **Shortcode & Template Tag** - Drop the switcher anywhere with `[multilify_switcher]`
-* **Auto Detection** - Automatic browser language detection
-* **Developer Friendly** - Clean code with hooks and filters
+* **Developer Friendly** - Filters for the post type list, the translated title and content, the flag choices and the locale
 
 = Perfect For =
 
@@ -57,11 +58,10 @@ Unlike bloated translation plugins, Multilify focuses on performance and simplic
 
 = Developer Features =
 
-* Object caching support for better performance
+* Object caching on the slug lookup, invalidated when a slug changes
 * Transient API for optimized rewrite rule flushing
-* Custom hooks and filters
-* Clean, documented code
-* PSR standards compliant
+* Filters: `multilify_post_types`, `multilify_translated_title`, `multilify_translated_content`, `multilify_flag_choices`, `multilify_locale`, `multilify_enable_browser_detection`
+* Clean, documented code following the WordPress Coding Standards
 
 = Translating Content =
 
@@ -126,7 +126,7 @@ Unlimited! Add as many languages as your site needs.
 
 = Does it work with page builders? =
 
-Yes, Multilify works with all major page builders including Elementor, Gutenberg, and Classic Editor.
+Multilify translates content that runs through the `the_content` filter, which covers the block editor and the classic editor. Builders that render from their own stored data, such as Elementor, bypass that filter, so their layouts are not translated.
 
 = Will it slow down my site? =
 
@@ -138,7 +138,7 @@ Yes! You can set custom slugs for each language version of your content.
 
 = Does it support RTL languages? =
 
-Yes, Multilify supports both LTR and RTL languages.
+Multilify sets `dir="rtl"` on the document when WordPress reports an RTL locale, so an RTL theme renders correctly. It does not ship RTL stylesheets of its own; that is your theme's job.
 
 = Can I translate menus and widgets? =
 
@@ -146,7 +146,11 @@ Currently, Multilify focuses on post and page content. Menu and widget translati
 
 = Is it compatible with WooCommerce? =
 
-Yes, Multilify works with WooCommerce for translating product content.
+Translation panels appear on posts and pages by default. To add them to products, or any other custom post type, use the `multilify_post_types` filter:
+
+`add_filter( 'multilify_post_types', function ( $types ) { $types[] = 'product'; return $types; } );`
+
+This translates the product title and description. Prices, attributes and variations are WooCommerce's own data and are not covered.
 
 = How do I get support? =
 
@@ -160,6 +164,28 @@ You can get support through the WordPress.org support forums or by contacting us
 4. Settings page - Configure your multilingual setup
 
 == Changelog ==
+
+= 1.1.0 =
+Fixes
+* Language detection now works when WordPress is installed in a subdirectory; the install path is no longer mistaken for a language code
+* `/{lang}/page/2/` and `/{lang}/feed/` return content instead of a 404; paged entries, entry feeds and search under a language prefix now route correctly
+* Child pages keep their parent path in translated URLs, so `/{lang}/parent/child/` resolves instead of 404ing
+* The document title on the front page and on archives is no longer overwritten with a post title from the loop
+* Translation panels no longer save on revisions or on post types they were never added to
+* Meta box fields no longer inherit the inline editor's layout, which shrank their labels and clipped their inputs
+
+Added
+* `rel="alternate"` hreflang tags, including `x-default`, in `<head>`
+* `<html lang>` and a `Content-Language` header that follow the language being viewed
+* Browser language detection for first-time visitors, remembered per visitor and overridable with the `multilify_enable_browser_detection` filter
+* Translation progress per language on the settings page
+* A flag picker in place of the free text emoji field
+* Custom post type support through the `multilify_post_types` filter
+* Filters: `multilify_translated_title`, `multilify_translated_content`, `multilify_flag_choices`, `multilify_locale`
+
+Changed
+* Rebuilt the settings screen: language entries read as a list with their code, name, default state and progress
+* Corrected readme claims that the code did not support
 
 = 1.0.5 =
 * The default language no longer gets a URL prefix, so each post has a single canonical address
@@ -207,6 +233,9 @@ You can get support through the WordPress.org support forums or by contacting us
 * Translation meta boxes
 
 == Upgrade Notice ==
+
+= 1.1.0 =
+Fixes 404s on paged, feed and child-page URLs under a language prefix, and on subdirectory installs where language detection never worked. Adds hreflang tags and browser language detection. Visit Settings > Permalinks once after updating so the new routes register.
 
 = 1.0.5 =
 URLs in the default language lose their /{lang}/ prefix in this release. If you rely on the prefixed form, add redirects before updating.
