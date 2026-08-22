@@ -264,9 +264,10 @@ class Multilify {
 				'multilify-admin',
 				'multilifyAdmin',
 				array(
-					'confirmDelete' => __( 'Delete this language? Its translations stay in the database, so re-adding the same code brings them back.', 'multilify' ),
-					'copied'        => __( 'Copied', 'multilify' ),
-					'copyFailed'    => __( 'Press Ctrl+C to copy', 'multilify' ),
+					/* translators: %s: language name. */
+					'confirmDeleteTitle' => __( 'Delete %s?', 'multilify' ),
+					'copied'             => __( 'Copied', 'multilify' ),
+					'copyFailed'         => __( 'Press Ctrl+C to copy', 'multilify' ),
 				)
 			);
 		}

@@ -17,11 +17,68 @@
             $(this).val(val);
         });
 
-        // Confirm delete
-        $('.button-link-delete').on('click', function(e) {
-            if (!window.confirm(l10n.confirmDelete)) {
-                e.preventDefault();
-                return false;
+        // Confirm a delete in the page rather than through window.confirm, which
+        // renders as a browser chrome alert and cannot be styled.
+        var $dialog = $('#multilify-confirm');
+        var pendingForm = null;
+        var lastFocus = null;
+
+        function closeDialog() {
+            $dialog.attr('hidden', true);
+            pendingForm = null;
+
+            if (lastFocus) {
+                $(lastFocus).trigger('focus');
+                lastFocus = null;
+            }
+        }
+
+        function openDialog(form, languageName) {
+            pendingForm = form;
+            lastFocus = document.activeElement;
+
+            if (languageName) {
+                $dialog.find('.multilify-dialog__title').text(
+                    (l10n.confirmDeleteTitle || 'Delete this language?').replace('%s', languageName)
+                );
+            }
+
+            $dialog.removeAttr('hidden');
+            $dialog.find('[data-multilify-dialog-cancel]').trigger('focus');
+        }
+
+        $('form[data-multilify-confirm]').on('submit', function(e) {
+            // The dialog re-submits this same form once confirmed.
+            if (pendingForm === this) {
+                return;
+            }
+
+            e.preventDefault();
+            openDialog(this, $(this).data('language'));
+        });
+
+        $dialog.on('click', '[data-multilify-dialog-cancel]', closeDialog);
+
+        $dialog.on('click', '[data-multilify-dialog-confirm]', function() {
+            var form = pendingForm;
+
+            if (form) {
+                $dialog.attr('hidden', true);
+                lastFocus = null;
+                form.submit();
+            }
+        });
+
+        // Clicking the backdrop dismisses, the same as cancelling.
+        $dialog.on('click', function(e) {
+            if (e.target === this) {
+                closeDialog();
+            }
+        });
+
+        $(document).on('keydown', function(e) {
+            if (!$dialog.attr('hidden') && e.key === 'Escape') {
+                closeDialog();
             }
         });
 

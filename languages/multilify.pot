@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Multilify 1.1.0\n"
 "Report-Msgid-Bugs-To: https://github.com/kadirermantr/multilify/issues\n"
-"POT-Creation-Date: 2026-08-22 17:04+0300\n"
+"POT-Creation-Date: 2026-08-22 17:12+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -26,27 +26,27 @@ msgstr ""
 msgid "Multilify"
 msgstr ""
 
-#: includes/class-multilify.php:267
-msgid ""
-"Delete this language? Its translations stay in the database, so re-adding "
-"the same code brings them back."
-msgstr ""
-
+#. translators: %s: language name.
 #: includes/class-multilify.php:268
-msgid "Copied"
+#, php-format
+msgid "Delete %s?"
 msgstr ""
 
 #: includes/class-multilify.php:269
+msgid "Copied"
+msgstr ""
+
+#: includes/class-multilify.php:270
 msgid "Press Ctrl+C to copy"
 msgstr ""
 
 #. translators: 1: language flag emoji, 2: language name.
-#: includes/class-multilify.php:639
+#: includes/class-multilify.php:640
 #, php-format
 msgid "%1$s %2$s Translation"
 msgstr ""
 
-#: includes/class-multilify.php:1308
+#: includes/class-multilify.php:1309
 msgid "Language switcher"
 msgstr ""
 
@@ -269,6 +269,24 @@ msgstr ""
 msgid ""
 "First-time visitors are sent to the language their browser asks for. Once "
 "someone picks a language from the switcher, that choice is remembered."
+msgstr ""
+
+#: includes/views/admin-page.php:363
+msgid "Delete this language?"
+msgstr ""
+
+#: includes/views/admin-page.php:366
+msgid ""
+"Its translations stay in the database, so adding the same code again brings "
+"them back."
+msgstr ""
+
+#: includes/views/admin-page.php:370
+msgid "Keep language"
+msgstr ""
+
+#: includes/views/admin-page.php:373
+msgid "Delete language"
 msgstr ""
 
 #: includes/views/meta-box.php:15

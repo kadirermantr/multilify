@@ -140,7 +140,7 @@ $multilify_flags = isset( $flag_choices ) && is_array( $flag_choices ) ? $flag_c
 							</button>
 
 							<?php if ( ! $multilify_is_default ) : ?>
-								<form method="post">
+								<form method="post" data-multilify-confirm data-language="<?php echo esc_attr( $multilify_name ); ?>">
 									<?php wp_nonce_field( 'multilify_action' ); ?>
 									<input type="hidden" name="multilify_action" value="delete_language">
 									<input type="hidden" name="lang_code" value="<?php echo esc_attr( $multilify_code ); ?>">
@@ -352,6 +352,26 @@ $multilify_flags = isset( $flag_choices ) && is_array( $flag_choices ) ? $flag_c
 				<h3><?php esc_html_e( 'Search engines', 'multilify' ); ?></h3>
 				<p><?php esc_html_e( 'Multilify adds hreflang tags to every page so search engines know which languages an entry exists in, and sets the page language so screen readers pronounce it correctly.', 'multilify' ); ?></p>
 				<p><?php esc_html_e( 'First-time visitors are sent to the language their browser asks for. Once someone picks a language from the switcher, that choice is remembered.', 'multilify' ); ?></p>
+			</div>
+		</div>
+	</div>
+
+	<div class="multilify-dialog" id="multilify-confirm" role="dialog" aria-modal="true"
+			aria-labelledby="multilify-confirm-title" aria-describedby="multilify-confirm-body" hidden>
+		<div class="multilify-dialog__panel">
+			<h2 class="multilify-dialog__title" id="multilify-confirm-title">
+				<?php esc_html_e( 'Delete this language?', 'multilify' ); ?>
+			</h2>
+			<p class="multilify-dialog__body" id="multilify-confirm-body">
+				<?php esc_html_e( 'Its translations stay in the database, so adding the same code again brings them back.', 'multilify' ); ?>
+			</p>
+			<div class="multilify-dialog__actions">
+				<button type="button" class="button" data-multilify-dialog-cancel>
+					<?php esc_html_e( 'Keep language', 'multilify' ); ?>
+				</button>
+				<button type="button" class="button button-primary multilify-dialog__delete" data-multilify-dialog-confirm>
+					<?php esc_html_e( 'Delete language', 'multilify' ); ?>
+				</button>
 			</div>
 		</div>
 	</div>
