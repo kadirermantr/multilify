@@ -257,7 +257,7 @@ Initial release of Multilify.
 
 == Support ==
 
-* **Website:** [https://multilify.vercel.app](https://multilify.vercel.app)
+* **Website:** [https://multilify.com](https://multilify.com)
 * **Support Forums:** [WordPress.org support forums](https://wordpress.org/support/plugin/multilify/)
 * **GitHub:** [github.com/kadirermantr/multilify](https://github.com/kadirermantr/multilify)
 
