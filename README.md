@@ -56,6 +56,16 @@ A translation is not a second post. Each post carries all of its translations in
 
 We welcome contributions from the community! Whether it's bug reports, feature requests, or code contributions, please see our [Contributing Guidelines](CONTRIBUTING.md) for details on how to get started.
 
+## Sponsors
+
+Multilify is free and has no paid tier, so development runs on evenings and weekends. If the plugin saves you the cost of a commercial licence, [sponsoring the project](https://github.com/sponsors/kadirermantr) helps keep it maintained.
+
+Sponsors at $25 a month and above are listed here.
+
+<!-- sponsors -->
+<!-- No sponsors yet. -->
+<!-- /sponsors -->
+
 ## Bug Reports & Feature Requests
 
 Found a bug or have a feature idea? Please [open an issue](https://github.com/kadirermantr/multilify/issues) on GitHub.
