@@ -1,7 +1,8 @@
 # Multilify
 
-![Version](https://img.shields.io/badge/version-1.0.4-blue.svg)
-![WordPress](https://img.shields.io/badge/wordpress-5.8%2B-brightgreen.svg)
+[![Version](https://img.shields.io/wordpress/plugin/v/multilify.svg?color=blue)](https://wordpress.org/plugins/multilify/)
+[![WordPress](https://img.shields.io/wordpress/plugin/wp-version/multilify.svg?color=brightgreen)](https://wordpress.org/plugins/multilify/)
+[![Tested](https://img.shields.io/wordpress/plugin/tested/multilify.svg?color=brightgreen)](https://wordpress.org/plugins/multilify/)
 ![PHP](https://img.shields.io/badge/php-7.4%2B-purple.svg)
 ![License](https://img.shields.io/badge/license-GPL--2.0-orange.svg)
 
@@ -14,9 +15,11 @@ A powerful, lightweight, and **100% free** multilingual content management syste
 - **Performance First** - Advanced caching system with database indexing
 - **Security Hardened** - Built with WordPress security best practices
 - **Visual Editor** - Translate content using the familiar WordPress editor
-- **Language Switcher** - Built-in customizable language switcher
-- **Auto Detection** - Automatic browser language detection
-- **SEO Optimized** - Clean URLs and SEO-friendly structure
+- **Language Switcher** - Built-in customizable switcher, as a `[multilify_switcher]` shortcode or a `multilify_switcher()` template tag
+- **Auto Detection** - Browser language detection for first-time visitors, remembered per visitor
+- **SEO Optimized** - Clean URLs, `rel="alternate"` hreflang tags with `x-default`, and a `<html lang>` attribute and `Content-Language` header that follow the language being viewed
+- **Translation Progress** - See how complete each language is from the settings screen
+- **Custom Post Types** - Translate any post type through the `multilify_post_types` filter
 - **No External Services** - All translations stored locally on your server
 - **Privacy Focused** - Your content stays on your server
 
@@ -27,6 +30,21 @@ Unlike bloated translation plugins, Multilify focuses on three core principles:
 1. **Performance** - Optimized database queries, caching, and minimal overhead
 2. **Simplicity** - Clean codebase, easy to understand and extend
 3. **Freedom** - 100% free and open source, no premium upsells
+
+## How It Works
+
+A translation is not a second post. Each post carries all of its translations in post meta, keyed by language code, so there is no duplicated content and no separate query to serve a translated page. Per-language rewrite rules resolve `/{lang}/{slug}/` back to the original post, and the default language keeps WordPress' own prefix-free URLs so every post has a single canonical address.
+
+## Filters
+
+| Filter | Purpose |
+| --- | --- |
+| `multilify_post_types` | Post types that get translation panels |
+| `multilify_translated_title` | Filter a translated title before output |
+| `multilify_translated_content` | Filter translated content before output |
+| `multilify_enable_browser_detection` | Turn browser language detection off |
+| `multilify_flag_choices` | Extend the flag picker |
+| `multilify_locale` | Map a language code to a WordPress locale |
 
 ## Technical Highlights
 
