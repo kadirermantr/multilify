@@ -295,7 +295,7 @@ class Multilify {
 	 */
 	public function handle_admin_actions() {
 		// Only act on our own form submissions; this runs on every admin_init.
-        // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing
 		if ( ! isset( $_POST['multilify_action'] ) ) {
 			return;
 		}
@@ -587,17 +587,17 @@ class Multilify {
 			$meta_key = '_multilang_title_' . $language['code'];
 
 			// A per-language count over indexed meta; cached for five minutes.
-            // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 			$count = $wpdb->get_var(
-                // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+				// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 				$wpdb->prepare(
 					"SELECT COUNT(1)
-                    FROM {$wpdb->postmeta} pm
-                    INNER JOIN {$wpdb->posts} p ON pm.post_id = p.ID
-                    WHERE pm.meta_key = %s
-                    AND pm.meta_value <> ''
-                    AND p.post_status = 'publish'
-                    AND p.post_type IN ( {$placeholders} )",
+					FROM {$wpdb->postmeta} pm
+					INNER JOIN {$wpdb->posts} p ON pm.post_id = p.ID
+					WHERE pm.meta_key = %s
+					AND pm.meta_value <> ''
+					AND p.post_status = 'publish'
+					AND p.post_type IN ( {$placeholders} )",
 					array_merge( array( $meta_key ), $post_types )
 				)
 			);
@@ -867,15 +867,15 @@ class Multilify {
 		$cached_data = wp_cache_get( $cache_key, 'multilify' );
 
 		if ( false === $cached_data ) {
-            // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 			$result = $wpdb->get_row(
 				$wpdb->prepare(
 					"SELECT p.ID, p.post_name, p.post_type, p.post_status
-                    FROM {$wpdb->postmeta} pm
-                    INNER JOIN {$wpdb->posts} p ON pm.post_id = p.ID
-                    WHERE pm.meta_key = %s AND pm.meta_value = %s
-                    AND p.post_status = 'publish'
-                    LIMIT 1",
+					FROM {$wpdb->postmeta} pm
+					INNER JOIN {$wpdb->posts} p ON pm.post_id = p.ID
+					WHERE pm.meta_key = %s AND pm.meta_value = %s
+					AND p.post_status = 'publish'
+					LIMIT 1",
 					'_multilang_slug_' . $lang,
 					$slug
 				)
@@ -996,20 +996,20 @@ class Multilify {
 
 		// Check if index exists.
 		// Schema information queries must access INFORMATION_SCHEMA directly.
-        // phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery
-        // phpcs:disable WordPress.DB.DirectDatabaseQuery.NoCaching
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery.NoCaching
 		$index_exists = $wpdb->get_var(
 			$wpdb->prepare(
 				'SELECT COUNT(1) FROM INFORMATION_SCHEMA.STATISTICS
-            WHERE table_schema = DATABASE()
-            AND table_name = %s
-            AND index_name = %s',
+			WHERE table_schema = DATABASE()
+			AND table_name = %s
+			AND index_name = %s',
 				$wpdb->postmeta,
 				$index_name
 			)
 		);
-        // phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery
-        // phpcs:enable WordPress.DB.DirectDatabaseQuery.NoCaching
+		// phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery
+		// phpcs:enable WordPress.DB.DirectDatabaseQuery.NoCaching
 
 		if ( ! $index_exists ) {
 			// Create composite index for meta_key and meta_value (first 191 chars for utf8mb4).
@@ -1018,19 +1018,19 @@ class Multilify {
 
 			// Index name is manually sanitized above (only alphanumeric and underscore allowed).
 			// Schema changes require direct queries and cannot use prepared statements for DDL.
-            // phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery
-            // phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange
-            // phpcs:disable WordPress.DB.DirectDatabaseQuery.NoCaching
-            // phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-            // phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter
+			// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery
+			// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange
+			// phpcs:disable WordPress.DB.DirectDatabaseQuery.NoCaching
+			// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+			// phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter
 			$wpdb->query(
 				"ALTER TABLE {$wpdb->postmeta} ADD INDEX {$safe_index_name} (meta_key(191), meta_value(191))"
 			);
-            // phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery
-            // phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange
-            // phpcs:enable WordPress.DB.DirectDatabaseQuery.NoCaching
-            // phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-            // phpcs:enable PluginCheck.Security.DirectDB.UnescapedDBParameter
+			// phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery
+			// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange
+			// phpcs:enable WordPress.DB.DirectDatabaseQuery.NoCaching
+			// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+			// phpcs:enable PluginCheck.Security.DirectDB.UnescapedDBParameter
 
 			if ( ! $wpdb->last_error ) {
 				update_option( 'multilify_db_indexes_created', true );

@@ -43,7 +43,7 @@ $multilify_flags = isset( $flag_choices ) && is_array( $flag_choices ) ? $flag_c
 	</div>
 
 	<?php
-    // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+	// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 	if ( isset( $_GET['multilify_updated'] ) && '1' === $_GET['multilify_updated'] ) :
 		?>
 		<div class="notice notice-success is-dismissible">
@@ -52,9 +52,9 @@ $multilify_flags = isset( $flag_choices ) && is_array( $flag_choices ) ? $flag_c
 	<?php endif; ?>
 
 	<?php
-    // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+	// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 	if ( isset( $_GET['multilify_error'] ) ) :
-        // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		$multilify_error          = sanitize_key( wp_unslash( $_GET['multilify_error'] ) );
 		$multilify_error_messages = array(
 			'duplicate_code' => __( 'That language code is already in use. Pick a code no other language uses.', 'multilify' ),
