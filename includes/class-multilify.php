@@ -49,7 +49,6 @@ class Multilify {
 	 */
 	private function __construct() {
 		// Translations.
-		add_action( 'init', array( $this, 'load_textdomain' ) );
 
 		// Admin hooks.
 		add_action( 'admin_menu', array( $this, 'add_admin_menu' ) );
@@ -95,13 +94,6 @@ class Multilify {
 
 		// Redirect first-time visitors to the language their browser asks for.
 		add_action( 'template_redirect', array( $this, 'maybe_redirect_to_browser_language' ) );
-	}
-
-	/**
-	 * Load the plugin translations.
-	 */
-	public function load_textdomain() {
-		load_plugin_textdomain( 'multilify', false, dirname( plugin_basename( MULTILIFY_PLUGIN_FILE ) ) . '/languages' );
 	}
 
 	/**
