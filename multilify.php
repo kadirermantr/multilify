@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name: Multilify
- * Plugin URI: https://multilify.vercel.app
+ * Plugin URI: https://multilify.com
  * Description: A powerful multilingual content management system for WordPress. Supports unlimited languages with custom slugs, SEO optimization, and performance caching.
  * Version: 1.1.0
  * Requires at least: 5.8
