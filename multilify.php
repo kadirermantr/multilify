@@ -56,7 +56,7 @@ multilify();
  */
 function multilify_switcher( $args = array() ) {
 	// Output is already escaped in get_language_switcher method.
-    // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+	// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 	echo multilify()->get_language_switcher( $args );
 }
 
