@@ -4,7 +4,7 @@ Tags: multilingual, translation, language, i18n, localization
 Requires at least: 5.8
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.1.0
+Stable tag: 1.2.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -165,6 +165,11 @@ You can get support through the WordPress.org support forums or by contacting us
 
 == Changelog ==
 
+= 1.2.0 =
+Added
+* Turkish, German and Spanish translations of the admin interface. WordPress shows the plugin in its own language when the site runs in one of them, and falls back to English otherwise.
+* Any other locale can be contributed at translate.wordpress.org, from the translation template the plugin already ships
+
 = 1.1.0 =
 Fixes
 * Language detection now works when WordPress is installed in a subdirectory; the install path is no longer mistaken for a language code
@@ -233,6 +238,9 @@ Changed
 * Translation meta boxes
 
 == Upgrade Notice ==
+
+= 1.2.0 =
+The admin screens are now available in Turkish, German and Spanish. Nothing else changed; no action needed after updating.
 
 = 1.1.0 =
 Fixes 404s on paged, feed and child-page URLs under a language prefix, and on subdirectory installs where language detection never worked. Adds hreflang tags and browser language detection. Visit Settings > Permalinks once after updating so the new routes register.
