@@ -4,7 +4,7 @@ Tags: multilingual, translation, language, i18n, localization
 Requires at least: 5.8
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.3.3
+Stable tag: 1.4.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -165,6 +165,11 @@ You can get support through the WordPress.org support forums or by contacting us
 
 == Changelog ==
 
+= 1.4.0 =
+Changed
+* An entry given a custom slug in the default language now answers on that address alone. Its WordPress slug returns a permanent redirect to it, the way WordPress answers any renamed entry, and page numbers, feeds and embeds are carried across. Both addresses used to return 200, and inconsistently: the paged form already redirected, because WordPress only runs its canonical check on a request carrying a page number
+* An entry with no custom slug in the default language is untouched, and so is every prefixed language, which has one address already
+
 = 1.3.3 =
 Fixes
 * Renaming an entry left the cached answer to "does a real entry already live at this address" untouched for both the address it left and the address it took. A rename is not a status change, so nothing cleared it. On a site with a persistent object cache, an entry whose own translated slug was the freed address returned a 404 for up to an hour. Measured against a persistent cache on MySQL, before and after
@@ -271,6 +276,9 @@ Changed
 * Translation meta boxes
 
 == Upgrade Notice ==
+
+= 1.4.0 =
+Changes URLs. If you set a custom slug in your default language, the entry WordPress slug now redirects to it permanently instead of serving the same page. Browsers cache a permanent redirect, so clearing such a slug later can leave earlier visitors on the old address for a while.
 
 = 1.3.3 =
 Only affects sites running a persistent object cache such as Redis or Memcached: renaming an entry could 404 another entry for up to an hour.
