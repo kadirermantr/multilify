@@ -3,7 +3,7 @@
  * Plugin Name: Multilify
  * Plugin URI: https://multilify.com
  * Description: A powerful multilingual content management system for WordPress. Supports unlimited languages with custom slugs, SEO optimization, and performance caching.
- * Version: 1.2.0
+ * Version: 1.3.0
  * Requires at least: 5.8
  * Requires PHP: 7.4
  * Author: Kadir Erman
@@ -22,7 +22,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Define plugin constants.
-define( 'MULTILIFY_VERSION', '1.2.0' );
+define( 'MULTILIFY_VERSION', '1.3.0' );
 define( 'MULTILIFY_PLUGIN_FILE', __FILE__ );
 define( 'MULTILIFY_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'MULTILIFY_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
@@ -66,23 +66,11 @@ function multilify_switcher( $args = array() ) {
 function multilify_activate() {
 	// Set default options if they don't exist.
 	if ( ! get_option( 'multilify_languages' ) ) {
-		$default_languages = array(
-			array(
-				'code' => 'en',
-				'name' => 'English',
-				'flag' => '🇬🇧',
-			),
-			array(
-				'code' => 'tr',
-				'name' => 'Türkçe',
-				'flag' => '🇹🇷',
-			),
-		);
-		update_option( 'multilify_languages', $default_languages );
+		update_option( 'multilify_languages', Multilify::starter_languages() );
 	}
 
 	if ( ! get_option( 'multilify_default_language' ) ) {
-		update_option( 'multilify_default_language', 'en' );
+		update_option( 'multilify_default_language', Multilify::starter_default_language() );
 	}
 
 	// Setup rewrite rules before flushing.
@@ -112,7 +100,7 @@ register_deactivation_hook( __FILE__, 'multilify_deactivate' );
  */
 function multilify_plugin_action_links( $links, $file ) {
 	if ( plugin_basename( __FILE__ ) === $file ) {
-		$settings_link = '<a href="' . admin_url( 'admin.php?page=multilify' ) . '">' . esc_html__( 'Settings', 'multilify' ) . '</a>';
+		$settings_link = '<a href="' . esc_url( admin_url( 'admin.php?page=multilify' ) ) . '">' . esc_html__( 'Settings', 'multilify' ) . '</a>';
 		array_unshift( $links, $settings_link );
 	}
 	return $links;

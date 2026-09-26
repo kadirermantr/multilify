@@ -82,6 +82,36 @@
             }
         });
 
+        // aria-modal only means anything if focus cannot walk out of the panel
+        // into the page behind it.
+        $dialog.on('keydown', function(e) {
+            if (e.key !== 'Tab') {
+                return;
+            }
+
+            var focusable = $dialog
+                .find('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')
+                .filter(':visible');
+
+            if (!focusable.length) {
+                return;
+            }
+
+            var first = focusable.get(0);
+            var last = focusable.get(focusable.length - 1);
+
+            if (e.shiftKey && document.activeElement === first) {
+                e.preventDefault();
+                last.focus();
+                return;
+            }
+
+            if (!e.shiftKey && document.activeElement === last) {
+                e.preventDefault();
+                first.focus();
+            }
+        });
+
         // Toggle inline edit row for an existing language
         $('.multilify-edit-toggle').on('click', function() {
             var code = $(this).data('code');

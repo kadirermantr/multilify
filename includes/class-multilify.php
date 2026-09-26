@@ -58,8 +58,13 @@ class Multilify {
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_assets' ) );
 
 		// Meta boxes for posts and pages.
-		add_action( 'add_meta_boxes', array( $this, 'add_translation_meta_boxes' ) );
+		add_action( 'add_meta_boxes', array( $this, 'add_translation_meta_boxes' ), 10, 2 );
 		add_action( 'save_post', array( $this, 'save_translation_meta' ) );
+
+		// Cached routes belong to a published entry, so they have to go when one
+		// stops being published or leaves altogether.
+		add_action( 'transition_post_status', array( $this, 'forget_translated_routes' ), 10, 3 );
+		add_action( 'before_delete_post', array( $this, 'forget_routes_for_post' ) );
 
 		// Frontend hooks.
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_frontend_assets' ) );
@@ -97,26 +102,50 @@ class Multilify {
 	}
 
 	/**
+	 * The languages a fresh install starts with.
+	 *
+	 * Activation and the runtime fallback both read the list here, so a site can
+	 * never end up with a default language that has no entry of its own.
+	 *
+	 * @return array List of languages.
+	 */
+	public static function starter_languages() {
+		return array(
+			array(
+				'code' => 'en',
+				'name' => 'English',
+				'flag' => '🇬🇧',
+			),
+			array(
+				'code' => 'tr',
+				'name' => 'Türkçe',
+				'flag' => '🇹🇷',
+			),
+		);
+	}
+
+	/**
+	 * The default language a fresh install starts with.
+	 *
+	 * @return string Language code.
+	 */
+	public static function starter_default_language() {
+		$starter = self::starter_languages();
+
+		return $starter[0]['code'];
+	}
+
+	/**
 	 * Get all configured languages
 	 */
 	public function get_languages() {
 		$languages = get_option( 'multilify_languages', array() );
+
 		if ( empty( $languages ) ) {
-			// Default languages.
-			$languages = array(
-				array(
-					'code' => 'tr',
-					'name' => 'Türkçe',
-					'flag' => '🇹🇷',
-				),
-				array(
-					'code' => 'en',
-					'name' => 'English',
-					'flag' => '🇬🇧',
-				),
-			);
+			$languages = self::starter_languages();
 			update_option( 'multilify_languages', $languages );
 		}
+
 		return $languages;
 	}
 
@@ -124,8 +153,7 @@ class Multilify {
 	 * Get default language
 	 */
 	public function get_default_language() {
-		$default = get_option( 'multilify_default_language', 'tr' );
-		return $default;
+		return get_option( 'multilify_default_language', self::starter_default_language() );
 	}
 
 	/**
@@ -230,14 +258,27 @@ class Multilify {
 		}
 
 		$sanitized = array();
+		$seen      = array();
+
 		foreach ( $languages as $language ) {
-			if ( is_array( $language ) && isset( $language['code'], $language['name'], $language['flag'] ) ) {
-				$sanitized[] = array(
-					'code' => sanitize_key( $language['code'] ),
-					'name' => sanitize_text_field( $language['name'] ),
-					'flag' => sanitize_text_field( $language['flag'] ),
-				);
+			if ( ! is_array( $language ) || ! isset( $language['code'], $language['name'], $language['flag'] ) ) {
+				continue;
 			}
+
+			$code = sanitize_key( $language['code'] );
+
+			// Same shape the admin form enforces: a code is a URL prefix and
+			// every translation meta key is derived from it.
+			if ( ! preg_match( '/^[a-z]{2,5}$/', $code ) || in_array( $code, $seen, true ) ) {
+				continue;
+			}
+
+			$seen[]      = $code;
+			$sanitized[] = array(
+				'code' => $code,
+				'name' => sanitize_text_field( $language['name'] ),
+				'flag' => sanitize_text_field( $language['flag'] ),
+			);
 		}
 
 		return $sanitized;
@@ -269,6 +310,11 @@ class Multilify {
 	 * Enqueue frontend assets (language switcher styles).
 	 */
 	public function enqueue_frontend_assets() {
+		// One language has no switcher to style, and nothing to remember.
+		if ( count( $this->get_languages() ) < 2 ) {
+			return;
+		}
+
 		wp_enqueue_style( 'multilify', MULTILIFY_ASSETS_URL . 'css/multilify.css', array(), MULTILIFY_VERSION );
 		wp_enqueue_script( 'multilify', MULTILIFY_ASSETS_URL . 'js/multilify.js', array(), MULTILIFY_VERSION, true );
 	}
@@ -338,6 +384,16 @@ class Multilify {
 				// Reject duplicates: a language code must be unique.
 				if ( $this->language_code_exists( $new_lang['code'], $languages ) ) {
 					$error = 'duplicate_code';
+					break;
+				}
+
+				// A code becomes a top level URL prefix whose rewrite rules sit
+				// above the core ones, so a code WordPress already answers to
+				// would quietly take that address over.
+				$conflict = $this->language_code_conflict( $new_lang['code'] );
+
+				if ( '' !== $conflict ) {
+					$error = $conflict;
 					break;
 				}
 
@@ -431,6 +487,13 @@ class Multilify {
 			set_transient( 'multilify_flush_rewrite_rules', 1, 60 );
 		}
 
+		// The settings page reads completion per language, so a changed list
+		// invalidates the figures it was holding.
+		if ( '' === $error ) {
+			wp_cache_delete( 'translation_progress', 'multilify' );
+			wp_cache_delete( 'translatable_total', 'multilify' );
+		}
+
 		// Redirect to prevent form resubmission.
 		if ( '' !== $error ) {
 			$redirect = add_query_arg( 'multilify_error', $error, admin_url( 'admin.php?page=multilify' ) );
@@ -457,6 +520,49 @@ class Multilify {
 		}
 
 		return false;
+	}
+
+	/**
+	 * Find what a language code would take the address of.
+	 *
+	 * The per-language rewrite rules are registered at the top, so /{code}/ wins
+	 * over whatever WordPress served there before. Both cases are refused rather
+	 * than warned about, because the loser goes quiet with no sign of why.
+	 *
+	 * @param string $code Language code being added.
+	 * @return string Error key, or an empty string when the code is free.
+	 */
+	private function language_code_conflict( $code ) {
+		global $wp_rewrite;
+
+		$reserved = array( 'feed', 'page', 'embed', 'wp', 'index', 'tag', 'date', 'type', 'order', 'paged', 'cpage', 'rest' );
+
+		if ( $wp_rewrite instanceof WP_Rewrite ) {
+			$reserved = array_merge(
+				$reserved,
+				array_filter(
+					array(
+						$wp_rewrite->author_base,
+						$wp_rewrite->search_base,
+						$wp_rewrite->comments_base,
+						$wp_rewrite->pagination_base,
+						$wp_rewrite->feed_base,
+					)
+				)
+			);
+		}
+
+		if ( in_array( $code, $reserved, true ) ) {
+			return 'reserved_code';
+		}
+
+		foreach ( $this->get_translatable_post_types() as $post_type ) {
+			if ( get_page_by_path( $code, OBJECT, $post_type ) instanceof WP_Post ) {
+				return 'code_in_use';
+			}
+		}
+
+		return '';
 	}
 
 	/**
@@ -612,12 +718,17 @@ class Multilify {
 
 	/**
 	 * Add translation meta boxes
+	 *
+	 * @param string       $post_type Post type of the screen being built. Unused; every
+	 *                                translatable type is registered in one pass.
+	 * @param WP_Post|null $post      Entry being edited, when there is one.
 	 */
-	public function add_translation_meta_boxes() {
+	public function add_translation_meta_boxes( $post_type = '', $post = null ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found -- Signature set by the add_meta_boxes action.
 		$post_types = $this->get_translatable_post_types();
 		$languages  = $this->get_languages();
+		$entry_id   = $post instanceof WP_Post ? $post->ID : 0;
 
-		foreach ( $post_types as $post_type ) {
+		foreach ( $post_types as $type ) {
 			foreach ( $languages as $language ) {
 				// Name is optional; fall back to the code so the meta box title is never blank.
 				$language_label = isset( $language['name'] ) ? trim( (string) $language['name'] ) : '';
@@ -625,22 +736,47 @@ class Multilify {
 					$language_label = $language['code'];
 				}
 
+				$title = sprintf(
+					/* translators: 1: language flag emoji, 2: language name. */
+					__( '%1$s %2$s Translation', 'multilify' ),
+					$language['flag'],
+					$language_label
+				);
+
+				// A collapsed panel shows only its title, so which languages are
+				// already done has to be readable from there.
+				if ( $entry_id && $this->has_translation( $entry_id, $language['code'] ) ) {
+					$title .= ' <span class="multilify-metabox-state">' . esc_html__( 'translated', 'multilify' ) . '</span>';
+				}
+
 				add_meta_box(
 					'multilify_' . $language['code'],
-					sprintf(
-						/* translators: 1: language flag emoji, 2: language name. */
-						__( '%1$s %2$s Translation', 'multilify' ),
-						$language['flag'],
-						$language_label
-					),
+					$title,
 					array( $this, 'render_translation_meta_box' ),
-					$post_type,
+					$type,
 					'normal',
 					'high',
 					array( 'language' => $language )
 				);
 			}
 		}
+	}
+
+	/**
+	 * Whether an entry carries anything at all in a language.
+	 *
+	 * @param int    $post_id Entry to check.
+	 * @param string $code    Language code.
+	 * @return bool
+	 */
+	private function has_translation( $post_id, $code ) {
+		foreach ( array( 'title', 'content', 'slug' ) as $field ) {
+			if ( '' !== trim( (string) get_post_meta( $post_id, '_multilang_' . $field . '_' . $code, true ) ) ) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/**
@@ -718,6 +854,10 @@ class Multilify {
 				$new_slug = sanitize_title( wp_unslash( $_POST[ 'multilang_slug_' . $lang_code ] ) );
 				$old_slug = get_post_meta( $post_id, '_multilang_slug_' . $lang_code, true );
 
+				if ( '' !== $new_slug ) {
+					$new_slug = $this->unique_translated_slug( $new_slug, $lang_code, $post_id );
+				}
+
 				update_post_meta( $post_id, '_multilang_slug_' . $lang_code, $new_slug );
 
 				// Clear cache for both old and new slugs.
@@ -731,6 +871,90 @@ class Multilify {
 				}
 			}
 		}
+	}
+
+	/**
+	 * Make a translated slug unique within its language.
+	 *
+	 * Two entries sharing one translated slug leave the second unreachable,
+	 * because the lookup answers with the first row it finds. WordPress
+	 * disambiguates a duplicate post slug the same way.
+	 *
+	 * @param string $slug    Slug the editor asked for.
+	 * @param string $lang    Language the slug belongs to.
+	 * @param int    $post_id Entry being saved.
+	 * @return string Slug no other entry uses in this language.
+	 */
+	private function unique_translated_slug( $slug, $lang, $post_id ) {
+		global $wpdb;
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$taken = $wpdb->get_col(
+			$wpdb->prepare(
+				"SELECT meta_value FROM {$wpdb->postmeta} WHERE meta_key = %s AND post_id <> %d AND meta_value LIKE %s",
+				'_multilang_slug_' . $lang,
+				$post_id,
+				$wpdb->esc_like( $slug ) . '%'
+			)
+		);
+
+		$unique = $slug;
+		$suffix = 2;
+
+		while ( in_array( $unique, $taken, true ) ) {
+			$unique = $slug . '-' . $suffix;
+			++$suffix;
+		}
+
+		return $unique;
+	}
+
+	/**
+	 * Drop the cached routes of an entry whose status changed.
+	 *
+	 * The slug lookup only answers for published entries and caches misses for
+	 * an hour, so an entry that is trashed, restored or published has to forget
+	 * its routes or a persistent object cache keeps serving the old answer.
+	 *
+	 * @param string  $new_status Status the entry moved to.
+	 * @param string  $old_status Status the entry came from.
+	 * @param WP_Post $post       Entry being transitioned.
+	 */
+	public function forget_translated_routes( $new_status, $old_status, $post ) {
+		if ( $new_status === $old_status ) {
+			return;
+		}
+
+		$this->forget_routes_for_post( $post );
+	}
+
+	/**
+	 * Drop every cached route an entry answers to.
+	 *
+	 * @param int|WP_Post $post Entry, or its ID.
+	 */
+	public function forget_routes_for_post( $post ) {
+		$post = get_post( $post );
+
+		if ( ! $post instanceof WP_Post ) {
+			return;
+		}
+
+		if ( '' !== (string) $post->post_name ) {
+			wp_cache_delete( 'multilify_own_slug_' . md5( $post->post_name ), 'multilify' );
+		}
+
+		foreach ( $this->get_languages() as $language ) {
+			$slug = (string) get_post_meta( $post->ID, '_multilang_slug_' . $language['code'], true );
+
+			if ( '' !== $slug ) {
+				wp_cache_delete( 'multilang_slug_' . md5( $language['code'] . '_' . $slug ), 'multilify' );
+			}
+		}
+
+		// The settings page reports completion from these counts.
+		wp_cache_delete( 'translation_progress', 'multilify' );
+		wp_cache_delete( 'translatable_total', 'multilify' );
 	}
 
 	/**
@@ -758,38 +982,55 @@ class Multilify {
 	 */
 	public function resolve_translated_request( $continue, $wp = null, $extra_query_vars = '' ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found -- Signature required by the do_parse_request filter.
 		$segments = $this->get_request_path_segments();
+		$codes    = wp_list_pluck( $this->get_languages(), 'code' );
+		$prefixed = ! empty( $segments[0] ) && in_array( $segments[0], $codes, true );
+		$lang     = $prefixed ? $segments[0] : $this->get_default_language();
+
+		if ( $prefixed ) {
+			array_shift( $segments );
+		}
 
 		// Only a nested path needs this; a single segment is resolved later on
 		// the request filter, and rewriting it here would fight the canonical
 		// redirect and loop.
-		if ( count( $segments ) < 3 ) {
+		if ( count( $segments ) < 2 ) {
 			return $continue;
 		}
 
-		$codes = wp_list_pluck( $this->get_languages(), 'code' );
-		$lang  = $segments[0];
+		$requested = implode( '/', array_map( 'sanitize_title', $segments ) );
 
-		if ( ! in_array( $lang, $codes, true ) ) {
+		// Pagination, feeds and embeds sit after the entry's own path, so they
+		// are set aside before it is mapped and put back afterwards. Without
+		// that, /{lang}/slug/page/2/ reads page as an ancestor segment.
+		list( $head, $tail ) = $this->split_request_tail( $requested );
+
+		$resolved = $this->resolve_translated_path( $lang, $head );
+
+		if ( '' === $resolved['path'] || $resolved['path'] === $head ) {
 			return $continue;
 		}
 
-		// The last segment names the entry; anything before it is ancestry.
-		$slug  = sanitize_title( end( $segments ) );
-		$entry = $this->lookup_translated_slug( $lang, $slug );
-
-		if ( ! $entry || ! is_post_type_hierarchical( $entry->post_type ) ) {
+		if ( $resolved['entry'] ) {
+			if ( ! is_post_type_hierarchical( $resolved['entry']->post_type ) ) {
+				return $continue;
+			}
+		} elseif ( ! $this->path_names_a_page( $resolved['path'] ) ) {
+			// Only ancestors were mapped back, so the result is a guess until a
+			// real page answers to it. /{lang}/slug/page/2/ maps the same way and
+			// must not be rewritten: its tail is pagination, not ancestry.
 			return $continue;
 		}
 
-		$real_path = get_page_uri( $entry->ID );
-
-		if ( ! $real_path ) {
+		// Without a prefix the address belongs to the default language, so an
+		// entry that answers to it under its own name keeps it.
+		if ( ! $prefixed && $this->slug_belongs_to_an_entry( $resolved['slug'] ) ) {
 			return $continue;
 		}
 
 		// Rewrite what core is about to match, keeping the language prefix.
 		// PATH_INFO takes precedence over REQUEST_URI, so both have to move.
-		$translated = '/' . $lang . '/' . $real_path . '/';
+		$path       = $resolved['path'] . ( '' !== $tail ? '/' . $tail : '' );
+		$translated = ( $prefixed ? '/' . $lang : '' ) . '/' . $path . '/';
 
 		if ( ! empty( $_SERVER['PATH_INFO'] ) ) {
 			$_SERVER['PATH_INFO'] = $translated;
@@ -807,12 +1048,15 @@ class Multilify {
 	 * @return array Query variables with translated slugs resolved.
 	 */
 	public function filter_request( $query_vars ) {
-		// Check if we have a language and a slug.
-		if ( ! isset( $query_vars['lang'] ) || ( ! isset( $query_vars['name'] ) && ! isset( $query_vars['pagename'] ) ) ) {
+		if ( ! isset( $query_vars['name'] ) && ! isset( $query_vars['pagename'] ) ) {
 			return $query_vars;
 		}
 
-		$lang = sanitize_key( $query_vars['lang'] );
+		// An address with no prefix belongs to the default language, which
+		// carries translated slugs of its own like any other language.
+		$prefixed = isset( $query_vars['lang'] );
+		$lang     = $prefixed ? sanitize_key( $query_vars['lang'] ) : $this->get_default_language();
+
 		$path = isset( $query_vars['name'] ) ? $query_vars['name'] : $query_vars['pagename'];
 		$path = trim( (string) $path, '/' );
 
@@ -820,18 +1064,26 @@ class Multilify {
 			return $query_vars;
 		}
 
-		// A hierarchical URL carries ancestor segments; only the last one names the entry.
-		$segments = array_map( 'sanitize_title', explode( '/', $path ) );
-		$slug     = end( $segments );
-
-		$entry = $this->lookup_translated_slug( $lang, $slug );
+		$resolved = $this->resolve_translated_path( $lang, $path );
+		$entry    = $resolved['entry'];
 
 		if ( ! $entry ) {
+			// A partially translated tree keeps an untranslated entry under
+			// translated ancestors, so only the ancestors are mapped back.
+			if ( isset( $query_vars['pagename'] ) && $resolved['path'] !== $path ) {
+				$query_vars['pagename'] = $resolved['path'];
+			}
+
+			return $query_vars;
+		}
+
+		// An entry that answers to this address under its own name keeps it.
+		if ( ! $prefixed && $this->slug_belongs_to_an_entry( $resolved['slug'] ) ) {
 			return $query_vars;
 		}
 
 		if ( is_post_type_hierarchical( $entry->post_type ) ) {
-			$query_vars['pagename'] = get_page_uri( $entry->ID );
+			$query_vars['pagename'] = $resolved['path'];
 			unset( $query_vars['name'] );
 
 			// A non-page hierarchical type needs its own query var to resolve.
@@ -848,6 +1100,144 @@ class Multilify {
 		}
 
 		return $query_vars;
+	}
+
+	/**
+	 * Map a path written in one language back to the path WordPress stores.
+	 *
+	 * The entry is resolved from its own translated slug when it has one, which
+	 * is authoritative. A partially translated tree has no such anchor on its
+	 * last segment, so every segment is mapped on its own and the ancestors that
+	 * do carry a translation still resolve.
+	 *
+	 * @param string $lang Language the path is written in.
+	 * @param string $path Requested path, without surrounding slashes.
+	 * @return array Resolved path, the matched entry when there is one, and the last segment.
+	 */
+	private function resolve_translated_path( $lang, $path ) {
+		$segments = array_values( array_filter( array_map( 'sanitize_title', explode( '/', trim( $path, '/' ) ) ) ) );
+		$slug     = $segments ? end( $segments ) : '';
+		$resolved = array(
+			'path'  => implode( '/', $segments ),
+			'entry' => null,
+			'slug'  => $slug,
+		);
+
+		if ( '' === $slug ) {
+			return $resolved;
+		}
+
+		$entry = $this->lookup_translated_slug( $lang, $slug );
+
+		if ( $entry ) {
+			$real_path = is_post_type_hierarchical( $entry->post_type )
+				? (string) get_page_uri( $entry->ID )
+				: (string) $entry->post_name;
+
+			$resolved['entry'] = $entry;
+			$resolved['path']  = '' !== $real_path ? $real_path : $resolved['path'];
+
+			return $resolved;
+		}
+
+		// A single segment has no ancestry to map back.
+		if ( count( $segments ) < 2 ) {
+			return $resolved;
+		}
+
+		$mapped = array();
+		$last   = count( $segments ) - 1;
+
+		foreach ( $segments as $index => $segment ) {
+			if ( $index === $last ) {
+				$mapped[] = $segment;
+				continue;
+			}
+
+			$ancestor = $this->lookup_translated_slug( $lang, $segment );
+			$mapped[] = $ancestor ? $ancestor->post_name : $segment;
+		}
+
+		$resolved['path'] = implode( '/', $mapped );
+
+		return $resolved;
+	}
+
+	/**
+	 * Split a request path into the entry's own path and the tail WordPress adds.
+	 *
+	 * Pagination, feeds and embeds come after the entry, so they must not be
+	 * mistaken for ancestry when a translated path is mapped back.
+	 *
+	 * @param string $path Path without surrounding slashes.
+	 * @return array Entry path first, tail second, both without surrounding slashes.
+	 */
+	private function split_request_tail( $path ) {
+		$tail = '(?:page|comment-page)/[0-9]+|feed(?:/(?:feed|rdf|rss|rss2|atom))?|embed|trackback';
+
+		if ( preg_match( '#^(.+?)/(' . $tail . ')$#', $path, $matches ) ) {
+			return array( $matches[1], $matches[2] );
+		}
+
+		return array( $path, '' );
+	}
+
+	/**
+	 * Whether a real hierarchical entry lives at this path.
+	 *
+	 * @param string $path Path without surrounding slashes.
+	 * @return bool
+	 */
+	private function path_names_a_page( $path ) {
+		if ( '' === $path ) {
+			return false;
+		}
+
+		foreach ( $this->get_translatable_post_types() as $post_type ) {
+			if ( ! is_post_type_hierarchical( $post_type ) ) {
+				continue;
+			}
+
+			if ( get_page_by_path( $path, OBJECT, $post_type ) instanceof WP_Post ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Whether a published entry already answers to this slug under its own name.
+	 *
+	 * Only consulted for an address with no language prefix, so an entry never
+	 * loses its own URL to another entry's translated slug.
+	 *
+	 * @param string $slug Slug taken from the request.
+	 * @return bool
+	 */
+	private function slug_belongs_to_an_entry( $slug ) {
+		global $wpdb;
+
+		if ( '' === $slug ) {
+			return false;
+		}
+
+		$cache_key = 'multilify_own_slug_' . md5( $slug );
+		$cached    = wp_cache_get( $cache_key, 'multilify' );
+
+		if ( false === $cached ) {
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+			$cached = (int) $wpdb->get_var(
+				$wpdb->prepare(
+					"SELECT COUNT(1) FROM {$wpdb->posts} WHERE post_name = %s AND post_status = 'publish' LIMIT 1",
+					$slug
+				)
+			);
+
+			wp_cache_set( $cache_key, $cached, 'multilify', HOUR_IN_SECONDS );
+		}
+
+		return $cached > 0;
 	}
 
 	/**
@@ -937,15 +1327,34 @@ class Multilify {
 			);
 
 			// Paged single entry: /{lang}/slug/page/2/.
+			//
+			// Two things core gets right here and an earlier single rule did not.
+			// A single entry paginates on page, not on paged, which is the
+			// archive's variable and leaves a post querying past its own only
+			// row. And a flat slug has to go through name: with verbose page
+			// rules a pagename rule is validated against get_page_by_path() while
+			// matching, so a post is rejected and the request falls through to a
+			// 404. Only a nested path, which can only be hierarchical, uses
+			// pagename.
 			add_rewrite_rule(
-				'^' . $lang_code . '/(.+?)/page/([0-9]{1,})/?$',
-				'index.php?pagename=$matches[1]&paged=$matches[2]&lang=' . $lang_code,
+				'^' . $lang_code . '/([^/]+)/page/([0-9]{1,})/?$',
+				'index.php?name=$matches[1]&page=$matches[2]&lang=' . $lang_code,
+				'top'
+			);
+			add_rewrite_rule(
+				'^' . $lang_code . '/(.+)/page/([0-9]{1,})/?$',
+				'index.php?pagename=$matches[1]&page=$matches[2]&lang=' . $lang_code,
 				'top'
 			);
 
-			// Single entry feed: /{lang}/slug/feed/.
+			// Single entry feed: /{lang}/slug/feed/, split the same way.
 			add_rewrite_rule(
-				'^' . $lang_code . '/(.+?)/feed/?$',
+				'^' . $lang_code . '/([^/]+)/feed/?$',
+				'index.php?name=$matches[1]&feed=feed&lang=' . $lang_code,
+				'top'
+			);
+			add_rewrite_rule(
+				'^' . $lang_code . '/(.+)/feed/?$',
 				'index.php?pagename=$matches[1]&feed=feed&lang=' . $lang_code,
 				'top'
 			);
@@ -961,6 +1370,17 @@ class Multilify {
 			add_rewrite_rule(
 				'^' . $lang_code . '/(.+)/?$',
 				'index.php?pagename=$matches[1]&lang=' . $lang_code,
+				'top'
+			);
+
+			// /{lang}/slug/2/, which is the address WordPress itself considers
+			// canonical for a paged entry and where it redirects /page/2/ to.
+			// It comes after the rule above so a child page whose own slug is a
+			// number still wins: that rule is validated while matching and only
+			// falls through to this one when no such page exists.
+			add_rewrite_rule(
+				'^' . $lang_code . '/([^/]+)/([0-9]{1,})/?$',
+				'index.php?name=$matches[1]&page=$matches[2]&lang=' . $lang_code,
 				'top'
 			);
 		}
@@ -1048,19 +1468,38 @@ class Multilify {
 	 * @return WP_Query Query adjusted for the detected language.
 	 */
 	public function detect_language( $query ) {
-		if ( ! is_admin() && $query->is_main_query() ) {
-			$lang = get_query_var( 'lang' );
-			if ( $lang ) {
-				$this->current_language = $lang;
-
-				// If only language is set (no pagename or name), show home page.
-				if ( ! get_query_var( 'pagename' ) && ! get_query_var( 'name' ) && ! get_query_var( 'p' ) ) {
-					$query->is_home       = true;
-					$query->is_front_page = true;
-					$query->is_404        = false;
-				}
-			}
+		if ( is_admin() || ! $query->is_main_query() ) {
+			return $query;
 		}
+
+		$lang = $query->get( 'lang' );
+
+		if ( ! $lang ) {
+			return $query;
+		}
+
+		// lang is a public query variable, so any value at all can arrive on any
+		// address. Anything that is not a configured code is dropped rather than
+		// carried into the document language and the Content-Language header.
+		if ( ! in_array( $lang, wp_list_pluck( $this->get_languages(), 'code' ), true ) ) {
+			$query->set( 'lang', '' );
+
+			return $query;
+		}
+
+		$this->current_language = $lang;
+
+		// Only a bare language home stands in for the front page. A language in
+		// front of a search, an archive or a taxonomy is still that archive, and
+		// forcing is_home there sends themes to the wrong template.
+		$carried = array_diff( array_keys( (array) $query->query ), array( 'lang', 'paged', 'page', 'feed' ) );
+
+		if ( empty( $carried ) ) {
+			$query->is_home       = true;
+			$query->is_front_page = true;
+			$query->is_404        = false;
+		}
+
 		return $query;
 	}
 
@@ -1321,7 +1760,7 @@ class Multilify {
 						hreflang="<?php echo esc_attr( $lang_code ); ?>"
 						lang="<?php echo esc_attr( $lang_code ); ?>"
 						data-lang="<?php echo esc_attr( $lang_code ); ?>"
-						<?php echo $is_current ? ' aria-current="true"' : ''; ?>>
+						<?php echo $is_current ? ' aria-current="page"' : ''; ?>>
 						<?php if ( $show_flag && '' !== $lang_flag ) : ?>
 							<span class="flag" aria-hidden="true"><?php echo esc_html( $lang_flag ); ?></span>
 						<?php endif; ?>
