@@ -4,7 +4,7 @@ Tags: multilingual, translation, language, i18n, localization
 Requires at least: 5.8
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.3.0
+Stable tag: 1.3.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -165,6 +165,11 @@ You can get support through the WordPress.org support forums or by contacting us
 
 == Changelog ==
 
+= 1.3.1 =
+Fixes
+* A paged page nested under a translated parent had no working address at all. `/{lang}/parent/entry/2/` returned a 404 and `/{lang}/parent/entry/page/2/` redirected to it, so the redirect landed on the 404 as well. Both now serve the right page, and a child page whose own slug is a number still resolves ahead of either
+* The address a visitor asked for is restored once routing has matched it. It was being left rewritten to the untranslated path, which put a paged entry into a redirect loop with itself and handed every other plugin an address nobody requested
+
 = 1.3.0 =
 Fixes
 * A custom slug in the default language produced a link that 404ed. Every link to the entry pointed at an address nothing resolved, while the entry itself stayed reachable only at its old one
@@ -258,6 +263,9 @@ Changed
 * Translation meta boxes
 
 == Upgrade Notice ==
+
+= 1.3.1 =
+Finishes the routing work in 1.3.0: a paged page under a translated parent had no working address, and the request URL was left rewritten after routing. Visit Settings > Permalinks once after updating.
 
 = 1.3.0 =
 Fixes four ways a translated address could 404 or resolve to the wrong page, including a custom slug in the default language and a child page under a translated parent. If either applies to your site, visit Settings > Permalinks once after updating.
