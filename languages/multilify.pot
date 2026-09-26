@@ -2,9 +2,9 @@
 # This file is distributed under the GPL v2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: Multilify 1.3.1\n"
+"Project-Id-Version: Multilify 1.3.2\n"
 "Report-Msgid-Bugs-To: https://github.com/kadirermantr/multilify/issues\n"
-"POT-Creation-Date: 2026-09-26 13:55+0300\n"
+"POT-Creation-Date: 2026-09-26 14:45+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -42,11 +42,11 @@ msgstr ""
 msgid "%1$s %2$s Translation"
 msgstr ""
 
-#: includes/class-multilify.php:758
+#: includes/class-multilify.php:761
 msgid "translated"
 msgstr ""
 
-#: includes/class-multilify.php:1837
+#: includes/class-multilify.php:1840
 msgid "Language switcher"
 msgstr ""
 
