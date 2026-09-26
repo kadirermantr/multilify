@@ -61,6 +61,8 @@ $multilify_flags = isset( $flag_choices ) && is_array( $flag_choices ) ? $flag_c
 			'invalid_code'   => __( 'Use 2 to 5 lowercase letters for a language code, such as tr, en or de.', 'multilify' ),
 			'not_found'      => __( 'That language is no longer in the list. Reload the page and try again.', 'multilify' ),
 			'delete_default' => __( 'Set another language as the default before deleting this one.', 'multilify' ),
+			'reserved_code'  => __( 'WordPress already serves that address, so a language cannot take it. Pick another code.', 'multilify' ),
+			'code_in_use'    => __( 'A post or page already lives at that address. Change its slug first, or pick another code.', 'multilify' ),
 		);
 		$multilify_error_text     = isset( $multilify_error_messages[ $multilify_error ] )
 			? $multilify_error_messages[ $multilify_error ]
@@ -117,6 +119,17 @@ $multilify_flags = isset( $flag_choices ) && is_array( $flag_choices ) ? $flag_c
 										</span>
 									<?php endif; ?>
 								</span>
+
+								<?php
+								if ( ! $multilify_is_default && $multilify_total > 0 ) :
+									// The sentence above already carries the figures, so the
+									// measure is decoration and stays out of the reading order.
+									$multilify_share = min( 100, round( ( $multilify_count / $multilify_total ) * 100 ) );
+									?>
+									<span class="multilify-measure" aria-hidden="true">
+										<span class="multilify-measure__fill" style="width: <?php echo esc_attr( $multilify_share ); ?>%"></span>
+									</span>
+								<?php endif; ?>
 							</span>
 						</div>
 
@@ -327,14 +340,14 @@ $multilify_flags = isset( $flag_choices ) && is_array( $flag_choices ) ? $flag_c
 				<div class="multilify-snippet">
 					<pre><code>[multilify_switcher]</code></pre>
 					<button type="button" class="multilify-copy" data-multilify-copy="[multilify_switcher]">
-						<span class="multilify-copy__label"><?php esc_html_e( 'Copy', 'multilify' ); ?></span>
+						<span class="multilify-copy__label" aria-live="polite"><?php esc_html_e( 'Copy', 'multilify' ); ?></span>
 					</button>
 				</div>
 				<p><?php esc_html_e( 'Or call it from a theme template:', 'multilify' ); ?></p>
 				<div class="multilify-snippet">
 					<pre><code>&lt;?php multilify_switcher(); ?&gt;</code></pre>
 					<button type="button" class="multilify-copy" data-multilify-copy="&lt;?php multilify_switcher(); ?&gt;">
-						<span class="multilify-copy__label"><?php esc_html_e( 'Copy', 'multilify' ); ?></span>
+						<span class="multilify-copy__label" aria-live="polite"><?php esc_html_e( 'Copy', 'multilify' ); ?></span>
 					</button>
 				</div>
 				<p>

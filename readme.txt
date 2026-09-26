@@ -4,7 +4,7 @@ Tags: multilingual, translation, language, i18n, localization
 Requires at least: 5.8
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.2.0
+Stable tag: 1.3.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -165,6 +165,26 @@ You can get support through the WordPress.org support forums or by contacting us
 
 == Changelog ==
 
+= 1.3.0 =
+Fixes
+* A custom slug in the default language produced a link that 404ed. Every link to the entry pointed at an address nothing resolved, while the entry itself stayed reachable only at its old one
+* A child page with no translated slug of its own returned a 404 under a translated parent, so a half-translated page tree lost every page below the first
+* `?lang=` on any address forced the front page onto it, which turned archives, search results and date listings into the blog index
+* An unknown language code from `?lang=` reached the `<html lang>` attribute and the `Content-Language` header unchanged; only configured codes are honoured now
+* A paged entry under a language prefix returned a 404, and a feed of one did too, because both routed through the query variable an archive uses and through a rule WordPress rejects for a post. `/{lang}/entry/2/` now serves page two, and `/{lang}/entry/page/2/` reaches it the same way it does without a prefix
+* Two entries could be given the same translated slug in one language, leaving the second unreachable. A duplicate is now numbered the way WordPress numbers a duplicate post slug
+* Cached routes are dropped when an entry is trashed, restored or deleted, instead of answering for an hour from a persistent object cache
+* A language code that WordPress already serves, or that an existing post or page already lives at, is refused with an explanation instead of quietly taking the address over
+* Uninstall removes translation meta in batches, so a large site is not held on one unbounded delete
+
+Added
+* Each language on the settings page carries a measure of how much of it is done
+* A translation panel on the post editor says so in its heading when that language already has something, which a collapsed panel shows
+
+Changed
+* The switcher marks the active language with `aria-current="page"`
+* The switcher stylesheet and script are left out entirely on a site with one language
+
 = 1.2.0 =
 Added
 * Turkish, German and Spanish translations of the admin interface. WordPress shows the plugin in its own language when the site runs in one of them, and falls back to English otherwise.
@@ -238,6 +258,9 @@ Changed
 * Translation meta boxes
 
 == Upgrade Notice ==
+
+= 1.3.0 =
+Fixes four ways a translated address could 404 or resolve to the wrong page, including a custom slug in the default language and a child page under a translated parent. If either applies to your site, visit Settings > Permalinks once after updating.
 
 = 1.2.0 =
 The admin screens are now available in Turkish, German and Spanish. Nothing else changed; no action needed after updating.

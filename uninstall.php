@@ -19,15 +19,20 @@ if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 function multilify_uninstall_site() {
 	global $wpdb;
 
-	// Translation meta is keyed by language, so match the shared prefix.
+	// Translation meta is keyed by language, so match the shared prefix. A site
+	// with a large postmeta table would hold the table for the length of one
+	// unbounded DELETE, so the rows go in batches instead.
 	// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery
 	// phpcs:disable WordPress.DB.DirectDatabaseQuery.NoCaching
-	$wpdb->query(
-		$wpdb->prepare(
-			"DELETE FROM {$wpdb->postmeta} WHERE meta_key LIKE %s",
-			$wpdb->esc_like( '_multilang_' ) . '%'
-		)
-	);
+	do {
+		$deleted = $wpdb->query(
+			$wpdb->prepare(
+				"DELETE FROM {$wpdb->postmeta} WHERE meta_key LIKE %s LIMIT %d",
+				$wpdb->esc_like( '_multilang_' ) . '%',
+				2000
+			)
+		);
+	} while ( $deleted > 0 );
 
 	// Drop the lookup index added by maybe_create_db_indexes().
 	$index_exists = $wpdb->get_var(
