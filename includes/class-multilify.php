@@ -35,6 +35,13 @@ class Multilify {
 	private $current_language = null;
 
 	/**
+	 * Address the request arrived at, kept while it is rewritten for matching.
+	 *
+	 * @var array|null
+	 */
+	private $original_request = null;
+
+	/**
 	 * Get singleton instance
 	 */
 	public static function get_instance() {
@@ -77,6 +84,8 @@ class Multilify {
 		// validate pagename against get_page_by_path() and would reject a
 		// translated path outright.
 		add_filter( 'do_parse_request', array( $this, 'resolve_translated_request' ), 10, 3 );
+		// And puts the real address back once matching is done.
+		add_action( 'parse_request', array( $this, 'restore_request_uri' ) );
 		add_filter( 'request', array( $this, 'filter_request' ), 10, 1 );
 		add_filter( 'pre_get_posts', array( $this, 'detect_language' ) );
 		add_filter( 'the_title', array( $this, 'filter_title' ), 10, 2 );
@@ -981,6 +990,12 @@ class Multilify {
 	 * @return bool Unchanged $continue value.
 	 */
 	public function resolve_translated_request( $continue, $wp = null, $extra_query_vars = '' ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found -- Signature required by the do_parse_request filter.
+		// Nothing is about to be matched, so there is nothing to steer, and the
+		// parse_request action that puts the address back would never fire.
+		if ( ! $continue ) {
+			return $continue;
+		}
+
 		$segments = $this->get_request_path_segments();
 		$codes    = wp_list_pluck( $this->get_languages(), 'code' );
 		$prefixed = ! empty( $segments[0] ) && in_array( $segments[0], $codes, true );
@@ -998,39 +1013,20 @@ class Multilify {
 		}
 
 		$requested = implode( '/', array_map( 'sanitize_title', $segments ) );
+		$path      = $this->translate_request_path( $lang, $requested, $prefixed );
 
-		// Pagination, feeds and embeds sit after the entry's own path, so they
-		// are set aside before it is mapped and put back afterwards. Without
-		// that, /{lang}/slug/page/2/ reads page as an ancestor segment.
-		list( $head, $tail ) = $this->split_request_tail( $requested );
-
-		$resolved = $this->resolve_translated_path( $lang, $head );
-
-		if ( '' === $resolved['path'] || $resolved['path'] === $head ) {
-			return $continue;
-		}
-
-		if ( $resolved['entry'] ) {
-			if ( ! is_post_type_hierarchical( $resolved['entry']->post_type ) ) {
-				return $continue;
-			}
-		} elseif ( ! $this->path_names_a_page( $resolved['path'] ) ) {
-			// Only ancestors were mapped back, so the result is a guess until a
-			// real page answers to it. /{lang}/slug/page/2/ maps the same way and
-			// must not be rewritten: its tail is pagination, not ancestry.
-			return $continue;
-		}
-
-		// Without a prefix the address belongs to the default language, so an
-		// entry that answers to it under its own name keeps it.
-		if ( ! $prefixed && $this->slug_belongs_to_an_entry( $resolved['slug'] ) ) {
+		if ( '' === $path ) {
 			return $continue;
 		}
 
 		// Rewrite what core is about to match, keeping the language prefix.
 		// PATH_INFO takes precedence over REQUEST_URI, so both have to move.
-		$path       = $resolved['path'] . ( '' !== $tail ? '/' . $tail : '' );
 		$translated = ( $prefixed ? '/' . $lang : '' ) . '/' . $path . '/';
+
+		$this->original_request = array(
+			'REQUEST_URI' => isset( $_SERVER['REQUEST_URI'] ) ? $_SERVER['REQUEST_URI'] : null, // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- Kept verbatim to be restored; sanitising would corrupt the address.
+			'PATH_INFO'   => isset( $_SERVER['PATH_INFO'] ) ? $_SERVER['PATH_INFO'] : null, // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- As above.
+		);
 
 		if ( ! empty( $_SERVER['PATH_INFO'] ) ) {
 			$_SERVER['PATH_INFO'] = $translated;
@@ -1039,6 +1035,102 @@ class Multilify {
 		$_SERVER['REQUEST_URI'] = $translated;
 
 		return $continue;
+	}
+
+	/**
+	 * Put the address the visitor asked for back, once matching is done.
+	 *
+	 * The rewrite above exists only to steer rule matching. Everything after it
+	 * reads REQUEST_URI as the real address, and redirect_canonical() in
+	 * particular compares it against the permalink it builds, which is the
+	 * translated one. Leaving the rewritten value in place therefore sends a
+	 * paged entry into a redirect loop with itself, and hands every other plugin
+	 * an address the visitor never asked for.
+	 */
+	public function restore_request_uri() {
+		if ( null === $this->original_request ) {
+			return;
+		}
+
+		foreach ( $this->original_request as $key => $value ) {
+			if ( null === $value ) {
+				unset( $_SERVER[ $key ] );
+
+				continue;
+			}
+
+			$_SERVER[ $key ] = $value;
+		}
+
+		$this->original_request = null;
+	}
+
+	/**
+	 * Work out the real path a translated request should be matched against.
+	 *
+	 * @param string $lang      Language the path is written in.
+	 * @param string $requested Requested path, without surrounding slashes.
+	 * @param bool   $prefixed  Whether the address carried a language prefix.
+	 * @return string Path to match instead, or an empty string to leave the request alone.
+	 */
+	private function translate_request_path( $lang, $requested, $prefixed ) {
+		foreach ( $this->request_path_readings( $requested ) as $reading ) {
+			list( $head, $tail ) = $reading;
+
+			$resolved = $this->resolve_translated_path( $lang, $head );
+
+			if ( '' === $resolved['path'] || $resolved['path'] === $head ) {
+				continue;
+			}
+
+			if ( $resolved['entry'] ) {
+				if ( ! is_post_type_hierarchical( $resolved['entry']->post_type ) ) {
+					continue;
+				}
+			} elseif ( ! $this->path_names_a_page( $resolved['path'] ) ) {
+				// Only ancestors were mapped back, so the result is a guess until
+				// a real page answers to it.
+				continue;
+			}
+
+			// Without a prefix the address belongs to the default language, so an
+			// entry that answers to it under its own name keeps it.
+			if ( ! $prefixed && $this->slug_belongs_to_an_entry( $resolved['slug'] ) ) {
+				continue;
+			}
+
+			return $resolved['path'] . ( '' !== $tail ? '/' . $tail : '' );
+		}
+
+		return '';
+	}
+
+	/**
+	 * The ways a request path can be read, most literal first.
+	 *
+	 * Pagination, feeds and embeds sit after the entry's own path, so they are
+	 * set aside before it is mapped and put back afterwards. Without that,
+	 * /{lang}/parent/entry/page/2/ reads page as an ancestor segment.
+	 *
+	 * A bare trailing number is the harder case, because /{lang}/parent/entry/2/
+	 * is both how WordPress addresses the second page of an entry and how a
+	 * child page called 2 would be addressed. The whole path is therefore tried
+	 * first, and the number is only read as pagination once nothing answers to
+	 * the literal reading. Only a nested head qualifies: a flat one is already
+	 * routed by its own rewrite rule and rewriting it here would send a page
+	 * through the rule meant for posts.
+	 *
+	 * @param string $requested Requested path, without surrounding slashes.
+	 * @return array List of head and tail pairs.
+	 */
+	private function request_path_readings( $requested ) {
+		$readings = array( $this->split_request_tail( $requested ) );
+
+		if ( preg_match( '#^(.+/.+)/([0-9]+)$#', $requested, $matches ) ) {
+			$readings[] = array( $matches[1], $matches[2] );
+		}
+
+		return $readings;
 	}
 
 	/**
@@ -1375,12 +1467,17 @@ class Multilify {
 
 			// /{lang}/slug/2/, which is the address WordPress itself considers
 			// canonical for a paged entry and where it redirects /page/2/ to.
-			// It comes after the rule above so a child page whose own slug is a
+			// Both come after the rule above so a child page whose own slug is a
 			// number still wins: that rule is validated while matching and only
-			// falls through to this one when no such page exists.
+			// falls through to these when no such page exists.
 			add_rewrite_rule(
 				'^' . $lang_code . '/([^/]+)/([0-9]{1,})/?$',
 				'index.php?name=$matches[1]&page=$matches[2]&lang=' . $lang_code,
+				'top'
+			);
+			add_rewrite_rule(
+				'^' . $lang_code . '/(.+)/([0-9]{1,})/?$',
+				'index.php?pagename=$matches[1]&page=$matches[2]&lang=' . $lang_code,
 				'top'
 			);
 		}
