@@ -4,7 +4,7 @@ Tags: multilingual, translation, language, i18n, localization
 Requires at least: 5.8
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.3.1
+Stable tag: 1.3.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -165,6 +165,10 @@ You can get support through the WordPress.org support forums or by contacting us
 
 == Changelog ==
 
+= 1.3.2 =
+Fixes
+* The marker added to a translation panel heading in 1.3.0 was written as markup. The block editor lists the same heading in its preferences panel and renders it as text, so the tag showed there verbatim. It is plain text now, and reads the same in the panel heading, the preferences list and Screen Options
+
 = 1.3.1 =
 Fixes
 * A paged page nested under a translated parent had no working address at all. `/{lang}/parent/entry/2/` returned a 404 and `/{lang}/parent/entry/page/2/` redirected to it, so the redirect landed on the 404 as well. Both now serve the right page, and a child page whose own slug is a number still resolves ahead of either
@@ -263,6 +267,9 @@ Changed
 * Translation meta boxes
 
 == Upgrade Notice ==
+
+= 1.3.2 =
+Cosmetic only: a translation panel heading showed raw markup in the block editor preferences list.
 
 = 1.3.1 =
 Finishes the routing work in 1.3.0: a paged page under a translated parent had no working address, and the request URL was left rewritten after routing. Visit Settings > Permalinks once after updating.

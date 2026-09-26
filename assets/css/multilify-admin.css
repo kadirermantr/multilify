@@ -675,17 +675,6 @@
 
 /* -------------------------------------------------------------- meta box */
 
-/* Sits in the panel heading, which is outside the .multilify-admin scope, so
-   it carries its own values. A collapsed panel shows nothing but this. */
-.multilify-metabox-state {
-	margin-left: 8px;
-	font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
-	font-size: 11px;
-	font-weight: 400;
-	letter-spacing: 0.04em;
-	color: #1d6f42;
-}
-
 .multilify-meta-box {
 	padding: 4px 0 2px;
 }

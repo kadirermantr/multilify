@@ -753,9 +753,12 @@ class Multilify {
 				);
 
 				// A collapsed panel shows only its title, so which languages are
-				// already done has to be readable from there.
+				// already done has to be readable from there. Plain text, because
+				// the same title is also listed in the editor's own preferences
+				// panel and in Screen Options, and those render it as text: any
+				// markup here shows up as markup.
 				if ( $entry_id && $this->has_translation( $entry_id, $language['code'] ) ) {
-					$title .= ' <span class="multilify-metabox-state">' . esc_html__( 'translated', 'multilify' ) . '</span>';
+					$title .= ' · ' . esc_html__( 'translated', 'multilify' );
 				}
 
 				add_meta_box(

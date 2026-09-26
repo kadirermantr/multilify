@@ -2,9 +2,9 @@
 # This file is distributed under the GPL v2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: Multilify 1.3.1\n"
+"Project-Id-Version: Multilify 1.3.2\n"
 "Report-Msgid-Bugs-To: https://github.com/kadirermantr/multilify/issues\n"
-"POT-Creation-Date: 2026-09-26 13:55+0300\n"
+"POT-Creation-Date: 2026-09-26 14:45+0300\n"
 "PO-Revision-Date: 2026-09-26 13:20\n"
 "Last-Translator: Kadir Erman <kadirermantr@gmail.com>\n"
 "Language-Team: German <https://translate.wordpress.org/projects/wp-plugins/"
@@ -43,11 +43,11 @@ msgstr "Zum Kopieren Strg+C drücken"
 msgid "%1$s %2$s Translation"
 msgstr "%1$s %2$s Übersetzung"
 
-#: includes/class-multilify.php:758
+#: includes/class-multilify.php:761
 msgid "translated"
 msgstr "übersetzt"
 
-#: includes/class-multilify.php:1837
+#: includes/class-multilify.php:1840
 msgid "Language switcher"
 msgstr "Sprachumschalter"
 
