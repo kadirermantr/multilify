@@ -110,6 +110,8 @@ class Multilify {
 
 		// Redirect first-time visitors to the language their browser asks for.
 		add_action( 'template_redirect', array( $this, 'maybe_redirect_to_browser_language' ) );
+		// And send an entry's own name to the address its default language gave it.
+		add_action( 'template_redirect', array( $this, 'redirect_to_translated_permalink' ) );
 	}
 
 	/**
@@ -1964,6 +1966,80 @@ class Multilify {
 
 		wp_safe_redirect( $this->get_language_url( $preferred ), 302 );
 		exit;
+	}
+
+	/**
+	 * Send an entry's own name to the address its default language gave it.
+	 *
+	 * A translated slug in the default language renames the entry's public
+	 * address while post_name stays as its internal one. That is the same shape
+	 * as a WordPress rename, and WordPress answers a rename with a permanent
+	 * redirect, so this does too. Without it the entry answered on two addresses
+	 * at once, and inconsistently: the paged form already redirected, because
+	 * core's canonical check only covers a request carrying a page number.
+	 *
+	 * Like core's own old-slug redirect this keeps the path and drops the query
+	 * string, and it never runs for a prefixed language, which has exactly one
+	 * address already.
+	 */
+	public function redirect_to_translated_permalink() {
+		// A trackback is a POST and must not be bounced. Everything else that
+		// hangs off an entry, a feed, an embed, a page number, travels with it.
+		if ( is_admin() || is_preview() || is_trackback() || ! is_singular() ) {
+			return;
+		}
+
+		$post = get_queried_object();
+
+		if ( ! $post instanceof WP_Post || 'publish' !== $post->post_status ) {
+			return;
+		}
+
+		$lang = $this->get_current_language();
+
+		if ( $lang !== $this->get_default_language() ) {
+			return;
+		}
+
+		$custom = (string) get_post_meta( $post->ID, '_multilang_slug_' . $lang, true );
+
+		if ( '' === $custom ) {
+			return;
+		}
+
+		$canonical = $this->build_translated_path_for( $post, $custom, $lang );
+
+		if ( '' === $canonical ) {
+			return;
+		}
+
+		$requested  = implode( '/', array_filter( array_map( 'sanitize_title', $this->get_request_path_segments() ) ) );
+		$candidates = array( $this->split_request_tail( $requested ) );
+
+		// /entry/2/ is how WordPress addresses a paged entry. Here, unlike on
+		// the request filter, the entry is already known, so a trailing number
+		// can be read as pagination without having to rule out a page named 2.
+		if ( preg_match( '#^(.+)/([0-9]+)$#', $requested, $matches ) ) {
+			$candidates[] = array( $matches[1], $matches[2] );
+		}
+
+		foreach ( $candidates as $candidate ) {
+			$parts = explode( '/', $candidate[0] );
+
+			// The split is the right one only when what is left names the entry.
+			if ( end( $parts ) !== $post->post_name && end( $parts ) !== $custom ) {
+				continue;
+			}
+
+			if ( $canonical === $candidate[0] ) {
+				return;
+			}
+
+			$path = $canonical . ( '' !== $candidate[1] ? '/' . $candidate[1] : '' );
+
+			wp_safe_redirect( home_url( '/' . $path . '/' ), 301 );
+			exit;
+		}
 	}
 
 	/**
