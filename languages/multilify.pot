@@ -2,9 +2,9 @@
 # This file is distributed under the GPL v2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: Multilify 1.3.2\n"
+"Project-Id-Version: Multilify 1.3.3\n"
 "Report-Msgid-Bugs-To: https://github.com/kadirermantr/multilify/issues\n"
-"POT-Creation-Date: 2026-09-26 14:45+0300\n"
+"POT-Creation-Date: 2026-09-26 15:17+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -14,39 +14,39 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 
-#: includes/class-multilify.php:228
+#: includes/class-multilify.php:230
 msgid "Multilify - Language Management"
 msgstr ""
 
-#: includes/class-multilify.php:229
+#: includes/class-multilify.php:231
 msgid "Multilify"
 msgstr ""
 
 #. translators: %s: language name.
-#: includes/class-multilify.php:310
+#: includes/class-multilify.php:312
 #, php-format
 msgid "Delete %s?"
 msgstr ""
 
-#: includes/class-multilify.php:311
+#: includes/class-multilify.php:313
 msgid "Copied"
 msgstr ""
 
-#: includes/class-multilify.php:312
+#: includes/class-multilify.php:314
 msgid "Press Ctrl+C to copy"
 msgstr ""
 
 #. translators: 1: language flag emoji, 2: language name.
-#: includes/class-multilify.php:750
+#: includes/class-multilify.php:752
 #, php-format
 msgid "%1$s %2$s Translation"
 msgstr ""
 
-#: includes/class-multilify.php:761
+#: includes/class-multilify.php:763
 msgid "translated"
 msgstr ""
 
-#: includes/class-multilify.php:1840
+#: includes/class-multilify.php:1882
 msgid "Language switcher"
 msgstr ""
 

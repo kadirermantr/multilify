@@ -72,6 +72,8 @@ class Multilify {
 		// stops being published or leaves altogether.
 		add_action( 'transition_post_status', array( $this, 'forget_translated_routes' ), 10, 3 );
 		add_action( 'before_delete_post', array( $this, 'forget_routes_for_post' ) );
+		// A rename is not a status change, so it needs its own hook.
+		add_action( 'post_updated', array( $this, 'forget_renamed_slug' ), 10, 3 );
 
 		// Frontend hooks.
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_frontend_assets' ) );
@@ -941,6 +943,46 @@ class Multilify {
 	}
 
 	/**
+	 * Drop the cached ownership of both addresses when an entry is renamed.
+	 *
+	 * Whether a real entry already lives at an address is cached, and a rename
+	 * changes that answer for two addresses at once: the one the entry leaves
+	 * and the one it takes. Neither is a status change, so nothing else clears
+	 * them. Against a persistent object cache the stale answer stands for an
+	 * hour, and an entry whose own translated slug is the freed address returns
+	 * a 404 for that hour.
+	 *
+	 * @param int     $post_id     Entry being updated. Unused; both posts carry it.
+	 * @param WP_Post $post_after  Entry as it now is.
+	 * @param WP_Post $post_before Entry as it was.
+	 */
+	public function forget_renamed_slug( $post_id, $post_after, $post_before ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found -- Signature set by the post_updated action.
+		if ( ! $post_after instanceof WP_Post || ! $post_before instanceof WP_Post ) {
+			return;
+		}
+
+		if ( $post_after->post_name === $post_before->post_name ) {
+			return;
+		}
+
+		foreach ( array( $post_before->post_name, $post_after->post_name ) as $slug ) {
+			if ( '' !== (string) $slug ) {
+				wp_cache_delete( $this->own_slug_cache_key( $slug ), 'multilify' );
+			}
+		}
+	}
+
+	/**
+	 * Cache key holding whether an entry answers to an address under its own name.
+	 *
+	 * @param string $slug Slug the key is for.
+	 * @return string Cache key.
+	 */
+	private function own_slug_cache_key( $slug ) {
+		return 'multilify_own_slug_' . md5( (string) $slug );
+	}
+
+	/**
 	 * Drop every cached route an entry answers to.
 	 *
 	 * @param int|WP_Post $post Entry, or its ID.
@@ -953,7 +995,7 @@ class Multilify {
 		}
 
 		if ( '' !== (string) $post->post_name ) {
-			wp_cache_delete( 'multilify_own_slug_' . md5( $post->post_name ), 'multilify' );
+			wp_cache_delete( $this->own_slug_cache_key( $post->post_name ), 'multilify' );
 		}
 
 		foreach ( $this->get_languages() as $language ) {
@@ -1317,7 +1359,7 @@ class Multilify {
 			return false;
 		}
 
-		$cache_key = 'multilify_own_slug_' . md5( $slug );
+		$cache_key = $this->own_slug_cache_key( $slug );
 		$cached    = wp_cache_get( $cache_key, 'multilify' );
 
 		if ( false === $cached ) {
