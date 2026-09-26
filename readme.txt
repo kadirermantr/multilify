@@ -4,7 +4,7 @@ Tags: multilingual, translation, language, i18n, localization
 Requires at least: 5.8
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.3.2
+Stable tag: 1.3.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -165,6 +165,10 @@ You can get support through the WordPress.org support forums or by contacting us
 
 == Changelog ==
 
+= 1.3.3 =
+Fixes
+* Renaming an entry left the cached answer to "does a real entry already live at this address" untouched for both the address it left and the address it took. A rename is not a status change, so nothing cleared it. On a site with a persistent object cache, an entry whose own translated slug was the freed address returned a 404 for up to an hour. Measured against a persistent cache on MySQL, before and after
+
 = 1.3.2 =
 Fixes
 * The marker added to a translation panel heading in 1.3.0 was written as markup. The block editor lists the same heading in its preferences panel and renders it as text, so the tag showed there verbatim. It is plain text now, and reads the same in the panel heading, the preferences list and Screen Options
@@ -267,6 +271,9 @@ Changed
 * Translation meta boxes
 
 == Upgrade Notice ==
+
+= 1.3.3 =
+Only affects sites running a persistent object cache such as Redis or Memcached: renaming an entry could 404 another entry for up to an hour.
 
 = 1.3.2 =
 Cosmetic only: a translation panel heading showed raw markup in the block editor preferences list.
