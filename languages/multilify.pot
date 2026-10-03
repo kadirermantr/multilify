@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Multilify 1.5.0\n"
 "Report-Msgid-Bugs-To: https://github.com/kadirermantr/multilify/issues\n"
-"POT-Creation-Date: 2026-10-03 17:40+0300\n"
+"POT-Creation-Date: 2026-10-03 17:53+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -304,34 +304,40 @@ msgstr ""
 msgid "Delete language"
 msgstr ""
 
-#: includes/views/meta-box.php:15
+#: includes/views/meta-box.php:16
+msgid ""
+"Anything filled in here replaces the entry's own title, content or address "
+"in the default language. Leave a field empty to keep the original."
+msgstr ""
+
+#: includes/views/meta-box.php:18
 msgid ""
 "Enter content for this language. If left empty, the default language content "
 "will be displayed."
 msgstr ""
 
-#: includes/views/meta-box.php:20
+#: includes/views/meta-box.php:24
 msgid "Title"
 msgstr ""
 
-#: includes/views/meta-box.php:27
+#: includes/views/meta-box.php:31
 msgid "Enter title in this language..."
 msgstr ""
 
-#: includes/views/meta-box.php:32
+#: includes/views/meta-box.php:36
 msgid "Slug (URL)"
 msgstr ""
 
-#: includes/views/meta-box.php:39
+#: includes/views/meta-box.php:43
 msgid "example-page, beispiel-seite, ornek-sayfa..."
 msgstr ""
 
-#: includes/views/meta-box.php:41
+#: includes/views/meta-box.php:45
 msgid ""
 "Custom slug for the URL. If left empty, the main content slug will be used."
 msgstr ""
 
-#: includes/views/meta-box.php:47
+#: includes/views/meta-box.php:51
 msgid "Content"
 msgstr ""
 
