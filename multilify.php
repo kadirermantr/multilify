@@ -3,7 +3,7 @@
  * Plugin Name: Multilify
  * Plugin URI: https://multilify.com
  * Description: A powerful multilingual content management system for WordPress. Supports unlimited languages with custom slugs, SEO optimization, and performance caching.
- * Version: 1.4.0
+ * Version: 1.5.0
  * Requires at least: 5.8
  * Requires PHP: 7.4
  * Author: Kadir Erman
@@ -22,7 +22,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Define plugin constants.
-define( 'MULTILIFY_VERSION', '1.4.0' );
+define( 'MULTILIFY_VERSION', '1.5.0' );
 define( 'MULTILIFY_PLUGIN_FILE', __FILE__ );
 define( 'MULTILIFY_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'MULTILIFY_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
@@ -43,6 +43,24 @@ function multilify() {
 
 // Start the plugin.
 multilify();
+
+/**
+ * Point WordPress at the translations shipped in languages/.
+ *
+ * WordPress 6.8 reads every active plugin's Domain Path on its own. Before
+ * that, just-in-time loading only looks in wp-content/languages, so on 5.8 to
+ * 6.7 the bundled Turkish and German files were never found and the admin
+ * stayed in English.
+ */
+function multilify_load_bundled_translations() {
+	if ( version_compare( get_bloginfo( 'version' ), '6.8', '>=' ) ) {
+		return;
+	}
+
+	// phpcs:ignore PluginCheck.CodeAnalysis.DiscouragedFunctions.load_plugin_textdomainFound -- Before WordPress 6.8 nothing else reads the Domain Path, so the bundled .mo files need this call.
+	load_plugin_textdomain( 'multilify', false, dirname( plugin_basename( MULTILIFY_PLUGIN_FILE ) ) . '/languages' );
+}
+add_action( 'init', 'multilify_load_bundled_translations' );
 
 /**
  * Helper function for language switcher.
@@ -79,6 +97,13 @@ function multilify_activate() {
 
 	// Flush rewrite rules on activation.
 	flush_rewrite_rules();
+
+	// The flag lives as an autoloaded option from the start, so checking it
+	// never costs a query. Activation already flushed, so it starts at 0.
+	update_option( 'multilify_flush_rewrite_rules', 0, true );
+
+	$multilify->maybe_create_db_indexes();
+	update_option( 'multilify_version', MULTILIFY_VERSION, true );
 }
 register_activation_hook( __FILE__, 'multilify_activate' );
 

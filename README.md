@@ -17,7 +17,7 @@ A powerful, lightweight, and **100% free** multilingual content management syste
 - **Visual Editor** - Translate content using the familiar WordPress editor
 - **Language Switcher** - Built-in customizable switcher, as a `[multilify_switcher]` shortcode or a `multilify_switcher()` template tag
 - **Auto Detection** - Browser language detection for first-time visitors, remembered per visitor
-- **SEO Optimized** - Clean URLs, `rel="alternate"` hreflang tags with `x-default`, and a `<html lang>` attribute and `Content-Language` header that follow the language being viewed
+- **SEO Optimized** - Clean URLs, `rel="alternate"` hreflang tags with `x-default` for the languages an entry is translated into, a sitemap per language, and a `<html lang>` attribute and `Content-Language` header that follow the language being viewed
 - **Translation Progress** - See how complete each language is from the settings screen
 - **Custom Post Types** - Translate any post type through the `multilify_post_types` filter
 - **No External Services** - All translations stored locally on your server
@@ -44,7 +44,8 @@ A translation is not a second post. Each post carries all of its translations in
 | `multilify_translated_content` | Filter translated content before output |
 | `multilify_enable_browser_detection` | Turn browser language detection off |
 | `multilify_flag_choices` | Extend the flag picker |
-| `multilify_locale` | Map a language code to a WordPress locale |
+| `multilify_locale` | Choose the WordPress locale a language switches to; defaults to the installed one for its code |
+| `multilify_is_crawler` | Decide which user agents browser language detection leaves alone |
 
 ## Technical Highlights
 
@@ -58,7 +59,7 @@ We welcome contributions from the community! Whether it's bug reports, feature r
 
 ## Sponsors
 
-Multilify is free and has no paid tier, so development runs on evenings and weekends. If the plugin saves you the cost of a commercial licence, [sponsoring the project](https://github.com/sponsors/kadirermantr) helps keep it maintained.
+Multilify is free and has no paid tier, so development runs on evenings and weekends. If the plugin saves you the cost of a commercial license, [sponsoring the project](https://github.com/sponsors/kadirermantr) helps keep it maintained.
 
 Sponsors at $25 a month and above are listed here.
 

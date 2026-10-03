@@ -278,6 +278,7 @@
 
             var selection = document.getSelection();
             var previous = selection.rangeCount ? selection.getRangeAt(0) : null;
+            var active = document.activeElement;
             var copied = false;
 
             field.select();
@@ -289,6 +290,12 @@
             }
 
             document.body.removeChild(field);
+
+            // Selecting the field took focus with it, and removing the field
+            // dropped focus to the page, so the next Tab started from the top.
+            if (active && typeof active.focus === 'function') {
+                active.focus();
+            }
 
             // Restore whatever the user had selected before the click.
             if (previous) {

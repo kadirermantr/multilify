@@ -220,7 +220,7 @@ We are committed to providing a welcoming and inspiring community for all.
 - Be respectful and inclusive
 - Accept constructive criticism gracefully
 - Focus on what is best for the community
-- Show empathy towards other community members
+- Show empathy toward other community members
 
 ### Unacceptable Behavior
 

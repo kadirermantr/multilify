@@ -1,5 +1,5 @@
 /**
- * Multilify front-end behaviour.
+ * Multilify front-end behavior.
  *
  * Remembers the language a visitor picks from the switcher so browser
  * detection never overrides a deliberate choice on a later visit.

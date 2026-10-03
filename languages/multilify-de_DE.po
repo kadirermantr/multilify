@@ -2,9 +2,9 @@
 # This file is distributed under the GPL v2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: Multilify 1.4.0\n"
+"Project-Id-Version: Multilify 1.5.0\n"
 "Report-Msgid-Bugs-To: https://github.com/kadirermantr/multilify/issues\n"
-"POT-Creation-Date: 2026-09-26 15:42+0300\n"
+"POT-Creation-Date: 2026-10-03 12:00+0300\n"
 "PO-Revision-Date: 2026-09-26 13:20\n"
 "Last-Translator: Kadir Erman <kadirermantr@gmail.com>\n"
 "Language-Team: German <https://translate.wordpress.org/projects/wp-plugins/"
@@ -15,68 +15,70 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: includes/class-multilify.php:232
+#: includes/class-multilify.php:242
 msgid "Multilify - Language Management"
 msgstr "Multilify - Sprachverwaltung"
 
-#: includes/class-multilify.php:233
+#. Plugin Name of the plugin
+#: multilify.php includes/class-multilify.php:243
 msgid "Multilify"
 msgstr "Multilify"
 
 #. translators: %s: language name.
-#: includes/class-multilify.php:314
+#: includes/class-multilify.php:324
 #, php-format
 msgid "Delete %s?"
 msgstr "%s löschen?"
 
-#: includes/class-multilify.php:315
+#: includes/class-multilify.php:325
 msgid "Copied"
 msgstr "Kopiert"
 
-#: includes/class-multilify.php:316
+#: includes/class-multilify.php:326
 msgid "Press Ctrl+C to copy"
 msgstr "Zum Kopieren Strg+C drücken"
 
 #. translators: 1: language flag emoji, 2: language name.
-#: includes/class-multilify.php:754
+#: includes/class-multilify.php:771
 #, php-format
 msgid "%1$s %2$s Translation"
 msgstr "%1$s %2$s Übersetzung"
 
-#: includes/class-multilify.php:765
+#: includes/class-multilify.php:782
 msgid "translated"
 msgstr "übersetzt"
 
-#: includes/class-multilify.php:1884
+#: includes/class-multilify.php:2180
 msgid "Language switcher"
 msgstr "Sprachumschalter"
 
-#: includes/views/admin-page.php:27
+#: includes/views/admin-page.php:26
 msgid "Languages"
 msgstr "Sprachen"
 
-#: includes/views/admin-page.php:29
-msgid ""
-"Every language you add gets its own URL prefix and its own set of "
-"translation fields on each post and page."
-msgstr ""
-"Jede Sprache, die du hinzufügst, bekommt ein eigenes URL-Präfix und eigene "
-"Übersetzungsfelder an jedem Beitrag und jeder Seite."
-
 #. translators: 1: number of languages, 2: number of published entries.
-#: includes/views/admin-page.php:36
+#: includes/views/admin-page.php:31
 #, php-format
 msgid "%1$s language"
 msgid_plural "%1$s languages"
 msgstr[0] "%1$s Sprache"
 msgstr[1] "%1$s Sprachen"
 
-#: includes/views/admin-page.php:37
+#. translators: 1: number of languages, 2: number of published entries.
+#: includes/views/admin-page.php:33
 #, php-format
 msgid "%2$s entry to translate"
 msgid_plural "%2$s entries to translate"
 msgstr[0] "%2$s Eintrag zu übersetzen"
 msgstr[1] "%2$s Einträge zu übersetzen"
+
+#: includes/views/admin-page.php:41
+msgid ""
+"Every language you add gets its own URL prefix and its own set of "
+"translation fields on each post and page."
+msgstr ""
+"Jede Sprache, die du hinzufügst, bekommt ein eigenes URL-Präfix und eigene "
+"Übersetzungsfelder an jedem Beitrag und jeder Seite."
 
 #: includes/views/admin-page.php:50
 msgid "Changes saved."
@@ -373,6 +375,32 @@ msgstr ""
 msgid "Content"
 msgstr "Inhalt"
 
-#: multilify.php:103
+#: multilify.php:128
 msgid "Settings"
 msgstr "Einstellungen"
+
+#. Plugin URI of the plugin
+#: multilify.php
+msgid "https://multilify.com"
+msgstr "https://multilify.com"
+
+#. Description of the plugin
+#: multilify.php
+msgid ""
+"A powerful multilingual content management system for WordPress. Supports "
+"unlimited languages with custom slugs, SEO optimization, and performance "
+"caching."
+msgstr ""
+"Ein leistungsstarkes mehrsprachiges Content-Management-System für WordPress. "
+"Unterstützt beliebig viele Sprachen mit eigenen Titelformen, SEO-Optimierung "
+"und Caching für schnelle Seiten."
+
+#. Author of the plugin
+#: multilify.php
+msgid "Kadir Erman"
+msgstr "Kadir Erman"
+
+#. Author URI of the plugin
+#: multilify.php
+msgid "https://kadirerman.com"
+msgstr "https://kadirerman.com"
