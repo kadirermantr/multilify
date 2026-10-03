@@ -2,9 +2,9 @@
 # This file is distributed under the GPL v2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: Multilify 1.4.0\n"
+"Project-Id-Version: Multilify 1.5.0\n"
 "Report-Msgid-Bugs-To: https://github.com/kadirermantr/multilify/issues\n"
-"POT-Creation-Date: 2026-09-26 15:42+0300\n"
+"POT-Creation-Date: 2026-10-03 12:00+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -14,66 +14,68 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 
-#: includes/class-multilify.php:232
+#: includes/class-multilify.php:242
 msgid "Multilify - Language Management"
 msgstr ""
 
-#: includes/class-multilify.php:233
+#. Plugin Name of the plugin
+#: multilify.php includes/class-multilify.php:243
 msgid "Multilify"
 msgstr ""
 
 #. translators: %s: language name.
-#: includes/class-multilify.php:314
+#: includes/class-multilify.php:324
 #, php-format
 msgid "Delete %s?"
 msgstr ""
 
-#: includes/class-multilify.php:315
+#: includes/class-multilify.php:325
 msgid "Copied"
 msgstr ""
 
-#: includes/class-multilify.php:316
+#: includes/class-multilify.php:326
 msgid "Press Ctrl+C to copy"
 msgstr ""
 
 #. translators: 1: language flag emoji, 2: language name.
-#: includes/class-multilify.php:754
+#: includes/class-multilify.php:771
 #, php-format
 msgid "%1$s %2$s Translation"
 msgstr ""
 
-#: includes/class-multilify.php:765
+#: includes/class-multilify.php:782
 msgid "translated"
 msgstr ""
 
-#: includes/class-multilify.php:1884
+#: includes/class-multilify.php:2180
 msgid "Language switcher"
 msgstr ""
 
-#: includes/views/admin-page.php:27
+#: includes/views/admin-page.php:26
 msgid "Languages"
 msgstr ""
 
-#: includes/views/admin-page.php:29
-msgid ""
-"Every language you add gets its own URL prefix and its own set of "
-"translation fields on each post and page."
-msgstr ""
-
 #. translators: 1: number of languages, 2: number of published entries.
-#: includes/views/admin-page.php:36
+#: includes/views/admin-page.php:31
 #, php-format
 msgid "%1$s language"
 msgid_plural "%1$s languages"
 msgstr[0] ""
 msgstr[1] ""
 
-#: includes/views/admin-page.php:37
+#. translators: 1: number of languages, 2: number of published entries.
+#: includes/views/admin-page.php:33
 #, php-format
 msgid "%2$s entry to translate"
 msgid_plural "%2$s entries to translate"
 msgstr[0] ""
 msgstr[1] ""
+
+#: includes/views/admin-page.php:41
+msgid ""
+"Every language you add gets its own URL prefix and its own set of "
+"translation fields on each post and page."
+msgstr ""
 
 #: includes/views/admin-page.php:50
 msgid "Changes saved."
@@ -332,6 +334,29 @@ msgstr ""
 msgid "Content"
 msgstr ""
 
-#: multilify.php:103
+#: multilify.php:128
 msgid "Settings"
+msgstr ""
+
+#. Plugin URI of the plugin
+#: multilify.php
+msgid "https://multilify.com"
+msgstr ""
+
+#. Description of the plugin
+#: multilify.php
+msgid ""
+"A powerful multilingual content management system for WordPress. Supports "
+"unlimited languages with custom slugs, SEO optimization, and performance "
+"caching."
+msgstr ""
+
+#. Author of the plugin
+#: multilify.php
+msgid "Kadir Erman"
+msgstr ""
+
+#. Author URI of the plugin
+#: multilify.php
+msgid "https://kadirerman.com"
 msgstr ""

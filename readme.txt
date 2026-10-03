@@ -4,7 +4,7 @@ Tags: multilingual, translation, language, i18n, localization
 Requires at least: 5.8
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.4.0
+Stable tag: 1.5.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -20,7 +20,7 @@ Powerful multilingual content management for WordPress with custom slugs and SEO
 * **Custom Slugs** - Set a different URL for every language, including nested pages
 * **hreflang Tags** - `rel="alternate"` tags in `<head>`, plus `x-default`, so search engines index each language correctly
 * **Correct Page Language** - `<html lang>` and a `Content-Language` header follow the language being viewed
-* **Browser Language Detection** - First-time visitors land in the language their browser asks for; their own choice is remembered afterwards
+* **Browser Language Detection** - First-time visitors land in the language their browser asks for; their own choice is remembered afterward
 * **Translation Progress** - The settings page shows how many entries each language still needs
 * **Flag Picker** - Choose a flag from a grid instead of hunting for the emoji
 * **Performance First** - Object caching on the slug lookup, with an index to match
@@ -42,7 +42,7 @@ Powerful multilingual content management for WordPress with custom slugs and SEO
 
 Unlike bloated translation plugins, Multilify focuses on performance and simplicity:
 
-* **Lightweight** - No impact on your site speed
+* **Lightweight** - The switcher's stylesheet is printed inline, and its script loads only where a switcher is shown
 * **Clean Database** - Efficient data storage with proper indexing
 * **No External Services** - All translations stored locally
 * **100% Free** - No premium features, no limitations
@@ -59,8 +59,8 @@ Unlike bloated translation plugins, Multilify focuses on performance and simplic
 = Developer Features =
 
 * Object caching on the slug lookup, invalidated when a slug changes
-* Transient API for optimized rewrite rule flushing
-* Filters: `multilify_post_types`, `multilify_translated_title`, `multilify_translated_content`, `multilify_flag_choices`, `multilify_locale`, `multilify_enable_browser_detection`
+* Rewrite rules are rebuilt only when the language list changes or the plugin updates
+* Filters: `multilify_post_types`, `multilify_translated_title`, `multilify_translated_content`, `multilify_flag_choices`, `multilify_locale`, `multilify_enable_browser_detection`, `multilify_is_crawler`
 * Clean, documented code following the WordPress Coding Standards
 
 = Translating Content =
@@ -165,6 +165,36 @@ You can get support through the WordPress.org support forums or by contacting us
 
 == Changelog ==
 
+= 1.5.0 =
+Fixes
+* A password-protected entry served its full translation in every other language without asking for the password. The password form now stands in every language, and a translated title keeps the "Protected:" prefix the original shows
+* A translated slug could take another entry's own address under a prefix, which left that entry unreachable in the language. Another entry's own name now counts as taken, and the slug is numbered instead
+* A page, or an entry of a custom post type, with no translation in a language returned a 404 under that language's prefix, although the settings screen promises the default text there
+* A post type the plugin does not translate, such as a WooCommerce product left out of `multilify_post_types`, lost its base in links on translated pages and pointed at a 404
+* Translated content ran after WordPress' own formatting, so paragraphs written in the editor came out joined and blocks and embeds did not render
+* The template tag switcher on the blog index, an archive or search results linked every language to the first post in the loop instead of the language homes
+* A prefixed language still answered on an entry's original slug beside its translated one. That address now redirects permanently, as the default language's has since 1.4.0
+* Embeds, comment pages and trackbacks of a translated entry returned a 404, and its oEmbed link was refused as an invalid URL
+* A search under a language prefix only matched the original title and content
+* An item in `/{lang}/feed/` paired a translated title with the original content
+* The bundled Turkish and German translations never loaded on WordPress 5.8 to 6.7
+* `wp_title()` and `single_post_title()` kept the original title on a translated page
+* Renaming an entry through Quick Edit, the REST API or WP-CLI left its translated addresses pointing at the old name in a persistent object cache
+* An array in `?name=` or `?pagename=` raised a PHP warning
+* The copy buttons on the settings page dropped keyboard focus to the top of the page, the flag grid ran off a phone screen, and the page's intro squeezed into a narrow column beside the tally
+
+Changed
+* hreflang tags are printed only on an entry and on the language homes, and only for languages the entry has text in. A language with no text of its own points its canonical at the default address
+* WordPress switches to the installed locale of the language being viewed, so its own strings, dates and the comment form follow the address. Return the site locale from `multilify_locale` to keep a language on it
+* A visitor at the site root is sent to the language they picked from the switcher before, ahead of their browser's preference. Logged-in users and crawlers are never redirected, and the answer is no longer kept by a shared cache for the next visitor
+* The switcher's stylesheet is printed inline, and its script loads only on a page that shows a switcher
+* Focus rings on the settings page follow the admin color scheme
+* Index creation and the first rewrite flush after an update run once, from the admin, instead of on every request until they succeeded
+
+Added
+* A sitemap for every language other than the default, listing its home and each entry with text in that language
+* The `multilify_is_crawler` filter
+
 = 1.4.0 =
 Changed
 * An entry given a custom slug in the default language now answers on that address alone. Its WordPress slug returns a permanent redirect to it, the way WordPress answers any renamed entry, and page numbers, feeds and embeds are carried across. Both addresses used to return 200, and inconsistently: the paged form already redirected, because WordPress only runs its canonical check on a request carrying a page number
@@ -188,7 +218,7 @@ Fixes
 * A custom slug in the default language produced a link that 404ed. Every link to the entry pointed at an address nothing resolved, while the entry itself stayed reachable only at its old one
 * A child page with no translated slug of its own returned a 404 under a translated parent, so a half-translated page tree lost every page below the first
 * `?lang=` on any address forced the front page onto it, which turned archives, search results and date listings into the blog index
-* An unknown language code from `?lang=` reached the `<html lang>` attribute and the `Content-Language` header unchanged; only configured codes are honoured now
+* An unknown language code from `?lang=` reached the `<html lang>` attribute and the `Content-Language` header unchanged; only configured codes are honored now
 * A paged entry under a language prefix returned a 404, and a feed of one did too, because both routed through the query variable an archive uses and through a rule WordPress rejects for a post. `/{lang}/entry/2/` now serves page two, and `/{lang}/entry/page/2/` reaches it the same way it does without a prefix
 * Two entries could be given the same translated slug in one language, leaving the second unreachable. A duplicate is now numbered the way WordPress numbers a duplicate post slug
 * Cached routes are dropped when an entry is trashed, restored or deleted, instead of answering for an hour from a persistent object cache
@@ -277,8 +307,11 @@ Changed
 
 == Upgrade Notice ==
 
+= 1.5.0 =
+Security fix: a password-protected entry showed its translations without the password. Also fixes untranslated pages and custom post types returning 404 under a prefix, and WordPress now switches to the language being viewed. Rewrite rules refresh on their own after the update.
+
 = 1.4.0 =
-Changes URLs. If you set a custom slug in your default language, the entry WordPress slug now redirects to it permanently instead of serving the same page. Browsers cache a permanent redirect, so clearing such a slug later can leave earlier visitors on the old address for a while.
+Changes URLs. If you set a custom slug in your default language, the entry's WordPress slug now redirects to it permanently instead of serving the same page. Browsers cache a permanent redirect, so clearing such a slug later can leave earlier visitors on the old address for a while.
 
 = 1.3.3 =
 Only affects sites running a persistent object cache such as Redis or Memcached: renaming an entry could 404 another entry for up to an hour.

@@ -37,10 +37,10 @@ function multilify_uninstall_site() {
 	// Drop the lookup index added by maybe_create_db_indexes().
 	$index_exists = $wpdb->get_var(
 		$wpdb->prepare(
-			"SELECT COUNT(1) FROM INFORMATION_SCHEMA.STATISTICS
+			'SELECT COUNT(1) FROM INFORMATION_SCHEMA.STATISTICS
 			WHERE table_schema = DATABASE()
 			AND table_name = %s
-			AND index_name = %s",
+			AND index_name = %s',
 			$wpdb->postmeta,
 			'multilify_slug_lookup'
 		)
@@ -58,6 +58,9 @@ function multilify_uninstall_site() {
 	delete_option( 'multilify_languages' );
 	delete_option( 'multilify_default_language' );
 	delete_option( 'multilify_db_indexes_created' );
+	delete_option( 'multilify_flush_rewrite_rules' );
+	delete_option( 'multilify_version' );
+	// The flush flag was a transient before 1.5.0.
 	delete_transient( 'multilify_flush_rewrite_rules' );
 }
 

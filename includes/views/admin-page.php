@@ -23,22 +23,22 @@ $multilify_flags = isset( $flag_choices ) && is_array( $flag_choices ) ? $flag_c
 <div class="wrap multilify-admin">
 
 	<div class="multilify-masthead">
-		<div>
-			<h1><?php esc_html_e( 'Languages', 'multilify' ); ?></h1>
-			<p class="multilify-masthead__lede">
-				<?php esc_html_e( 'Every language you add gets its own URL prefix and its own set of translation fields on each post and page.', 'multilify' ); ?>
-			</p>
-		</div>
+		<h1><?php esc_html_e( 'Languages', 'multilify' ); ?></h1>
 		<p class="multilify-tally">
 			<?php
 			printf(
 				/* translators: 1: number of languages, 2: number of published entries. */
 				esc_html( _n( '%1$s language', '%1$s languages', count( $languages ), 'multilify' ) ) . ' &middot; ' .
+				/* translators: 1: number of languages, 2: number of published entries. */
 				esc_html( _n( '%2$s entry to translate', '%2$s entries to translate', $multilify_total, 'multilify' ) ),
 				'<strong>' . esc_html( number_format_i18n( count( $languages ) ) ) . '</strong>',
 				'<strong>' . esc_html( number_format_i18n( $multilify_total ) ) . '</strong>'
 			);
 			?>
+		</p>
+		<?php // A grid item in its own right, so it can run under both the title and the tally. ?>
+		<p class="multilify-masthead__lede">
+			<?php esc_html_e( 'Every language you add gets its own URL prefix and its own set of translation fields on each post and page.', 'multilify' ); ?>
 		</p>
 	</div>
 

@@ -3,7 +3,7 @@
  *
  * The interface borrows from bilingual dictionaries: language codes are set as
  * typographic objects in a monospaced face, entries sit on a ruled column, and
- * colour is spent only on state. Everything is scoped under .multilify-admin so
+ * color is spent only on state. Everything is scoped under .multilify-admin so
  * the plugin never leaks styles into the rest of wp-admin.
  */
 
@@ -31,12 +31,14 @@
 /* ---------------------------------------------------------------- masthead */
 
 /* Title and tally share the top line; the lede runs full width beneath them,
-   so it never wraps early just because the tally is sitting beside it. */
+   so it never wraps early just because the tally is sitting beside it. No row
+   gap: the lede sits right under the title, where it sat when it still shared
+   the title's column. */
 .multilify-masthead {
 	display: grid;
 	grid-template-columns: 1fr auto;
 	align-items: baseline;
-	gap: 6px 32px;
+	gap: 0 32px;
 	padding: 0 0 18px;
 	border-bottom: 2px solid var(--mlf-ink);
 	margin: 8px 0 28px;
@@ -62,8 +64,11 @@
 	color: var(--mlf-ink-soft);
 }
 
-/* The count reads as a dictionary's entry tally. */
+/* The count reads as a dictionary's entry tally. No margin: in a baseline
+   aligned grid a paragraph's own margin stretches the title's row and pushes
+   the lede down. */
 .multilify-tally {
+	margin: 0;
 	font-family: var(--mlf-mono);
 	font-size: 12px;
 	letter-spacing: 0.04em;
@@ -274,8 +279,8 @@
 }
 
 .multilify-editform input[type="text"]:focus {
-	border-color: var(--mlf-accent);
-	box-shadow: 0 0 0 1px var(--mlf-accent);
+	border-color: var( --wp-admin-theme-color, #2271b1 );
+	box-shadow: 0 0 0 1px var( --wp-admin-theme-color, #2271b1 );
 	outline: 2px solid transparent;
 }
 
@@ -288,7 +293,6 @@
 
 .multilify-field--code input { width: 72px; }
 .multilify-field--name input { width: 220px; }
-.multilify-field--flag input { width: 72px; text-align: center; }
 
 .multilify-field--actions {
 	flex-direction: row;
@@ -299,7 +303,7 @@
 /* --------------------------------------------------------------- add form */
 
 /* Three named fields, so the grid is declared as three columns. auto-fit would
-   open a fourth, empty track on a wide screen and push the fields off-centre. */
+   open a fourth, empty track on a wide screen and push the fields off-center. */
 .multilify-addform {
 	display: grid;
 	grid-template-columns: minmax( 0, 15em ) minmax( 0, 20em ) auto;
@@ -332,8 +336,8 @@
 }
 
 .multilify-addform input[type="text"]:focus {
-	border-color: var(--mlf-accent);
-	box-shadow: 0 0 0 1px var(--mlf-accent);
+	border-color: var( --wp-admin-theme-color, #2271b1 );
+	box-shadow: 0 0 0 1px var( --wp-admin-theme-color, #2271b1 );
 	outline: 2px solid transparent;
 }
 
@@ -422,12 +426,12 @@
 }
 
 .multilify-flagpicker__option:focus-visible {
-	outline: 2px solid var(--mlf-accent);
+	outline: 2px solid var( --wp-admin-theme-color, #2271b1 );
 	outline-offset: 1px;
 }
 
-/* Selected state cannot rest on colour alone: the emoji already carries
-   colour, so a solid ring plus a checkmark do the signalling. */
+/* Selected state cannot rest on color alone: the emoji already carries
+   color, so a solid ring plus a checkmark do the signalling. */
 .multilify-flagpicker__option.is-selected {
 	border-color: var(--mlf-accent);
 	background: var(--mlf-accent-soft);
@@ -581,7 +585,7 @@
 }
 
 .multilify-copy:focus-visible {
-	outline: 2px solid var(--mlf-accent);
+	outline: 2px solid var( --wp-admin-theme-color, #2271b1 );
 	outline-offset: 1px;
 }
 
@@ -596,12 +600,6 @@
 	.multilify-copy {
 		opacity: 1;
 	}
-}
-
-/* A code block answers the line above it, so it sits closer to that line
-   than to whatever follows. */
-.multilify-guide p + pre {
-	margin-top: -2px;
 }
 
 .multilify-guide pre code {
@@ -659,7 +657,7 @@
 	gap: 8px;
 }
 
-/* The destructive action is coloured, so it never reads as the safe default. */
+/* The destructive action is colored, so it never reads as the safe default. */
 .multilify-dialog__delete.button-primary {
 	background: var(--mlf-danger);
 	border-color: var(--mlf-danger);
@@ -707,8 +705,8 @@
 }
 
 .multilify-meta-box .multilify-field input[type="text"]:focus {
-	border-color: #2271b1;
-	box-shadow: 0 0 0 1px #2271b1;
+	border-color: var( --wp-admin-theme-color, #2271b1 );
+	box-shadow: 0 0 0 1px var( --wp-admin-theme-color, #2271b1 );
 	outline: 2px solid transparent;
 }
 
@@ -746,9 +744,13 @@
 	}
 
 	.multilify-field--code input,
-	.multilify-field--name input,
-	.multilify-field--flag input {
+	.multilify-field--name input {
 		width: 100%;
+	}
+
+	/* Eight fixed columns are 327px, wider than a phone's section. */
+	.multilify-flagpicker__grid {
+		grid-template-columns: repeat( auto-fill, 34px );
 	}
 }
 
