@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Multilify 1.5.0\n"
 "Report-Msgid-Bugs-To: https://github.com/kadirermantr/multilify/issues\n"
-"POT-Creation-Date: 2026-10-03 12:00+0300\n"
+"POT-Creation-Date: 2026-10-03 17:08+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -274,9 +274,9 @@ msgstr ""
 
 #: includes/views/admin-page.php:366
 msgid ""
-"Multilify adds hreflang tags to every page so search engines know which "
-"languages an entry exists in, and sets the page language so screen readers "
-"pronounce it correctly."
+"Multilify adds hreflang tags to each entry and to the homepage so search "
+"engines know which languages an entry exists in, and sets the page language "
+"so screen readers pronounce it correctly."
 msgstr ""
 
 #: includes/views/admin-page.php:367
