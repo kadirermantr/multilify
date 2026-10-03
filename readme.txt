@@ -4,7 +4,7 @@ Tags: multilingual, translation, language, i18n, localization
 Requires at least: 5.8
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.5.0
+Stable tag: 1.5.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -165,6 +165,10 @@ You can get support through the WordPress.org support forums or by contacting us
 
 == Changelog ==
 
+= 1.5.1 =
+Fixes
+* In the block editor a translation's content editor could show an empty page. The editor moves the meta boxes into its own panel after they have rendered, and that reloads each editor's frame. The text was still there and still saved, but could not be seen or edited in the Visual tab. An editor that loses its frame is now rebuilt with its content, including after a panel is moved
+
 = 1.5.0 =
 Fixes
 * A password-protected entry served its full translation in every other language without asking for the password. The password form now stands in every language, and a translated title keeps the "Protected:" prefix the original shows
@@ -306,6 +310,9 @@ Changed
 * Translation meta boxes
 
 == Upgrade Notice ==
+
+= 1.5.1 =
+Fixes a translation's content editor showing an empty page in the block editor. Nothing was lost: the text was saved all along, only hidden from the Visual tab.
 
 = 1.5.0 =
 Security fix: a password-protected entry showed its translations without the password. Also fixes untranslated pages and custom post types returning 404 under a prefix, and WordPress now switches to the language being viewed. Rewrite rules refresh on their own after the update.

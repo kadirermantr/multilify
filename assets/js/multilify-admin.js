@@ -7,6 +7,50 @@
 
     var l10n = window.multilifyAdmin || {};
 
+    // The block editor moves the meta boxes into its own panel once it has
+    // rendered, and moving an iframe reloads it. WordPress waits for the page
+    // to finish loading before it builds an editor inside a meta box, but the
+    // move can still come later, and then the translation editors showed an
+    // empty page while their content sat in a document no longer on screen.
+    // An editor that has lost its document is rebuilt from the content it
+    // still holds. One in Code mode is left alone: it shows the textarea.
+    function reviveEditor(frame) {
+        var id = frame.id.replace(/_ifr$/, '');
+        var editor = window.tinymce && window.tinymce.get(id);
+        var settings = window.tinyMCEPreInit && window.tinyMCEPreInit.mceInit[id];
+
+        if (!editor || !settings || !editor.initialized || editor.isHidden() || editor.getDoc() === frame.contentDocument) {
+            return;
+        }
+
+        editor.save();
+        editor.remove();
+        window.tinymce.init(settings);
+    }
+
+    function reviveEditors() {
+        $('iframe[id^="multilang_content_"]').each(function() {
+            reviveEditor(this);
+        });
+    }
+
+    // A moved iframe loads again. Load does not bubble, so it is caught on
+    // the way down instead.
+    document.addEventListener('load', function(e) {
+        if (e.target && 'IFRAME' === e.target.tagName && /^multilang_content_.+_ifr$/.test(e.target.id)) {
+            reviveEditor(e.target);
+        }
+    }, true);
+
+    // And once the page has loaded, for a move that came before this ran.
+    if ('complete' === document.readyState) {
+        window.setTimeout(reviveEditors, 0);
+    } else {
+        $(window).on('load', function() {
+            window.setTimeout(reviveEditors, 0);
+        });
+    }
+
     $(document).ready(function() {
 
         // Form validation for language code
