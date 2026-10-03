@@ -363,7 +363,7 @@ $multilify_flags = isset( $flag_choices ) && is_array( $flag_choices ) ? $flag_c
 
 			<div>
 				<h3><?php esc_html_e( 'Search engines', 'multilify' ); ?></h3>
-				<p><?php esc_html_e( 'Multilify adds hreflang tags to every page so search engines know which languages an entry exists in, and sets the page language so screen readers pronounce it correctly.', 'multilify' ); ?></p>
+				<p><?php esc_html_e( 'Multilify adds hreflang tags to each entry and to the homepage so search engines know which languages an entry exists in, and sets the page language so screen readers pronounce it correctly.', 'multilify' ); ?></p>
 				<p><?php esc_html_e( 'First-time visitors are sent to the language their browser asks for. Once someone picks a language from the switcher, that choice is remembered.', 'multilify' ); ?></p>
 			</div>
 		</div>
