@@ -12,7 +12,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 <div class="multilify-meta-box">
 	<p class="description">
-		<?php esc_html_e( 'Enter content for this language. If left empty, the default language content will be displayed.', 'multilify' ); ?>
+		<?php if ( $this->get_default_language() === $lang_code ) : ?>
+			<?php esc_html_e( 'Anything filled in here replaces the entry\'s own title, content or address in the default language. Leave a field empty to keep the original.', 'multilify' ); ?>
+		<?php else : ?>
+			<?php esc_html_e( 'Enter content for this language. If left empty, the default language content will be displayed.', 'multilify' ); ?>
+		<?php endif; ?>
 	</p>
 
 	<div class="multilify-field">
