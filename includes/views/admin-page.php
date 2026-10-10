@@ -18,6 +18,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 $multilify_total = isset( $translatable ) ? (int) $translatable : 0;
 $multilify_done  = isset( $progress ) && is_array( $progress ) ? $progress : array();
 $multilify_flags = isset( $flag_choices ) && is_array( $flag_choices ) ? $flag_choices : array();
+
+// One nonce for every form on the page. wp_nonce_field() prints the field with
+// id="_wpnonce", and a page of forms then carries that id many times over.
+$multilify_nonce = '<input type="hidden" name="_wpnonce" value="' . esc_attr( wp_create_nonce( 'multilify_action' ) ) . '">' . wp_referer_field( false );
 ?>
 
 <div class="wrap multilify-admin">
@@ -111,7 +115,7 @@ $multilify_flags = isset( $flag_choices ) && is_array( $flag_choices ) ? $flag_c
 											<?php
 											printf(
 												/* translators: 1: translated entry count, 2: total entry count. */
-												esc_html__( '%1$s of %2$s entries translated', 'multilify' ),
+												esc_html( _n( '%1$s of %2$s entry translated', '%1$s of %2$s entries translated', $multilify_total, 'multilify' ) ),
 												esc_html( number_format_i18n( $multilify_count ) ),
 												esc_html( number_format_i18n( $multilify_total ) )
 											);
@@ -136,10 +140,12 @@ $multilify_flags = isset( $flag_choices ) && is_array( $flag_choices ) ? $flag_c
 						<div class="multilify-entry__actions">
 							<?php if ( ! $multilify_is_default ) : ?>
 								<form method="post">
-									<?php wp_nonce_field( 'multilify_action' ); ?>
+									<?php echo $multilify_nonce; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Built above from escaped parts. ?>
 									<input type="hidden" name="multilify_action" value="set_default">
 									<input type="hidden" name="default_language" value="<?php echo esc_attr( $multilify_code ); ?>">
-									<button type="submit" class="button button-small">
+									<?php // A screen reader lists the page's buttons out of context, so each one names its language. ?>
+									<button type="submit" class="button button-small"
+											aria-label="<?php echo esc_attr( sprintf( /* translators: %s: language name. */ __( 'Make %s the default', 'multilify' ), $multilify_name ) ); ?>">
 										<?php esc_html_e( 'Make default', 'multilify' ); ?>
 									</button>
 								</form>
@@ -148,16 +154,18 @@ $multilify_flags = isset( $flag_choices ) && is_array( $flag_choices ) ? $flag_c
 							<button type="button" class="button button-small multilify-edit-toggle"
 									data-code="<?php echo esc_attr( $multilify_code ); ?>"
 									aria-expanded="false"
-									aria-controls="multilify-edit-<?php echo esc_attr( $multilify_code ); ?>">
+									aria-controls="multilify-edit-<?php echo esc_attr( $multilify_code ); ?>"
+									aria-label="<?php echo esc_attr( sprintf( /* translators: %s: language name. */ __( 'Edit %s', 'multilify' ), $multilify_name ) ); ?>">
 								<?php esc_html_e( 'Edit', 'multilify' ); ?>
 							</button>
 
 							<?php if ( ! $multilify_is_default ) : ?>
 								<form method="post" data-multilify-confirm data-language="<?php echo esc_attr( $multilify_name ); ?>">
-									<?php wp_nonce_field( 'multilify_action' ); ?>
+									<?php echo $multilify_nonce; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Built above from escaped parts. ?>
 									<input type="hidden" name="multilify_action" value="delete_language">
 									<input type="hidden" name="lang_code" value="<?php echo esc_attr( $multilify_code ); ?>">
-									<button type="submit" class="button button-small button-link-delete">
+									<button type="submit" class="button button-small button-link-delete"
+											aria-label="<?php echo esc_attr( sprintf( /* translators: %s: language name. */ __( 'Delete %s', 'multilify' ), $multilify_name ) ); ?>">
 										<?php esc_html_e( 'Delete', 'multilify' ); ?>
 									</button>
 								</form>
@@ -167,7 +175,7 @@ $multilify_flags = isset( $flag_choices ) && is_array( $flag_choices ) ? $flag_c
 
 					<div class="multilify-editrow" id="multilify-edit-<?php echo esc_attr( $multilify_code ); ?>" hidden>
 						<form method="post" class="multilify-editform">
-							<?php wp_nonce_field( 'multilify_action' ); ?>
+							<?php echo $multilify_nonce; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Built above from escaped parts. ?>
 							<input type="hidden" name="multilify_action" value="edit_language">
 							<input type="hidden" name="lang_code" value="<?php echo esc_attr( $multilify_code ); ?>">
 
@@ -199,25 +207,25 @@ $multilify_flags = isset( $flag_choices ) && is_array( $flag_choices ) ? $flag_c
 								<div class="multilify-flagpicker" data-multilify-flagpicker>
 									<div class="multilify-flagpicker__grid" role="radiogroup"
 											aria-labelledby="multilify-edit-flaglabel-<?php echo esc_attr( $multilify_code ); ?>">
-										<?php foreach ( $multilify_flags as $multilify_flag_code => $multilify_flag_emoji ) : ?>
+										<?php // The emoji is the option's name: a screen reader reads a flag as its country, where the key it was filed under named a language. ?>
+										<?php foreach ( $multilify_flags as $multilify_flag_emoji ) : ?>
 											<button type="button"
 													class="multilify-flagpicker__option<?php echo ( $multilify_flag_emoji === $multilify_language['flag'] ) ? ' is-selected' : ''; ?>"
 													role="radio"
 													aria-checked="<?php echo ( $multilify_flag_emoji === $multilify_language['flag'] ) ? 'true' : 'false'; ?>"
-													data-flag="<?php echo esc_attr( $multilify_flag_emoji ); ?>"
-													title="<?php echo esc_attr( $multilify_flag_code ); ?>">
-												<span aria-hidden="true"><?php echo esc_html( $multilify_flag_emoji ); ?></span>
-												<span class="screen-reader-text"><?php echo esc_html( $multilify_flag_code ); ?></span>
+													data-flag="<?php echo esc_attr( $multilify_flag_emoji ); ?>">
+												<span><?php echo esc_html( $multilify_flag_emoji ); ?></span>
 											</button>
 										<?php endforeach; ?>
 									</div>
 									<label class="multilify-flagpicker__custom" for="multilify-edit-flag-<?php echo esc_attr( $multilify_code ); ?>">
-										<span><?php esc_html_e( 'Or type your own', 'multilify' ); ?></span>
+										<span id="multilify-edit-flagcustom-<?php echo esc_attr( $multilify_code ); ?>"><?php esc_html_e( 'Or type your own', 'multilify' ); ?></span>
 										<input type="text"
 												id="multilify-edit-flag-<?php echo esc_attr( $multilify_code ); ?>"
 												name="lang_flag"
 												value="<?php echo esc_attr( $multilify_language['flag'] ); ?>"
 												maxlength="10"
+												aria-labelledby="multilify-edit-flaglabel-<?php echo esc_attr( $multilify_code ); ?> multilify-edit-flagcustom-<?php echo esc_attr( $multilify_code ); ?>"
 												data-multilify-flaginput>
 									</label>
 								</div>
@@ -246,7 +254,7 @@ $multilify_flags = isset( $flag_choices ) && is_array( $flag_choices ) ? $flag_c
 		</p>
 
 		<form method="post" class="multilify-addform">
-			<?php wp_nonce_field( 'multilify_action' ); ?>
+			<?php echo $multilify_nonce; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Built above from escaped parts. ?>
 			<input type="hidden" name="multilify_action" value="add_language">
 
 			<div class="multilify-field">
@@ -257,8 +265,9 @@ $multilify_flags = isset( $flag_choices ) && is_array( $flag_choices ) ? $flag_c
 						placeholder="de"
 						required
 						maxlength="5"
-						pattern="[a-z]{2,5}">
-				<p class="description"><?php esc_html_e( 'Two to five lowercase letters. This becomes the URL prefix.', 'multilify' ); ?></p>
+						pattern="[a-z]{2,5}"
+						aria-describedby="multilify-add-code-hint">
+				<p class="description" id="multilify-add-code-hint"><?php esc_html_e( 'Two to five lowercase letters. This becomes the URL prefix.', 'multilify' ); ?></p>
 			</div>
 
 			<div class="multilify-field">
@@ -266,8 +275,9 @@ $multilify_flags = isset( $flag_choices ) && is_array( $flag_choices ) ? $flag_c
 				<input type="text"
 						id="lang_name"
 						name="lang_name"
-						placeholder="Deutsch">
-				<p class="description">
+						placeholder="Deutsch"
+						aria-describedby="multilify-add-name-hint">
+				<p class="description" id="multilify-add-name-hint">
 					<?php
 					printf(
 						/* translators: %s: the show_name="false" shortcode attribute. */
@@ -282,30 +292,30 @@ $multilify_flags = isset( $flag_choices ) && is_array( $flag_choices ) ? $flag_c
 				<span class="multilify-field__label" id="multilify-add-flaglabel"><?php esc_html_e( 'Flag', 'multilify' ); ?></span>
 				<div class="multilify-flagpicker" data-multilify-flagpicker>
 					<div class="multilify-flagpicker__grid" role="radiogroup" aria-labelledby="multilify-add-flaglabel">
-						<?php foreach ( $multilify_flags as $multilify_flag_code => $multilify_flag_emoji ) : ?>
+						<?php foreach ( $multilify_flags as $multilify_flag_emoji ) : ?>
 							<button type="button"
 									class="multilify-flagpicker__option"
 									role="radio"
 									aria-checked="false"
-									data-flag="<?php echo esc_attr( $multilify_flag_emoji ); ?>"
-									title="<?php echo esc_attr( $multilify_flag_code ); ?>">
-								<span aria-hidden="true"><?php echo esc_html( $multilify_flag_emoji ); ?></span>
-								<span class="screen-reader-text"><?php echo esc_html( $multilify_flag_code ); ?></span>
+									data-flag="<?php echo esc_attr( $multilify_flag_emoji ); ?>">
+								<span><?php echo esc_html( $multilify_flag_emoji ); ?></span>
 							</button>
 						<?php endforeach; ?>
 					</div>
 					<label class="multilify-flagpicker__custom" for="lang_flag">
-						<span><?php esc_html_e( 'Or type your own', 'multilify' ); ?></span>
+						<span id="multilify-add-flagcustom"><?php esc_html_e( 'Or type your own', 'multilify' ); ?></span>
 						<input type="text"
 								id="lang_flag"
 								name="lang_flag"
 								placeholder="🏴"
 								required
 								maxlength="10"
+								aria-labelledby="multilify-add-flaglabel multilify-add-flagcustom"
+								aria-describedby="multilify-add-flag-hint"
 								data-multilify-flaginput>
 					</label>
 				</div>
-				<p class="description"><?php esc_html_e( 'Pick a flag, or type any emoji. Screen readers skip it.', 'multilify' ); ?></p>
+				<p class="description" id="multilify-add-flag-hint"><?php esc_html_e( 'Pick a flag, or type any emoji. Screen readers skip it.', 'multilify' ); ?></p>
 			</div>
 
 			<p class="multilify-addform__submit">
@@ -339,14 +349,16 @@ $multilify_flags = isset( $flag_choices ) && is_array( $flag_choices ) ? $flag_c
 				<p><?php esc_html_e( 'Drop the shortcode into any post, page or block:', 'multilify' ); ?></p>
 				<div class="multilify-snippet">
 					<pre><code>[multilify_switcher]</code></pre>
-					<button type="button" class="multilify-copy" data-multilify-copy="[multilify_switcher]">
+					<button type="button" class="multilify-copy" data-multilify-copy="[multilify_switcher]"
+							aria-label="<?php echo esc_attr( sprintf( /* translators: %s: the snippet the button copies. */ __( 'Copy %s', 'multilify' ), '[multilify_switcher]' ) ); ?>">
 						<span class="multilify-copy__label" aria-live="polite"><?php esc_html_e( 'Copy', 'multilify' ); ?></span>
 					</button>
 				</div>
 				<p><?php esc_html_e( 'Or call it from a theme template:', 'multilify' ); ?></p>
 				<div class="multilify-snippet">
 					<pre><code>&lt;?php multilify_switcher(); ?&gt;</code></pre>
-					<button type="button" class="multilify-copy" data-multilify-copy="&lt;?php multilify_switcher(); ?&gt;">
+					<button type="button" class="multilify-copy" data-multilify-copy="&lt;?php multilify_switcher(); ?&gt;"
+							aria-label="<?php echo esc_attr( sprintf( /* translators: %s: the snippet the button copies. */ __( 'Copy %s', 'multilify' ), '<?php multilify_switcher(); ?>' ) ); ?>">
 						<span class="multilify-copy__label" aria-live="polite"><?php esc_html_e( 'Copy', 'multilify' ); ?></span>
 					</button>
 				</div>

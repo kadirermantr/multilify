@@ -3,7 +3,7 @@
  * Plugin Name: Multilify
  * Plugin URI: https://multilify.com
  * Description: A powerful multilingual content management system for WordPress. Supports unlimited languages with custom slugs, SEO optimization, and performance caching.
- * Version: 1.5.1
+ * Version: 1.6.0
  * Requires at least: 5.8
  * Requires PHP: 7.4
  * Author: Kadir Erman
@@ -22,7 +22,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Define plugin constants.
-define( 'MULTILIFY_VERSION', '1.5.1' );
+define( 'MULTILIFY_VERSION', '1.6.0' );
 define( 'MULTILIFY_PLUGIN_FILE', __FILE__ );
 define( 'MULTILIFY_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'MULTILIFY_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
@@ -80,8 +80,22 @@ function multilify_switcher( $args = array() ) {
 
 /**
  * Activation hook.
+ *
+ * A network activation reaches every site, where it used to set up the main
+ * site only and leave the others 404ing on /tr/ until an administrator opened
+ * their dashboard.
+ *
+ * @param bool $network_wide Whether the plugin is being activated for the whole network.
  */
-function multilify_activate() {
+function multilify_activate( $network_wide = false ) {
+	multilify_for_each_site( 'multilify_activate_site', $network_wide );
+}
+register_activation_hook( __FILE__, 'multilify_activate' );
+
+/**
+ * Set one site up.
+ */
+function multilify_activate_site() {
 	// Set default options if they don't exist.
 	if ( ! get_option( 'multilify_languages' ) ) {
 		update_option( 'multilify_languages', Multilify::starter_languages() );
@@ -105,16 +119,61 @@ function multilify_activate() {
 	$multilify->maybe_create_db_indexes();
 	update_option( 'multilify_version', MULTILIFY_VERSION, true );
 }
-register_activation_hook( __FILE__, 'multilify_activate' );
 
 /**
  * Deactivation hook.
+ *
+ * @param bool $network_wide Whether the plugin is being deactivated for the whole network.
  */
-function multilify_deactivate() {
-	// Flush rewrite rules on deactivation.
-	flush_rewrite_rules();
+function multilify_deactivate( $network_wide = false ) {
+	multilify_for_each_site( 'multilify_deactivate_site', $network_wide );
 }
 register_deactivation_hook( __FILE__, 'multilify_deactivate' );
+
+/**
+ * Rebuild one site's rewrite rules without the plugin's own.
+ *
+ * By the time this runs, init has already registered them, so a plain flush
+ * wrote them back and /tr/ kept answering, with the default text, after the
+ * plugin was switched off.
+ */
+function multilify_deactivate_site() {
+	multilify()->remove_rewrite_rules();
+	flush_rewrite_rules();
+}
+
+/**
+ * Run a setup step on this site, or on every site of the network.
+ *
+ * @param callable $callback     Step to run.
+ * @param bool     $network_wide Whether to walk the whole network.
+ */
+function multilify_for_each_site( $callback, $network_wide ) {
+	global $wp_rewrite;
+
+	if ( ! $network_wide || ! is_multisite() ) {
+		call_user_func( $callback );
+
+		return;
+	}
+
+	$site_ids = get_sites(
+		array(
+			'fields' => 'ids',
+			'number' => 0,
+		)
+	);
+
+	foreach ( $site_ids as $site_id ) {
+		switch_to_blog( $site_id );
+		// The rewrite object still holds the previous site's permalink settings.
+		$wp_rewrite->init();
+		call_user_func( $callback );
+		restore_current_blog();
+	}
+
+	$wp_rewrite->init();
+}
 
 /**
  * Add plugin action links (Settings, View details).
