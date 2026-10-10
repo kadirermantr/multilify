@@ -40,8 +40,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 				name="multilang_slug_<?php echo esc_attr( $lang_code ); ?>"
 				value="<?php echo esc_attr( $slug ); ?>"
 				class="widefat"
-				placeholder="<?php esc_attr_e( 'example-page, beispiel-seite, ornek-sayfa...', 'multilify' ); ?>">
-		<p class="description">
+				placeholder="<?php esc_attr_e( 'example-page, beispiel-seite, ornek-sayfa...', 'multilify' ); ?>"
+				aria-describedby="multilang_slug_hint_<?php echo esc_attr( $lang_code ); ?>">
+		<p class="description" id="multilang_slug_hint_<?php echo esc_attr( $lang_code ); ?>">
 			<?php esc_html_e( 'Custom slug for the URL. If left empty, the main content slug will be used.', 'multilify' ); ?>
 		</p>
 	</div>
@@ -58,7 +59,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 			'media_buttons' => true,
 			'teeny'         => false,
 			'tinymce'       => array(
-				'toolbar1' => 'formatselect,bold,italic,underline,bullist,numlist,blockquote,alignleft,aligncenter,alignright,link,unlink,wp_more,spellchecker,fullscreen,wp_adv',
+				'toolbar1'   => 'formatselect,bold,italic,underline,bullist,numlist,blockquote,alignleft,aligncenter,alignright,link,unlink,wp_more,spellchecker,fullscreen,wp_adv',
+				// The label above points at a textarea the visual editor hides,
+				// so the editor itself is named, one per language.
+				/* translators: %s: language name. */
+				'aria_label' => sprintf( __( 'Content in %s', 'multilify' ), '' !== trim( (string) $language['name'] ) ? $language['name'] : $lang_code ),
 			),
 		);
 		wp_editor( $content, $multilify_editor_id, $multilify_settings );

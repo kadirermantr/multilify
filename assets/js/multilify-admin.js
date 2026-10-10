@@ -64,11 +64,17 @@
         // Confirm a delete in the page rather than through window.confirm, which
         // renders as a browser chrome alert and cannot be styled.
         var $dialog = $('#multilify-confirm');
+        var $page = $('#wpwrap');
         var pendingForm = null;
         var lastFocus = null;
 
+        // The page behind an open dialog is made inert, which needs the dialog
+        // outside it: it is moved under body once.
+        $dialog.appendTo(document.body);
+
         function closeDialog() {
             $dialog.attr('hidden', true);
+            $page.removeAttr('inert');
             pendingForm = null;
 
             if (lastFocus) {
@@ -81,12 +87,14 @@
             pendingForm = form;
             lastFocus = document.activeElement;
 
-            if (languageName) {
-                $dialog.find('.multilify-dialog__title').text(
-                    (l10n.confirmDeleteTitle || 'Delete this language?').replace('%s', languageName)
-                );
-            }
+            // A function, so a $ in the language name is never read as a pattern.
+            $dialog.find('.multilify-dialog__title').text(
+                (l10n.confirmDeleteTitle || 'Delete %s?').replace('%s', function() {
+                    return languageName;
+                })
+            );
 
+            $page.attr('inert', '');
             $dialog.removeAttr('hidden');
             $dialog.find('[data-multilify-dialog-cancel]').trigger('focus');
         }
@@ -97,8 +105,9 @@
                 return;
             }
 
+            // attr, not data: data() would turn a language called "0" or "null" into a non-string.
             e.preventDefault();
-            openDialog(this, $(this).data('language'));
+            openDialog(this, $(this).attr('data-language') || '');
         });
 
         $dialog.on('click', '[data-multilify-dialog-cancel]', closeDialog);
@@ -108,6 +117,7 @@
 
             if (form) {
                 $dialog.attr('hidden', true);
+                $page.removeAttr('inert');
                 lastFocus = null;
                 form.submit();
             }
@@ -258,11 +268,12 @@
                 }
             }
 
-            $options.on('click', function() {
+            $options.on('click', function(e) {
                 var value = $(this).data('flag');
 
-                // Clicking the selected flag again clears it.
-                if ($(this).hasClass('is-selected')) {
+                // Clicking the selected flag again clears it. Only a pointer
+                // click: Space on a checked radio must leave it checked.
+                if ($(this).hasClass('is-selected') && e.originalEvent && e.originalEvent.detail > 0) {
                     $input.val('');
                     markSelected('');
                     return;
@@ -303,7 +314,7 @@
 
             // Only auto-generate if slug is empty
             if (slugField.val() === '') {
-                slugField.val(generateSlug($(this).val()));
+                slugField.val(generateSlug($(this).val(), langCode));
             }
         });
 
@@ -366,28 +377,41 @@
         }
 
         // Generate slug helper function
-        function generateSlug(text) {
+        function generateSlug(text, langCode) {
             text = (text === null || text === undefined) ? '' : String(text);
 
+            // German writes an umlaut out as a digraph, as the guide's /de/ueber-uns/ does.
+            if (langCode === 'de') {
+                var umlauts = { 'ä': 'ae', 'Ä': 'ae', 'ö': 'oe', 'Ö': 'oe', 'ü': 'ue', 'Ü': 'ue' };
+
+                text = text.replace(/[äÄöÖüÜ]/g, function(ch) {
+                    return umlauts[ch];
+                });
+            }
+
+            // Letters that do not decompose into a base letter plus an accent.
             var map = {
-                'ğ': 'g', 'Ğ': 'g',
-                'ü': 'u', 'Ü': 'u',
-                'ş': 's', 'Ş': 's',
                 'ı': 'i', 'İ': 'i',
-                'ö': 'o', 'Ö': 'o',
-                'ç': 'c', 'Ç': 'c',
-                'ä': 'a', 'Ä': 'a',
-                'ß': 'ss'
+                'ß': 'ss',
+                'æ': 'ae', 'Æ': 'ae',
+                'œ': 'oe', 'Œ': 'oe',
+                'ø': 'o', 'Ø': 'o',
+                'ł': 'l', 'Ł': 'l',
+                'đ': 'd', 'Đ': 'd'
             };
 
             // Transliterate before lowercasing so Turkish İ/I map correctly.
+            // Every other accented letter is decomposed and its mark dropped,
+            // so ñ, é and ç come out as n, e and c the way sanitize_title() does.
             return text
                 .trim()
-                .replace(/[ğĞüÜşŞıİöÖçÇäÄß]/g, function(ch) {
+                .replace(/[ıİßæÆœŒøØłŁđĐ]/g, function(ch) {
                     return map[ch];
                 })
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
                 .toLowerCase()
-                .replace(/[^\w\s-]/g, '')
+                .replace(/[^\p{L}\p{N}\s_-]/gu, '')
                 .replace(/[\s_-]+/g, '-')
                 .replace(/^-+|-+$/g, '');
         }

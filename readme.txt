@@ -4,7 +4,7 @@ Tags: multilingual, translation, language, i18n, localization
 Requires at least: 5.8
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.5.1
+Stable tag: 1.6.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -28,7 +28,7 @@ Powerful multilingual content management for WordPress with custom slugs and SEO
 * **Language Switcher** - Built-in switcher with flag-only or flag + name display
 * **Any Post Type** - Posts and pages out of the box, anything else through the `multilify_post_types` filter
 * **Shortcode & Template Tag** - Drop the switcher anywhere with `[multilify_switcher]`
-* **Developer Friendly** - Filters for the post type list, the translated title and content, the flag choices and the locale
+* **Developer Friendly** - Filters for the post type list, the translated title and content, the flag choices, the locale, browser detection and crawler detection
 
 = Perfect For =
 
@@ -164,6 +164,34 @@ You can get support through the WordPress.org support forums or by contacting us
 4. Settings page - Configure your multilingual setup
 
 == Changelog ==
+
+= 1.6.0 =
+Fixes
+* A `comment-page-N` address of a translated page returned a 404 under a prefix, and the same tail on an entry's original name was not redirected to its translated address
+* `/{lang}/entry/feed/atom/` and the other typed feeds returned a 404 for a nested page and an empty feed for a flat one
+* The second page of a search under a prefix, `/{lang}/search/term/page/2/`, searched for "term/page/2" and found nothing, and a search feed came back as HTML
+* `?lang=` in the query string overrode the language in the address, so a Turkish entry opened with `?lang=de` was a 404. The address decides the language now, and the query variable is ignored
+* An oEmbed of a translated address named the entry in the default language and framed the default address
+* On a subdirectory install, a nested translated path whose first letters spell the directory's name lost them while being routed
+* The switcher on an attachment, a product or another post type the plugin does not translate linked every other language to a 404. It links to the language home now
+* An excluded search term, `-word`, was ignored when the word appeared only in the translation
+* A cookie left behind for a deleted language switched browser language detection off for a year
+* A crawler's answer at the site root carried no `Vary` header, so a shared cache could hand it to every browser
+* The site locale was never switched for the default language, so a site run from a Turkish admin that publishes in English printed Turkish dates and "Bir yanıt yazın" under `lang="en"`
+* Deactivating the plugin left its rewrite rules in place, so `/tr/` went on answering with the default text until the permalinks were saved
+* A network activation set up the main site only, and every other site 404ed on its language prefixes until an administrator opened its dashboard
+* The rewrite rules a new version adds waited for an administrator to log in. They are rebuilt in the first request after an update
+* A translated slug changed by WP-CLI, an importer or another plugin kept resolving to the old address for an hour on a persistent object cache, and an entry trashed, restored or published on schedule stayed in, or out of, the sitemap for as long
+* The slug suggested from a translated title dropped every accented letter outside Turkish and German, so "España" became "espaa", and emptied a non-Latin title. It follows WordPress' own rules now, with German umlauts written out as ae, oe and ue
+* The switcher marked its active link as the current page on archives, search results and 404s, where it points at the language home
+
+Changed
+* The default language's prefix, `/en/...` on an English site, redirects permanently to the address without it instead of serving the same page twice
+* A lookup for an address that does not exist is remembered for five minutes rather than an hour, so a flood of unknown addresses cannot push real entries out of a persistent object cache
+* The lookup index is created from an administrator's own request only, never from an anonymous `admin-ajax.php` call
+* Settings page: every button names its language for screen readers, each flag option is named by its emoji, the delete dialog makes the page behind it inert, the text fields meet the 3:1 contrast a control's edge needs, the selected flag keeps a visible focus ring and Space no longer clears it, forced-colors mode gets a system highlight, and the title and tally stack on a narrow screen. The stylesheet uses logical properties, so a right-to-left admin keeps its gutters
+* Editor: each translation's content editor is named with its language, and the slug hint is read out with its field
+* The unused `multilify_settings` settings group was removed. The settings page never used it, and through `options.php` it let an administrator store a default language that did not exist
 
 = 1.5.1 =
 Fixes
@@ -310,6 +338,9 @@ Changed
 * Translation meta boxes
 
 == Upgrade Notice ==
+
+= 1.6.0 =
+Routing fixes: comment pages, typed feeds and search pages under a prefix, ?lang= no longer overrides the address, and /en/-style addresses of the default language redirect to the bare one. Deactivation removes the plugin's rules. Network activation reaches every site.
 
 = 1.5.1 =
 Fixes a translation's content editor showing an empty page in the block editor. Nothing was lost: the text was saved all along, only hidden from the Visual tab.

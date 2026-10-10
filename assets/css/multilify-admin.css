@@ -7,7 +7,8 @@
  * the plugin never leaks styles into the rest of wp-admin.
  */
 
-.multilify-admin {
+.multilify-admin,
+.multilify-dialog {
 	--mlf-ink: #14171c;
 	--mlf-ink-soft: #5b6470;
 	--mlf-ink-faint: #646d78;
@@ -23,8 +24,12 @@
 	--mlf-danger-soft: #fbeaea;
 	--mlf-radius: 6px;
 	--mlf-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+	/* Inputs keep core's border: the rule color is 1.65:1 on white, below the 3:1 a control's edge needs. */
+	--mlf-input-border: #8c8f94;
+}
 
-	margin-right: 20px;
+.multilify-admin {
+	margin-inline-end: 20px;
 	color: var(--mlf-ink);
 }
 
@@ -238,9 +243,10 @@
 .multilify-editrow {
 	padding: 16px 0 18px;
 	border-bottom: 1px solid var(--mlf-rule);
+	border-inline-start: 3px solid var(--mlf-accent);
 	background: var(--mlf-surface-sunken);
-	box-shadow: inset 3px 0 0 var(--mlf-accent);
-	padding-left: 16px;
+	padding-inline-start: 13px;
+	padding-inline-end: 16px;
 }
 
 .multilify-editrow[hidden] {
@@ -271,7 +277,7 @@
 .multilify-editform input[type="text"] {
 	height: 32px;
 	padding: 0 9px;
-	border: 1px solid var(--mlf-rule-strong);
+	border: 1px solid var(--mlf-input-border);
 	border-radius: 4px;
 	background: var(--mlf-surface);
 	color: var(--mlf-ink);
@@ -328,7 +334,7 @@
 .multilify-addform input[type="text"] {
 	height: 36px;
 	padding: 0 11px;
-	border: 1px solid var(--mlf-rule-strong);
+	border: 1px solid var(--mlf-input-border);
 	border-radius: 4px;
 	background: var(--mlf-surface);
 	color: var(--mlf-ink);
@@ -430,6 +436,11 @@
 	outline-offset: 1px;
 }
 
+/* The selection ring already sits where the focus ring would go. */
+.multilify-flagpicker__option.is-selected:focus-visible {
+	outline-offset: 4px;
+}
+
 /* Selected state cannot rest on color alone: the emoji already carries
    color, so a solid ring plus a checkmark do the signalling. */
 .multilify-flagpicker__option.is-selected {
@@ -443,7 +454,7 @@
 .multilify-flagpicker__option.is-selected::after {
 	content: "";
 	position: absolute;
-	right: -4px;
+	inset-inline-end: -4px;
 	bottom: -4px;
 	width: 13px;
 	height: 13px;
@@ -454,7 +465,7 @@
 .multilify-flagpicker__option.is-selected::before {
 	content: "";
 	position: absolute;
-	right: 0;
+	inset-inline-end: 0;
 	bottom: 0;
 	z-index: 1;
 	width: 3px;
@@ -515,7 +526,8 @@
 .multilify-guide p:last-child { margin-bottom: 0; }
 
 .multilify-guide ul {
-	margin: 0 0 10px 18px;
+	margin: 0 0 10px;
+	margin-inline-start: 18px;
 	list-style: disc;
 }
 
@@ -551,13 +563,13 @@
 
 .multilify-snippet pre {
 	margin: 0;
-	padding-right: 74px;
+	padding-inline-end: 74px;
 }
 
 .multilify-copy {
 	position: absolute;
 	top: 6px;
-	right: 6px;
+	inset-inline-end: 6px;
 	padding: 4px 9px;
 	font-size: 11px;
 	font-weight: 600;
@@ -751,6 +763,30 @@
 	/* Eight fixed columns are 327px, wider than a phone's section. */
 	.multilify-flagpicker__grid {
 		grid-template-columns: repeat( auto-fill, 34px );
+	}
+}
+
+@media ( max-width: 600px ) {
+	/* Title and tally no longer fit on one line, and core hides horizontal overflow here. */
+	.multilify-masthead {
+		grid-template-columns: minmax( 0, 1fr );
+	}
+
+	.multilify-tally {
+		white-space: normal;
+	}
+}
+
+/* Forced colors drop box-shadow and flatten backgrounds, so the selected flag
+   and the measure need a system color of their own. */
+@media ( forced-colors: active ) {
+	.multilify-flagpicker__option.is-selected {
+		outline: 2px solid Highlight;
+		outline-offset: 2px;
+	}
+
+	.multilify-measure__fill {
+		background: Highlight;
 	}
 }
 
