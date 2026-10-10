@@ -28,9 +28,21 @@
         window.tinymce.init(settings);
     }
 
+    // TinyMCE names every editor frame "Rich Text Area", so a screen reader
+    // cannot tell the languages apart. The name the meta box passes as
+    // aria_label goes on the frame instead, whenever one appears or reloads.
+    function nameEditorFrame(frame) {
+        var settings = window.tinyMCEPreInit && window.tinyMCEPreInit.mceInit[frame.id.replace(/_ifr$/, '')];
+
+        if (settings && settings.aria_label) {
+            frame.setAttribute('title', settings.aria_label);
+        }
+    }
+
     function reviveEditors() {
         $('iframe[id^="multilang_content_"]').each(function() {
             reviveEditor(this);
+            nameEditorFrame(this);
         });
     }
 
@@ -39,8 +51,15 @@
     document.addEventListener('load', function(e) {
         if (e.target && 'IFRAME' === e.target.tagName && /^multilang_content_.+_ifr$/.test(e.target.id)) {
             reviveEditor(e.target);
+            nameEditorFrame(e.target);
         }
     }, true);
+
+    $(document).on('tinymce-editor-init', function(event, editor) {
+        if (/^multilang_content_/.test(editor.id) && editor.iframeElement) {
+            nameEditorFrame(editor.iframeElement);
+        }
+    });
 
     // And once the page has loaded, for a move that came before this ran.
     if ('complete' === document.readyState) {
