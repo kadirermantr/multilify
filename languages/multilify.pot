@@ -2,9 +2,9 @@
 # This file is distributed under the GPL v2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: Multilify 1.6.0\n"
+"Project-Id-Version: Multilify 1.7.0\n"
 "Report-Msgid-Bugs-To: https://github.com/kadirermantr/multilify/issues\n"
-"POT-Creation-Date: 2026-10-10 11:01+0300\n"
+"POT-Creation-Date: 2026-10-12 21:35+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -399,4 +399,16 @@ msgstr ""
 #: includes/views/meta-box.php:66
 #, php-format
 msgid "Content in %s"
+msgstr ""
+
+#. translators: %s: language name.
+#: includes/class-multilify.php:866
+#, php-format
+msgid "%s: translated"
+msgstr ""
+
+#. translators: %s: language name.
+#: includes/class-multilify.php:869
+#, php-format
+msgid "%s: not translated"
 msgstr ""

@@ -61,6 +61,8 @@ class Multilify {
 		// Handle form submissions before any output so redirects work (avoids "headers already sent").
 		add_action( 'admin_init', array( $this, 'handle_admin_actions' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_assets' ) );
+		// The Posts and Pages lists show which languages each entry already has.
+		add_action( 'admin_init', array( $this, 'register_language_columns' ) );
 
 		// Meta boxes for posts and pages.
 		add_action( 'add_meta_boxes', array( $this, 'add_translation_meta_boxes' ), 10, 2 );
@@ -279,6 +281,17 @@ class Multilify {
 	 * @param string $hook Current admin page hook suffix.
 	 */
 	public function enqueue_admin_assets( $hook ) {
+		// An entry list only needs the stylesheet, for the language badges.
+		if ( 'edit.php' === $hook ) {
+			$screen = get_current_screen();
+
+			if ( $screen instanceof WP_Screen && count( $this->get_languages() ) > 1 && in_array( $screen->post_type, $this->get_translatable_post_types(), true ) ) {
+				wp_enqueue_style( 'multilify-admin', MULTILIFY_ASSETS_URL . 'css/multilify-admin.css', array(), MULTILIFY_VERSION );
+			}
+
+			return;
+		}
+
 		$editor = in_array( $hook, array( 'post.php', 'post-new.php' ), true );
 
 		// An editor without translation panels has nothing for these to do.
@@ -776,6 +789,95 @@ class Multilify {
 				);
 			}
 		}
+	}
+
+	/**
+	 * Add a Languages column to the list of every translatable post type.
+	 *
+	 * The settings screen counts translations per language; this is the same
+	 * fact per entry, where an editor decides what to translate next. With one
+	 * language there is nothing to compare, so the column stays away.
+	 */
+	public function register_language_columns() {
+		if ( count( $this->get_languages() ) < 2 ) {
+			return;
+		}
+
+		foreach ( $this->get_translatable_post_types() as $post_type ) {
+			add_filter( 'manage_' . $post_type . '_posts_columns', array( $this, 'add_languages_column' ) );
+			add_action( 'manage_' . $post_type . '_posts_custom_column', array( $this, 'render_languages_column' ), 10, 2 );
+		}
+	}
+
+	/**
+	 * Place the column right after the title, ahead of the dates and counts.
+	 *
+	 * @param array $columns Columns of the list, keyed by name.
+	 * @return array Columns with the language column added.
+	 */
+	public function add_languages_column( $columns ) {
+		$label = __( 'Languages', 'multilify' );
+		$added = array();
+
+		foreach ( $columns as $name => $heading ) {
+			$added[ $name ] = $heading;
+
+			if ( 'title' === $name ) {
+				$added['multilify_languages'] = $label;
+			}
+		}
+
+		// A list without a title column takes it last.
+		if ( ! isset( $added['multilify_languages'] ) ) {
+			$added['multilify_languages'] = $label;
+		}
+
+		return $added;
+	}
+
+	/**
+	 * Print one badge per language, filled in once the entry has text in it.
+	 *
+	 * The list query primes the post meta cache, so these reads cost no query.
+	 * The default language is left out: the entry itself is that language.
+	 *
+	 * @param string $column  Column being printed.
+	 * @param int    $post_id Entry of the row.
+	 */
+	public function render_languages_column( $column, $post_id ) {
+		if ( 'multilify_languages' !== $column ) {
+			return;
+		}
+
+		$default = $this->get_default_language();
+
+		echo '<ul class="multilify-langs">';
+
+		foreach ( $this->get_languages() as $language ) {
+			if ( $default === $language['code'] ) {
+				continue;
+			}
+
+			$name       = '' !== trim( (string) $language['name'] ) ? $language['name'] : $language['code'];
+			$translated = $this->has_translation( $post_id, $language['code'] );
+
+			if ( $translated ) {
+				/* translators: %s: language name. */
+				$state = sprintf( __( '%s: translated', 'multilify' ), $name );
+			} else {
+				/* translators: %s: language name. */
+				$state = sprintf( __( '%s: not translated', 'multilify' ), $name );
+			}
+
+			printf(
+				'<li class="multilify-langs__code%1$s" title="%2$s"><span aria-hidden="true">%3$s</span><span class="screen-reader-text">%2$s</span></li>',
+				esc_attr( $translated ? ' is-translated' : '' ),
+				esc_attr( $state ),
+				esc_html( $language['code'] )
+			);
+		}
+
+		echo '</ul>';
 	}
 
 	/**

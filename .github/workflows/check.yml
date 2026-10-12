@@ -1,0 +1,43 @@
+# Runs on every pull request and on pushes to main: a syntax check of every PHP
+# file across the versions the plugin declares (Requires PHP 7.4) and the same
+# Plugin Check that WordPress.org scans a submission with. The local gate is
+# phpcs --standard=PluginCheck at zero findings; this is that gate, run where a
+# reviewer can see it.
+name: Check
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: PHP ${{ matrix.php }} syntax
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ["7.4", "8.0", "8.2", "8.4"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          coverage: none
+      - name: php -l
+        run: |
+          set -e
+          find . -name '*.php' -not -path './.git/*' -print0 | xargs -0 -n1 php -l
+
+  plugin-check:
+    name: Plugin Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: WordPress/plugin-check-action@v1
+        with:
+          # The repository root is the plugin, so it is checked in place.
+          build-dir: ./
