@@ -4,7 +4,7 @@ Tags: multilingual, translation, language, i18n, localization
 Requires at least: 5.8
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.6.0
+Stable tag: 1.7.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -21,7 +21,7 @@ Powerful multilingual content management for WordPress with custom slugs and SEO
 * **hreflang Tags** - `rel="alternate"` tags in `<head>`, plus `x-default`, so search engines index each language correctly
 * **Correct Page Language** - `<html lang>` and a `Content-Language` header follow the language being viewed
 * **Browser Language Detection** - First-time visitors land in the language their browser asks for; their own choice is remembered afterward
-* **Translation Progress** - The settings page shows how many entries each language still needs
+* **Translation Progress** - The settings page shows how many entries each language still needs, and the Posts and Pages lists show which languages each entry already has
 * **Flag Picker** - Choose a flag from a grid instead of hunting for the emoji
 * **Performance First** - Object caching on the slug lookup, with an index to match
 * **Visual Editor** - Translate content using the familiar WordPress editor
@@ -158,12 +158,16 @@ You can get support through the WordPress.org support forums or by contacting us
 
 == Screenshots ==
 
-1. Language management page - Add and manage your languages
-2. Translation meta boxes - Translate content directly in the editor
-3. Language switcher - Display language options to your visitors
-4. Settings page - Configure your multilingual setup
+1. The Languages screen: every language with its code, flag and how much of the site it already covers, and the form that adds one, flag picker included
+2. The editor: one panel per language with the translated title, the slug that language uses in the address, and its own content editor
+3. The switcher on a published entry, flags and names, with the current language marked
+4. The guide at the foot of the Languages screen: what the addresses look like, where the shortcode goes, and what search engines are told
 
 == Changelog ==
+
+= 1.7.0 =
+Added
+* A Languages column on the Posts and Pages lists, and on the list of any post type handed to `multilify_post_types`: one badge per language, filled in once the entry has a title, content or slug in that language. It can be hidden from Screen Options like any other column
 
 = 1.6.0 =
 Fixes
@@ -338,6 +342,9 @@ Changed
 * Translation meta boxes
 
 == Upgrade Notice ==
+
+= 1.7.0 =
+Adds a Languages column to the Posts and Pages lists, showing which languages each entry already has. No action needed after updating.
 
 = 1.6.0 =
 Routing fixes: comment pages, typed feeds and search pages under a prefix, ?lang= no longer overrides the address, and /en/-style addresses of the default language redirect to the bare one. Deactivation removes the plugin's rules. Network activation reaches every site.

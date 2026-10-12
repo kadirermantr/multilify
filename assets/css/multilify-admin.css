@@ -790,6 +790,59 @@
 	}
 }
 
+/* ------------------------------------------------------------ entry lists */
+
+/* The Posts and Pages lists carry one badge per language, set like the codes
+   on the settings screen and filled in once the entry has text in that
+   language. The list sits outside .multilify-admin, so the badge brings the
+   few values it needs. */
+.multilify-langs {
+	--mlf-accent: #2f4b7c;
+	--mlf-accent-soft: #eaf0f8;
+	--mlf-ink-faint: #646d78;
+	--mlf-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+	display: inline-flex;
+	flex-wrap: wrap;
+	gap: 4px;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.multilify-langs__code {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 30px;
+	margin: 0;
+	padding: 2px 6px;
+	font-family: var(--mlf-mono);
+	font-size: 11px;
+	font-weight: 600;
+	letter-spacing: 0.06em;
+	line-height: 1.5;
+	color: var(--mlf-ink-faint);
+	background: #f0f0f1;
+	border: 1px solid transparent;
+	border-radius: 3px;
+}
+
+.multilify-langs__code.is-translated {
+	color: var(--mlf-accent);
+	background: var(--mlf-accent-soft);
+}
+
+@media ( forced-colors: active ) {
+	.multilify-langs__code {
+		border-color: CanvasText;
+	}
+
+	.multilify-langs__code.is-translated {
+		color: Highlight;
+		border-color: Highlight;
+	}
+}
+
 @media ( prefers-reduced-motion: reduce ) {
 	.multilify-admin * {
 		transition: none !important;

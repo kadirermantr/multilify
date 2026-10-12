@@ -2,10 +2,10 @@
 # This file is distributed under the GPL v2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: Multilify 1.6.0\n"
+"Project-Id-Version: Multilify 1.7.0\n"
 "Report-Msgid-Bugs-To: https://github.com/kadirermantr/multilify/issues\n"
 "POT-Creation-Date: 2026-10-10 11:01+0300\n"
-"PO-Revision-Date: 2026-10-10 11:02\n"
+"PO-Revision-Date: 2026-10-12 21:35\n"
 "Last-Translator: Kadir Erman <kadirermantr@gmail.com>\n"
 "Language-Team: Turkish <https://translate.wordpress.org/projects/wp-plugins/"
 "multilify/>\n"
@@ -433,3 +433,15 @@ msgstr "%s kopyala"
 #, php-format
 msgid "Content in %s"
 msgstr "%s içeriği"
+
+#. translators: %s: language name.
+#: includes/class-multilify.php:866
+#, php-format
+msgid "%s: translated"
+msgstr "%s: çevrildi"
+
+#. translators: %s: language name.
+#: includes/class-multilify.php:869
+#, php-format
+msgid "%s: not translated"
+msgstr "%s: çevrilmedi"
