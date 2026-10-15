@@ -42,7 +42,7 @@ msgstr "Kopyalamak için Ctrl+C'ye basın"
 #: includes/class-multilify.php:753
 #, php-format
 msgid "%1$s %2$s Translation"
-msgstr "%1$s %2$s Çevirisi"
+msgstr "%1$s %2$s çevirisi"
 
 #. translators: Appended to a translation panel's title once the entry has text in that language.
 #: includes/class-multilify.php:765
@@ -69,7 +69,7 @@ msgstr[0] "%1$s dil"
 #, php-format
 msgid "%2$s entry to translate"
 msgid_plural "%2$s entries to translate"
-msgstr[0] "çevrilecek %2$s içerik"
+msgstr[0] "çevrilecek %2$s kayıt"
 
 #: includes/views/admin-page.php:45
 msgid ""
@@ -113,9 +113,7 @@ msgstr ""
 msgid ""
 "A post or page already lives at that address. Change its slug first, or pick "
 "another code."
-msgstr ""
-"Bu adreste zaten bir yazı ya da sayfa var. Önce onun slug değerini "
-"değiştirin ya da başka bir kod seçin."
+msgstr "Bu adreste zaten bir yazı ya da sayfa var. Önce onun adres son ekini değiştirin ya da başka bir kod seçin."
 
 #: includes/views/admin-page.php:73
 msgid "That did not go through. Try again."
@@ -225,7 +223,7 @@ msgstr "Dili ekle"
 
 #: includes/views/admin-page.php:328
 msgid "How translating works"
-msgstr "Çeviri nasıl çalışır?"
+msgstr "Çeviri nasıl çalışır"
 
 #: includes/views/admin-page.php:332
 msgid "Translate a post or page"
@@ -235,9 +233,7 @@ msgstr "Bir yazıyı ya da sayfayı çevirin"
 msgid ""
 "Open any post or page. Each language gets its own panel where you can set a "
 "title, the content, and the slug that language uses in the URL."
-msgstr ""
-"Herhangi bir yazıyı ya da sayfayı açın. Her dil kendi panelini alır; "
-"başlığı, içeriği ve o dilin adreste kullandığı son eki buradan girersiniz."
+msgstr "Herhangi bir yazıyı ya da sayfayı açın. Her dil kendi panosunu alır; başlığı, içeriği ve o dilin adreste kullandığı adres son ekini buradan girersiniz."
 
 #: includes/views/admin-page.php:334
 msgid ""
@@ -249,15 +245,13 @@ msgstr ""
 
 #: includes/views/admin-page.php:338
 msgid "What the URLs look like"
-msgstr "Adresler nasıl görünür?"
+msgstr "Adresler nasıl görünür"
 
 #: includes/views/admin-page.php:339
 msgid ""
 "The default language keeps the address it already has. Every other language "
 "serves the same entry under its own prefix:"
-msgstr ""
-"Varsayılan dil mevcut adresini korur. Diğer her dil aynı içeriği kendi öneki "
-"altında sunar:"
+msgstr "Varsayılan dil mevcut adresini korur. Diğer her dil aynı kaydı kendi öneki altında sunar:"
 
 #: includes/views/admin-page.php:348
 msgid "Show the language switcher"
@@ -290,10 +284,7 @@ msgid ""
 "Multilify adds hreflang tags to each entry and to the homepage so search "
 "engines know which languages an entry exists in, and sets the page language "
 "so screen readers pronounce it correctly."
-msgstr ""
-"Multilify her içeriğe ve giriş sayfasına hreflang etiketleri ekler, böylece "
-"arama motorları içeriğin hangi dillerde bulunduğunu bilir. Sayfa dilini de "
-"ayarladığı için ekran okuyucular metni doğru telaffuz eder."
+msgstr "Multilify her kayda ve giriş sayfasına hreflang etiketleri ekler, böylece arama motorları kaydın hangi dillerde bulunduğunu bilir. Sayfa dilini de ayarladığı için ekran okuyucular metni doğru telaffuz eder."
 
 #: includes/views/admin-page.php:379
 msgid ""
@@ -328,9 +319,7 @@ msgstr "Dili sil"
 msgid ""
 "Anything filled in here replaces the entry's own title, content or address "
 "in the default language. Leave a field empty to keep the original."
-msgstr ""
-"Buraya yazdıklarınız, varsayılan dilde asıl başlığın, içeriğin ya da adresin "
-"yerine geçer. Boş bıraktığınız alanlarda asıl değer kullanılır."
+msgstr "Buraya yazdıklarınız, varsayılan dilde kaydın kendi başlığının, içeriğinin ya da adresinin yerine geçer. Boş bıraktığınız alanlarda özgün değer korunur."
 
 #: includes/views/meta-box.php:18
 msgid ""
@@ -382,10 +371,7 @@ msgid ""
 "A powerful multilingual content management system for WordPress. Supports "
 "unlimited languages with custom slugs, SEO optimization, and performance "
 "caching."
-msgstr ""
-"WordPress için güçlü, çok dilli bir içerik yönetim sistemi. Sınırsız dil, "
-"her dil için özel adres son eki, SEO iyileştirmesi ve performans için "
-"önbellekleme sunar."
+msgstr "WordPress için güçlü, çok dilli bir içerik yönetim sistemi. Sınırsız dil, her dil için özel adres son eki, SEO iyileştirmesi ve başarım için önbellekleme sunar."
 
 #. Author of the plugin
 #: multilify.php
@@ -402,7 +388,7 @@ msgstr "https://kadirerman.com"
 #, php-format
 msgid "%1$s of %2$s entry translated"
 msgid_plural "%1$s of %2$s entries translated"
-msgstr[0] "%2$s içerikten %1$s tanesi çevrildi"
+msgstr[0] "%2$s kayıttan %1$s tanesi çevrildi"
 
 #. translators: %s: language name.
 #: includes/views/admin-page.php:148
@@ -426,7 +412,7 @@ msgstr "%s dilini sil"
 #: includes/views/admin-page.php:353 includes/views/admin-page.php:361
 #, php-format
 msgid "Copy %s"
-msgstr "%s kopyala"
+msgstr "%s ögesini kopyala"
 
 #. translators: %s: language name.
 #: includes/views/meta-box.php:66
