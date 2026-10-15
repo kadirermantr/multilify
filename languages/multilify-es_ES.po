@@ -341,7 +341,7 @@ msgid ""
 "in the default language. Leave a field empty to keep the original."
 msgstr ""
 "Lo que rellenes aquí sustituye al título, al contenido o a la dirección de "
-"la propia entrada en el idioma predeterminado. Si dejas un campo vacío, se "
+"la propia entrada en el idioma por defecto. Si dejas un campo vacío, se "
 "mantiene el original."
 
 #: includes/views/meta-box.php:18
