@@ -180,7 +180,6 @@ Admin
 * The Copy buttons announce "Copied" through a status region screen readers pick up
 * Labels under 12px were raised to 12px, and the edit form uses the same input size as the add form
 * Code examples read left to right in a right-to-left admin, and the arrow keys in the flag picker follow the reading direction
-* The list of languages is announced as a list with its item count
 * A flags-only switcher, `show_name="false"`, underlines the current language's flag
 
 = 1.7.0 =

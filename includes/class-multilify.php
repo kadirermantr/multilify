@@ -144,6 +144,9 @@ class Multilify {
 		add_action( 'template_redirect', array( $this, 'maybe_redirect_to_browser_language' ) );
 		// And send an entry's own name to the address its default language gave it.
 		add_action( 'template_redirect', array( $this, 'redirect_to_translated_permalink' ) );
+		// Core sends a front page query to the bare home, which stripped the
+		// prefix from /{lang}/ on a site with a static front page.
+		add_filter( 'redirect_canonical', array( $this, 'filter_front_page_canonical' ), 10, 2 );
 	}
 
 	/**
@@ -1554,6 +1557,39 @@ class Multilify {
 	}
 
 	/**
+	 * Keep a language's front page at the language home.
+	 *
+	 * redirect_canonical() sends any request for the static front page to
+	 * home_url( '/' ), so /tr/ bounced to / and the language was lost. The
+	 * language home stays put, and the page's own slug under a prefix goes
+	 * to the language home, as /front-page/ goes to / in core.
+	 *
+	 * @param string|false $redirect_url  Address core would redirect to.
+	 * @param string       $requested_url Address that was requested.
+	 * @return string|false Address to redirect to, or false to stay.
+	 */
+	public function filter_front_page_canonical( $redirect_url, $requested_url = '' ) {
+		$front_page = $this->front_page_id();
+
+		if ( ! $redirect_url || ! $front_page || get_queried_object_id() !== $front_page ) {
+			return $redirect_url;
+		}
+
+		list( $prefixed, $lang ) = $this->request_language();
+
+		// The default language's prefix is handled by its own redirect.
+		if ( ! $prefixed || $lang === $this->get_default_language() ) {
+			return $redirect_url;
+		}
+
+		$home           = $this->get_language_url( $lang );
+		$home_path      = trailingslashit( (string) wp_parse_url( $home, PHP_URL_PATH ) );
+		$requested_path = trailingslashit( (string) wp_parse_url( $requested_url, PHP_URL_PATH ) );
+
+		return $requested_path === $home_path ? false : $home;
+	}
+
+	/**
 	 * Read the static front page set under Settings, Reading.
 	 *
 	 * @return int Page ID, or 0 when the front page lists the latest posts.
@@ -2656,6 +2692,12 @@ class Multilify {
 			return;
 		}
 
+		// The front page's address is the language home, which
+		// filter_front_page_canonical() keeps.
+		if ( $post->ID === $this->front_page_id() ) {
+			return;
+		}
+
 		$lang       = $this->get_current_language();
 		$is_default = ( $lang === $this->get_default_language() );
 		$custom     = (string) get_post_meta( $post->ID, '_multilang_slug_' . $lang, true );
@@ -2694,15 +2736,10 @@ class Multilify {
 			$parts = explode( '/', $candidate[0] );
 
 			// The split is the right one only when what is left names the entry.
-			if ( end( $parts ) !== $post->post_name && end( $parts ) !== $custom ) {
+			// An empty segment never names the entry, even when the entry has
+			// no translated slug to compare it with.
+			if ( '' === end( $parts ) || ( end( $parts ) !== $post->post_name && end( $parts ) !== $custom ) ) {
 				continue;
-			}
-
-			// The front page asked for by its slug goes to the language home,
-			// as core sends /front-page/ to / in the default language.
-			if ( $post->ID === $this->front_page_id() ) {
-				wp_safe_redirect( $this->get_language_url( $lang ), 301 );
-				exit;
 			}
 
 			if ( $canonical === $candidate[0] ) {

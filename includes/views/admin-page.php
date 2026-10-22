@@ -86,8 +86,7 @@ $multilify_nonce = '<input type="hidden" name="_wpnonce" value="' . esc_attr( wp
 			<?php esc_html_e( 'The default language keeps your existing URLs. Every other language serves its content under its own prefix.', 'multilify' ); ?>
 		</p>
 
-		<?php // A list, so a screen reader announces how many languages there are. ?>
-		<div class="multilify-entries"<?php echo empty( $languages ) ? '' : ' role="list"'; ?>>
+		<div class="multilify-entries">
 			<?php if ( empty( $languages ) ) : ?>
 				<p class="multilify-empty">
 					<?php esc_html_e( 'No languages yet. Add one below to start translating.', 'multilify' ); ?>
@@ -102,7 +101,7 @@ $multilify_nonce = '<input type="hidden" name="_wpnonce" value="' . esc_attr( wp
 						: $multilify_code;
 					$multilify_count      = isset( $multilify_done[ $multilify_code ] ) ? (int) $multilify_done[ $multilify_code ] : 0;
 					?>
-					<div role="listitem" class="multilify-entry<?php echo $multilify_is_default ? ' multilify-entry--default' : ''; ?>">
+					<div class="multilify-entry<?php echo $multilify_is_default ? ' multilify-entry--default' : ''; ?>">
 
 						<div class="multilify-entry__headword">
 							<span class="multilify-code"><?php echo esc_html( $multilify_code ); ?></span>
