@@ -1586,7 +1586,17 @@ class Multilify {
 		$home_path      = trailingslashit( (string) wp_parse_url( $home, PHP_URL_PATH ) );
 		$requested_path = trailingslashit( (string) wp_parse_url( $requested_url, PHP_URL_PATH ) );
 
-		return $requested_path === $home_path ? false : $home;
+		if ( $requested_path === $home_path ) {
+			return false;
+		}
+
+		// /{lang}/page/2/ is the second part of a front page split with
+		// <!--nextpage-->, and stays where it is.
+		if ( 0 === strpos( $requested_path, $home_path ) && preg_match( '#^page/[0-9]+/$#', substr( $requested_path, strlen( $home_path ) ) ) ) {
+			return false;
+		}
+
+		return $home;
 	}
 
 	/**
