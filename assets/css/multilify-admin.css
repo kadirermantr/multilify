@@ -190,7 +190,7 @@
 	align-items: center;
 	gap: 5px;
 	padding: 2px 8px;
-	font-size: 11px;
+	font-size: 12px;
 	font-weight: 600;
 	letter-spacing: 0.02em;
 	border-radius: 999px;
@@ -268,20 +268,19 @@
 }
 
 .multilify-editform label {
-	font-size: 11px;
+	font-size: 12px;
 	font-weight: 600;
-	letter-spacing: 0.04em;
 	color: var(--mlf-ink-soft);
 }
 
 .multilify-editform input[type="text"] {
-	height: 32px;
-	padding: 0 9px;
+	height: 36px;
+	padding: 0 11px;
 	border: 1px solid var(--mlf-input-border);
 	border-radius: 4px;
 	background: var(--mlf-surface);
 	color: var(--mlf-ink);
-	font-size: 13px;
+	font-size: 14px;
 }
 
 .multilify-editform input[type="text"]:focus {
@@ -369,6 +368,14 @@
 	background: var(--mlf-surface-sunken);
 	border: 1px solid var(--mlf-rule);
 	white-space: nowrap;
+	/* URLs and PHP read left to right in a right-to-left admin as well. */
+	direction: ltr;
+	unicode-bidi: isolate;
+}
+
+.multilify-snippet pre code {
+	display: block;
+	text-align: left;
 }
 
 .multilify-addform__submit {
@@ -387,8 +394,7 @@
 }
 
 .multilify-editform .multilify-field__label {
-	font-size: 11px;
-	letter-spacing: 0.04em;
+	font-size: 12px;
 	color: var(--mlf-ink-soft);
 }
 
@@ -571,7 +577,7 @@
 	top: 6px;
 	inset-inline-end: 6px;
 	padding: 4px 9px;
-	font-size: 11px;
+	font-size: 12px;
 	font-weight: 600;
 	line-height: 1.6;
 	color: var(--mlf-ink-soft);
@@ -732,6 +738,13 @@
 /* ------------------------------------------------------------- responsive */
 
 @media ( max-width: 782px ) {
+	.multilify-editform input[type="text"],
+	.multilify-addform input[type="text"],
+	.multilify-meta-box .multilify-field input[type="text"] {
+		height: 40px;
+		font-size: 16px;
+	}
+
 	.multilify-entry {
 		grid-template-columns: minmax( 0, 1fr );
 		align-items: start;
@@ -823,13 +836,16 @@
 	line-height: 1.5;
 	color: var(--mlf-ink-faint);
 	background: #f0f0f1;
-	border: 1px solid transparent;
+	/* Dashed for missing, solid for translated, so the state does not rest on color. */
+	border: 1px dashed #a7aaad;
 	border-radius: 3px;
 }
 
 .multilify-langs__code.is-translated {
 	color: var(--mlf-accent);
 	background: var(--mlf-accent-soft);
+	border-style: solid;
+	border-color: var(--mlf-accent);
 }
 
 @media ( forced-colors: active ) {

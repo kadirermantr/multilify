@@ -46,6 +46,9 @@ $multilify_nonce = '<input type="hidden" name="_wpnonce" value="' . esc_attr( wp
 		</p>
 	</div>
 
+	<?php // Core moves admin notices here; without it they land inside the masthead grid. ?>
+	<hr class="wp-header-end">
+
 	<?php
 	// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 	if ( isset( $_GET['multilify_updated'] ) && '1' === $_GET['multilify_updated'] ) :
@@ -351,16 +354,18 @@ $multilify_nonce = '<input type="hidden" name="_wpnonce" value="' . esc_attr( wp
 					<pre><code>[multilify_switcher]</code></pre>
 					<button type="button" class="multilify-copy" data-multilify-copy="[multilify_switcher]"
 							aria-label="<?php echo esc_attr( sprintf( /* translators: %s: the snippet the button copies. */ __( 'Copy %s', 'multilify' ), '[multilify_switcher]' ) ); ?>">
-						<span class="multilify-copy__label" aria-live="polite"><?php esc_html_e( 'Copy', 'multilify' ); ?></span>
+						<span class="multilify-copy__label"><?php esc_html_e( 'Copy', 'multilify' ); ?></span>
 					</button>
+					<span class="screen-reader-text" role="status" data-multilify-copy-status></span>
 				</div>
 				<p><?php esc_html_e( 'Or call it from a theme template:', 'multilify' ); ?></p>
 				<div class="multilify-snippet">
 					<pre><code>&lt;?php multilify_switcher(); ?&gt;</code></pre>
 					<button type="button" class="multilify-copy" data-multilify-copy="&lt;?php multilify_switcher(); ?&gt;"
 							aria-label="<?php echo esc_attr( sprintf( /* translators: %s: the snippet the button copies. */ __( 'Copy %s', 'multilify' ), '<?php multilify_switcher(); ?>' ) ); ?>">
-						<span class="multilify-copy__label" aria-live="polite"><?php esc_html_e( 'Copy', 'multilify' ); ?></span>
+						<span class="multilify-copy__label"><?php esc_html_e( 'Copy', 'multilify' ); ?></span>
 					</button>
+					<span class="screen-reader-text" role="status" data-multilify-copy-status></span>
 				</div>
 				<p>
 					<?php

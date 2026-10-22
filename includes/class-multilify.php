@@ -80,6 +80,9 @@ class Multilify {
 		add_action( 'added_post_meta', array( $this, 'forget_meta_route' ), 10, 4 );
 		add_action( 'updated_post_meta', array( $this, 'forget_meta_route' ), 10, 4 );
 		add_action( 'deleted_post_meta', array( $this, 'forget_meta_route' ), 10, 4 );
+		// delete_post_meta() without a value hands deleted_post_meta an empty
+		// one, so the slug is read while it is still stored.
+		add_action( 'delete_post_meta', array( $this, 'forget_meta_route_before_update' ), 10, 3 );
 
 		// Frontend hooks.
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_frontend_assets' ) );
@@ -89,7 +92,10 @@ class Multilify {
 		// every request. It is one autoloaded option, and the flush it asks for
 		// runs in the same request, below.
 		add_action( 'init', array( $this, 'maybe_upgrade' ) );
-		add_action( 'init', array( $this, 'maybe_flush_rewrite_rules' ) );
+		// wp_loaded, after every init callback: a theme or plugin registering a
+		// post type on init at the default priority ran after the flush, so its
+		// addresses were missing from the rules until the next flush.
+		add_action( 'wp_loaded', array( $this, 'maybe_flush_rewrite_rules' ) );
 		add_action( 'init', array( $this, 'register_sitemap_provider' ) );
 		// Schema work waits for an administrator: admin_init also fires for an
 		// anonymous admin-ajax.php request, and an ALTER TABLE has no place there.
@@ -104,6 +110,9 @@ class Multilify {
 		add_filter( 'request', array( $this, 'filter_request' ), 10, 1 );
 		add_filter( 'pre_get_posts', array( $this, 'detect_language' ) );
 		add_filter( 'posts_search', array( $this, 'filter_search' ), 10, 2 );
+		// Search forms post to the bare home, which searched the default language.
+		add_filter( 'get_search_form', array( $this, 'filter_search_form_action' ) );
+		add_filter( 'render_block_core/search', array( $this, 'filter_search_form_action' ) );
 		add_filter( 'the_title', array( $this, 'filter_title' ), 10, 2 );
 		// Ahead of do_blocks, wpautop, wptexturize and the embeds, so a
 		// translation goes through the same pipeline as the post's own content.
@@ -135,6 +144,9 @@ class Multilify {
 		add_action( 'template_redirect', array( $this, 'maybe_redirect_to_browser_language' ) );
 		// And send an entry's own name to the address its default language gave it.
 		add_action( 'template_redirect', array( $this, 'redirect_to_translated_permalink' ) );
+		// Core sends a front page query to the bare home, which stripped the
+		// prefix from /{lang}/ on a site with a static front page.
+		add_filter( 'redirect_canonical', array( $this, 'filter_front_page_canonical' ), 10, 2 );
 	}
 
 	/**
@@ -1043,7 +1055,7 @@ class Multilify {
 	/**
 	 * Drop the cached routes of an entry whose status changed.
 	 *
-	 * The slug lookup only answers for published entries and caches misses for
+	 * The slug lookup only answers for published and private entries and caches misses for
 	 * an hour, so an entry that is trashed, restored or published has to forget
 	 * its routes or a persistent object cache keeps serving the old answer.
 	 *
@@ -1426,7 +1438,7 @@ class Multilify {
 	 */
 	public function filter_request( $query_vars ) {
 		if ( ! isset( $query_vars['name'] ) && ! isset( $query_vars['pagename'] ) ) {
-			return $query_vars;
+			return $this->route_language_front_page( $query_vars );
 		}
 
 		// The address decides the language, never the lang query variable:
@@ -1503,6 +1515,107 @@ class Multilify {
 		}
 
 		return $query_vars;
+	}
+
+	/**
+	 * Point a bare language home at the static front page.
+	 *
+	 * WordPress swaps an empty request for the page set under Settings,
+	 * Reading, but /tr/ carries lang, so that swap never ran and the language
+	 * home listed the latest posts where the front page belonged.
+	 *
+	 * @param array $query_vars Query variables for the current request.
+	 * @return array Query variables, aimed at the front page on a language home.
+	 */
+	private function route_language_front_page( $query_vars ) {
+		$front_page = $this->front_page_id();
+
+		if ( ! $front_page || empty( $query_vars['lang'] ) ) {
+			return $query_vars;
+		}
+
+		// The same keys core lets through on its own front page swap.
+		if ( array_diff( array_keys( $query_vars ), array( 'lang', 'page', 'paged', 'cpage', 'preview' ) ) ) {
+			return $query_vars;
+		}
+
+		list( $prefixed ) = $this->request_language();
+
+		if ( ! $prefixed ) {
+			return $query_vars;
+		}
+
+		$query_vars['page_id'] = $front_page;
+
+		// A page number on the front page is a <!--nextpage--> part, as in core.
+		if ( ! empty( $query_vars['paged'] ) ) {
+			$query_vars['page'] = $query_vars['paged'];
+			unset( $query_vars['paged'] );
+		}
+
+		return $query_vars;
+	}
+
+	/**
+	 * Keep a language's front page at the language home.
+	 *
+	 * Core's redirect_canonical() sends a request for the static front page to
+	 * home_url( '/' ), so /tr/ bounced to / and the language was lost. The
+	 * language home stays put, and the page's own slug under a prefix goes
+	 * to the language home, as /front-page/ goes to / in core.
+	 *
+	 * @param string|false $redirect_url  Address core would redirect to.
+	 * @param string       $requested_url Address that was requested.
+	 * @return string|false Address to redirect to, or false to stay.
+	 */
+	public function filter_front_page_canonical( $redirect_url, $requested_url = '' ) {
+		$front_page = $this->front_page_id();
+
+		if ( ! $redirect_url || ! $front_page || get_queried_object_id() !== $front_page ) {
+			return $redirect_url;
+		}
+
+		list( $prefixed, $lang ) = $this->request_language();
+
+		// The default language's prefix is handled by its own redirect.
+		if ( ! $prefixed || $lang === $this->get_default_language() ) {
+			return $redirect_url;
+		}
+
+		$home           = $this->get_language_url( $lang );
+		$home_path      = trailingslashit( (string) wp_parse_url( $home, PHP_URL_PATH ) );
+		$requested_path = trailingslashit( (string) wp_parse_url( $requested_url, PHP_URL_PATH ) );
+
+		$target = $home;
+
+		// /{lang}/page/2/ is the second part of a front page split with
+		// <!--nextpage-->, and keeps its page number.
+		if ( 0 === strpos( $requested_path, $home_path ) && preg_match( '#^page/[0-9]+/$#', substr( $requested_path, strlen( $home_path ) ), $tail ) ) {
+			$target = $home . $tail[0];
+		}
+
+		$query = (string) wp_parse_url( $requested_url, PHP_URL_QUERY );
+
+		if ( '' !== $query ) {
+			$target .= '?' . $query;
+		}
+
+		// Already the right address: stay. Otherwise core's host and
+		// trailing slash corrections still apply, with the prefix kept.
+		return $target === $requested_url ? false : $target;
+	}
+
+	/**
+	 * Read the static front page set under Settings, Reading.
+	 *
+	 * @return int Page ID, or 0 when the front page lists the latest posts.
+	 */
+	private function front_page_id() {
+		if ( 'page' !== get_option( 'show_on_front' ) ) {
+			return 0;
+		}
+
+		return (int) get_option( 'page_on_front' );
 	}
 
 	/**
@@ -1708,6 +1821,8 @@ class Multilify {
 		$cached_data = wp_cache_get( $cache_key, 'multilify' );
 
 		if ( false === $cached_data ) {
+			// Private entries resolve too, as their untranslated addresses do;
+			// WP_Query still decides who may see one.
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 			$result = $wpdb->get_row(
 				$wpdb->prepare(
@@ -1715,7 +1830,7 @@ class Multilify {
 					FROM {$wpdb->postmeta} pm
 					INNER JOIN {$wpdb->posts} p ON pm.post_id = p.ID
 					WHERE pm.meta_key = %s AND pm.meta_value = %s
-					AND p.post_status = 'publish'
+					AND p.post_status IN ( 'publish', 'private' )
 					LIMIT 1",
 					'_multilang_slug_' . $lang,
 					$slug
@@ -2243,6 +2358,11 @@ class Multilify {
 		$lang         = $this->get_current_language();
 		$default_lang = $this->get_default_language();
 
+		// The front page lives at the language home, never under its own slug.
+		if ( $post->ID === $this->front_page_id() ) {
+			return $lang === $default_lang ? $url : home_url( '/' . $lang . '/' );
+		}
+
 		// Get custom slug for this language.
 		$custom_slug = get_post_meta( $post->ID, '_multilang_slug_' . $lang, true );
 
@@ -2537,9 +2657,18 @@ class Multilify {
 		$segments = $this->get_request_path_segments();
 		array_shift( $segments );
 
-		$path = implode( '/', array_filter( $segments ) );
+		$path   = implode( '/', array_filter( $segments ) );
+		$target = home_url( '' !== $path ? user_trailingslashit( '/' . $path ) : '/' );
 
-		wp_safe_redirect( home_url( '' !== $path ? user_trailingslashit( '/' . $path ) : '/' ), 301 );
+		// The query string travels along: /en/?s=harbour lost its search.
+		// Sanitized with its leading ?, or esc_url_raw() reads it as a host.
+		$query = isset( $_SERVER['QUERY_STRING'] ) ? esc_url_raw( '?' . wp_unslash( $_SERVER['QUERY_STRING'] ) ) : '';
+
+		if ( '' !== $query && '?' !== $query ) {
+			$target .= $query;
+		}
+
+		wp_safe_redirect( $target, 301 );
 		exit;
 	}
 
@@ -2576,6 +2705,12 @@ class Multilify {
 
 		// Only a translated type has an address of its own per language.
 		if ( ! in_array( $post->post_type, $this->get_translatable_post_types(), true ) ) {
+			return;
+		}
+
+		// The front page's address is the language home, which
+		// filter_front_page_canonical() keeps.
+		if ( $post->ID === $this->front_page_id() ) {
 			return;
 		}
 
@@ -2617,7 +2752,9 @@ class Multilify {
 			$parts = explode( '/', $candidate[0] );
 
 			// The split is the right one only when what is left names the entry.
-			if ( end( $parts ) !== $post->post_name && end( $parts ) !== $custom ) {
+			// An empty segment never names the entry, even when the entry has
+			// no translated slug to compare it with.
+			if ( '' === end( $parts ) || ( end( $parts ) !== $post->post_name && end( $parts ) !== $custom ) ) {
 				continue;
 			}
 
@@ -2790,7 +2927,9 @@ class Multilify {
 
 		$post = get_post( $post_id );
 
-		if ( ! $post instanceof WP_Post ) {
+		// The front page is the language home, so the switcher and hreflang
+		// point there rather than at the page's slug.
+		if ( ! $post instanceof WP_Post || $post->ID === $this->front_page_id() ) {
 			return $is_default ? home_url( '/' ) : home_url( '/' . $lang_code . '/' );
 		}
 
@@ -3067,6 +3206,33 @@ class Multilify {
 		$translated_title = apply_filters( 'multilify_translated_title', $translated_title, $title, $post->ID, $lang );
 
 		return ! empty( $translated_title ) ? $translated_title : $title;
+	}
+
+	/**
+	 * Point a search form on a language page at that language's home.
+	 *
+	 * Forms post to the bare home URL, so a search from /tr/ ran in the
+	 * default language and never reached the translated matches.
+	 *
+	 * @param string $form Search form markup.
+	 * @return string Markup with the language home as its action.
+	 */
+	public function filter_search_form_action( $form ) {
+		$lang = $this->get_current_language();
+
+		if ( is_admin() || '' === $lang || $lang === $this->get_default_language() || ! is_string( $form ) ) {
+			return $form;
+		}
+
+		$home   = esc_url( home_url( '/' ) );
+		$target = esc_url( $this->get_language_url( $lang ) );
+
+		// Both the classic form and the search block print the home URL this way.
+		return str_replace(
+			array( 'action="' . $home . '"', "action='" . $home . "'" ),
+			array( 'action="' . $target . '"', "action='" . $target . "'" ),
+			$form
+		);
 	}
 
 	/**
