@@ -4,7 +4,7 @@ Tags: multilingual, translation, language, i18n, localization
 Requires at least: 5.8
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.7.0
+Stable tag: 1.7.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -164,6 +164,24 @@ You can get support through the WordPress.org support forums or by contacting us
 4. The guide at the foot of the Languages screen: what the addresses look like, where the shortcode goes, and what search engines are told
 
 == Changelog ==
+
+= 1.7.1 =
+Fixes
+* On a site whose front page is a static page, `/{lang}/` listed the latest posts instead of that page, and the switcher and hreflang tags sent every language to the page's slug. The language home now shows the front page, its translated title and content included, and `/{lang}/<front-page-slug>/` redirects to `/{lang}/`
+* A search form on a language page searched the default language. Classic search forms and the Search block now submit to the language home
+* `/en/?s=term` and other addresses carrying the default language's prefix lost their query string on the redirect to the bare address
+* Rewrite rules were rebuilt before themes and plugins registered their post types on `init`, so those types' addresses could 404 until the next rebuild
+* A translated slug removed with `delete_post_meta()` and no value, as WP-CLI does, kept resolving from a persistent object cache for up to an hour
+* A private page's translated address returned a 404 to editors who can read it
+
+Admin
+* The Languages column marks a missing translation with a dashed badge and a translated one with a solid border, so the state no longer rests on color alone
+* Inputs on the settings screen and in the editor panel are 40px tall with 16px text on phones, which also stops iOS from zooming in on focus
+* The Copy buttons announce "Copied" through a status region screen readers pick up
+* Labels under 12px were raised to 12px, and the edit form uses the same input size as the add form
+* Code examples read left to right in a right-to-left admin, and the arrow keys in the flag picker follow the reading direction
+* The list of languages is announced as a list with its item count
+* A flags-only switcher, `show_name="false"`, underlines the current language's flag
 
 = 1.7.0 =
 Added
@@ -342,6 +360,9 @@ Changed
 * Translation meta boxes
 
 == Upgrade Notice ==
+
+= 1.7.1 =
+Fixes the language home on sites with a static front page, keeps searches in the language they were made in, and improves the admin screens on phones and for screen readers. No action needed after updating.
 
 = 1.7.0 =
 Adds a Languages column to the Posts and Pages lists, showing which languages each entry already has. No action needed after updating.

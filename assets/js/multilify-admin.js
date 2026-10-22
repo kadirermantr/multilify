@@ -232,13 +232,19 @@
                 $button.data('originalLabel', original);
             }
 
+            // A live region inside a button is not reliably announced, so the
+            // result is also written to a status region beside it.
+            var $status = $button.siblings('[data-multilify-copy-status]');
+
             function report(message, ok) {
                 $label.text(message);
+                $status.text(message);
                 $button.toggleClass('is-copied', ok);
 
                 window.clearTimeout($button.data('resetTimer'));
                 $button.data('resetTimer', window.setTimeout(function() {
                     $label.text(original);
+                    $status.text('');
                     $button.removeClass('is-copied');
                 }, 2000));
             }
@@ -314,6 +320,12 @@
 
                 var index = $options.index(this);
                 var step = (e.key === 'ArrowRight' || e.key === 'ArrowDown') ? 1 : -1;
+
+                // In a right-to-left admin the grid starts on the right, so
+                // the horizontal arrows swap direction.
+                if (document.documentElement.dir === 'rtl' && (e.key === 'ArrowRight' || e.key === 'ArrowLeft')) {
+                    step = -step;
+                }
                 var next = (index + step + $options.length) % $options.length;
 
                 $options.eq(next).trigger('focus').trigger('click');

@@ -46,6 +46,9 @@ $multilify_nonce = '<input type="hidden" name="_wpnonce" value="' . esc_attr( wp
 		</p>
 	</div>
 
+	<?php // Core moves admin notices here; without it they land inside the masthead grid. ?>
+	<hr class="wp-header-end">
+
 	<?php
 	// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 	if ( isset( $_GET['multilify_updated'] ) && '1' === $_GET['multilify_updated'] ) :
@@ -83,7 +86,8 @@ $multilify_nonce = '<input type="hidden" name="_wpnonce" value="' . esc_attr( wp
 			<?php esc_html_e( 'The default language keeps your existing URLs. Every other language serves its content under its own prefix.', 'multilify' ); ?>
 		</p>
 
-		<div class="multilify-entries">
+		<?php // A list, so a screen reader announces how many languages there are. ?>
+		<div class="multilify-entries"<?php echo empty( $languages ) ? '' : ' role="list"'; ?>>
 			<?php if ( empty( $languages ) ) : ?>
 				<p class="multilify-empty">
 					<?php esc_html_e( 'No languages yet. Add one below to start translating.', 'multilify' ); ?>
@@ -98,7 +102,7 @@ $multilify_nonce = '<input type="hidden" name="_wpnonce" value="' . esc_attr( wp
 						: $multilify_code;
 					$multilify_count      = isset( $multilify_done[ $multilify_code ] ) ? (int) $multilify_done[ $multilify_code ] : 0;
 					?>
-					<div class="multilify-entry<?php echo $multilify_is_default ? ' multilify-entry--default' : ''; ?>">
+					<div role="listitem" class="multilify-entry<?php echo $multilify_is_default ? ' multilify-entry--default' : ''; ?>">
 
 						<div class="multilify-entry__headword">
 							<span class="multilify-code"><?php echo esc_html( $multilify_code ); ?></span>
@@ -351,16 +355,18 @@ $multilify_nonce = '<input type="hidden" name="_wpnonce" value="' . esc_attr( wp
 					<pre><code>[multilify_switcher]</code></pre>
 					<button type="button" class="multilify-copy" data-multilify-copy="[multilify_switcher]"
 							aria-label="<?php echo esc_attr( sprintf( /* translators: %s: the snippet the button copies. */ __( 'Copy %s', 'multilify' ), '[multilify_switcher]' ) ); ?>">
-						<span class="multilify-copy__label" aria-live="polite"><?php esc_html_e( 'Copy', 'multilify' ); ?></span>
+						<span class="multilify-copy__label"><?php esc_html_e( 'Copy', 'multilify' ); ?></span>
 					</button>
+					<span class="screen-reader-text" role="status" data-multilify-copy-status></span>
 				</div>
 				<p><?php esc_html_e( 'Or call it from a theme template:', 'multilify' ); ?></p>
 				<div class="multilify-snippet">
 					<pre><code>&lt;?php multilify_switcher(); ?&gt;</code></pre>
 					<button type="button" class="multilify-copy" data-multilify-copy="&lt;?php multilify_switcher(); ?&gt;"
 							aria-label="<?php echo esc_attr( sprintf( /* translators: %s: the snippet the button copies. */ __( 'Copy %s', 'multilify' ), '<?php multilify_switcher(); ?>' ) ); ?>">
-						<span class="multilify-copy__label" aria-live="polite"><?php esc_html_e( 'Copy', 'multilify' ); ?></span>
+						<span class="multilify-copy__label"><?php esc_html_e( 'Copy', 'multilify' ); ?></span>
 					</button>
+					<span class="screen-reader-text" role="status" data-multilify-copy-status></span>
 				</div>
 				<p>
 					<?php

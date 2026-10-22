@@ -37,6 +37,12 @@
     font-weight: 600;
 }
 
+/* Bold does nothing to an emoji, so a flags-only switcher marks the current language with a rule. */
+.wp-multilang-switcher .lang-link.active:not(:has(.name)) .flag {
+    padding-bottom: 2px;
+    border-bottom: 2px solid currentColor;
+}
+
 .wp-multilang-switcher .flag {
     display: inline-flex;
     line-height: 1;
