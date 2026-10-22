@@ -1586,17 +1586,23 @@ class Multilify {
 		$home_path      = trailingslashit( (string) wp_parse_url( $home, PHP_URL_PATH ) );
 		$requested_path = trailingslashit( (string) wp_parse_url( $requested_url, PHP_URL_PATH ) );
 
-		if ( $requested_path === $home_path ) {
-			return false;
-		}
+		$target = $home;
 
 		// /{lang}/page/2/ is the second part of a front page split with
-		// <!--nextpage-->, and stays where it is.
-		if ( 0 === strpos( $requested_path, $home_path ) && preg_match( '#^page/[0-9]+/$#', substr( $requested_path, strlen( $home_path ) ) ) ) {
-			return false;
+		// <!--nextpage-->, and keeps its page number.
+		if ( 0 === strpos( $requested_path, $home_path ) && preg_match( '#^page/[0-9]+/$#', substr( $requested_path, strlen( $home_path ) ), $tail ) ) {
+			$target = $home . $tail[0];
 		}
 
-		return $home;
+		$query = (string) wp_parse_url( $requested_url, PHP_URL_QUERY );
+
+		if ( '' !== $query ) {
+			$target .= '?' . $query;
+		}
+
+		// Already the right address: stay. Otherwise core's host and
+		// trailing slash corrections still apply, with the prefix kept.
+		return $target === $requested_url ? false : $target;
 	}
 
 	/**
