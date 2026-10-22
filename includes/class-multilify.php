@@ -1559,7 +1559,7 @@ class Multilify {
 	/**
 	 * Keep a language's front page at the language home.
 	 *
-	 * redirect_canonical() sends any request for the static front page to
+	 * Core's redirect_canonical() sends a request for the static front page to
 	 * home_url( '/' ), so /tr/ bounced to / and the language was lost. The
 	 * language home stays put, and the page's own slug under a prefix goes
 	 * to the language home, as /front-page/ goes to / in core.
