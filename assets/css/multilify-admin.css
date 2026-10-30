@@ -1,10 +1,11 @@
 /**
  * Multilify admin styles.
  *
- * The interface borrows from bilingual dictionaries: language codes are set as
- * typographic objects in a monospaced face, entries sit on a ruled column, and
- * color is spent only on state. Everything is scoped under .multilify-admin so
- * the plugin never leaks styles into the rest of wp-admin.
+ * The screens follow WordPress's own settings pages: the languages in a table,
+ * the rarer actions behind a menu, adding a language in a dialog, and one
+ * translations box in the editor with the languages listed on its side. Color
+ * is spent on state and on the admin's own theme color. Everything is scoped
+ * under .multilify-admin, .mfy and .mfy-tr so no style leaks into wp-admin.
  */
 
 .multilify-admin,
@@ -33,331 +34,7 @@
 	color: var(--mlf-ink);
 }
 
-/* ---------------------------------------------------------------- masthead */
-
-/* Title and tally share the top line; the lede runs full width beneath them,
-   so it never wraps early just because the tally is sitting beside it. No row
-   gap: the lede sits right under the title, where it sat when it still shared
-   the title's column. */
-.multilify-masthead {
-	display: grid;
-	grid-template-columns: 1fr auto;
-	align-items: baseline;
-	gap: 0 32px;
-	padding: 0 0 18px;
-	border-bottom: 2px solid var(--mlf-ink);
-	margin: 8px 0 28px;
-}
-
-.multilify-masthead__lede {
-	grid-column: 1 / -1;
-}
-
-.multilify-masthead h1 {
-	margin: 0;
-	padding: 0;
-	font-size: 28px;
-	line-height: 1.15;
-	font-weight: 600;
-	letter-spacing: -0.015em;
-	color: var(--mlf-ink);
-}
-
-.multilify-masthead__lede {
-	margin: 0;
-	font-size: 13px;
-	color: var(--mlf-ink-soft);
-}
-
-/* The count reads as a dictionary's entry tally. No margin: in a baseline
-   aligned grid a paragraph's own margin stretches the title's row and pushes
-   the lede down. */
-.multilify-tally {
-	margin: 0;
-	font-family: var(--mlf-mono);
-	font-size: 12px;
-	letter-spacing: 0.04em;
-	color: var(--mlf-ink-faint);
-	white-space: nowrap;
-}
-
-.multilify-tally strong {
-	color: var(--mlf-ink);
-	font-weight: 600;
-}
-
-/* ---------------------------------------------------------------- sections */
-
-.multilify-section {
-	background: var(--mlf-surface);
-	border: 1px solid var(--mlf-rule);
-	border-radius: var(--mlf-radius);
-	padding: 22px 24px 24px;
-	margin: 0 0 22px;
-}
-
-.multilify-section > h2 {
-	margin: 0 0 4px;
-	padding: 0;
-	font-size: 15px;
-	font-weight: 600;
-	letter-spacing: 0.01em;
-	color: var(--mlf-ink);
-	border: 0;
-}
-
-.multilify-section__note {
-	margin: 0 0 18px;
-	font-size: 13px;
-	color: var(--mlf-ink-soft);
-}
-
-/* ------------------------------------------------------------ entry column */
-
-.multilify-entries {
-	border-top: 1px solid var(--mlf-rule);
-}
-
-.multilify-entry {
-	display: grid;
-	grid-template-columns: minmax(0, 1fr) auto;
-	align-items: center;
-	gap: 16px;
-	padding: 14px 0;
-	border-bottom: 1px solid var(--mlf-rule);
-}
-
-.multilify-entry__headword {
-	display: flex;
-	align-items: center;
-	gap: 14px;
-	min-width: 0;
-}
-
-/* The signature element: the language code set as a fixed-width token. */
-.multilify-code {
-	flex: none;
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	min-width: 56px;
-	padding: 7px 10px;
-	font-family: var(--mlf-mono);
-	font-size: 14px;
-	font-weight: 600;
-	letter-spacing: 0.06em;
-	color: var(--mlf-accent);
-	background: var(--mlf-accent-soft);
-	border: 1px solid transparent;
-	border-radius: 4px;
-}
-
-.multilify-entry--default .multilify-code {
-	color: var(--mlf-positive);
-	background: var(--mlf-positive-soft);
-	border-color: currentColor;
-}
-
-.multilify-entry__gloss {
-	min-width: 0;
-}
-
-.multilify-entry__name {
-	display: block;
-	font-size: 14px;
-	font-weight: 500;
-	line-height: 1.3;
-	color: var(--mlf-ink);
-	overflow-wrap: anywhere;
-}
-
-.multilify-entry__meta {
-	display: flex;
-	align-items: center;
-	gap: 8px;
-	margin-top: 3px;
-	font-size: 12px;
-	color: var(--mlf-ink-faint);
-}
-
-.multilify-flag {
-	font-size: 16px;
-	line-height: 1;
-}
-
-.multilify-badge {
-	display: inline-flex;
-	align-items: center;
-	gap: 5px;
-	padding: 2px 8px;
-	font-size: 12px;
-	font-weight: 600;
-	letter-spacing: 0.02em;
-	border-radius: 999px;
-	color: var(--mlf-positive);
-	background: var(--mlf-positive-soft);
-}
-
-/* How much of a language is done, drawn as the rule the entries already sit
-   on rather than as a second kind of object. */
-.multilify-measure {
-	display: block;
-	width: 220px;
-	max-width: 100%;
-	height: 3px;
-	margin-top: 7px;
-	overflow: hidden;
-	border-radius: 2px;
-	background: var(--mlf-rule);
-}
-
-.multilify-measure__fill {
-	display: block;
-	height: 100%;
-	background: var(--mlf-accent);
-}
-
-.multilify-entry__actions {
-	display: flex;
-	align-items: center;
-	gap: 6px;
-	flex-wrap: wrap;
-	justify-content: flex-end;
-}
-
-.multilify-entry__actions form {
-	display: inline;
-	margin: 0;
-}
-
-.multilify-empty {
-	padding: 28px 0 30px;
-	text-align: center;
-	color: var(--mlf-ink-soft);
-	font-size: 13px;
-	border-bottom: 1px solid var(--mlf-rule);
-}
-
-/* --------------------------------------------------------------- edit form */
-
-.multilify-editrow {
-	padding: 16px 0 18px;
-	border-bottom: 1px solid var(--mlf-rule);
-	border-inline-start: 3px solid var(--mlf-accent);
-	background: var(--mlf-surface-sunken);
-	padding-inline-start: 13px;
-	padding-inline-end: 16px;
-}
-
-.multilify-editrow[hidden] {
-	display: none;
-}
-
-.multilify-editform {
-	display: flex;
-	flex-wrap: wrap;
-	align-items: flex-end;
-	gap: 14px;
-}
-
-.multilify-editform .multilify-field {
-	display: flex;
-	flex-direction: column;
-	gap: 5px;
-	margin: 0;
-}
-
-.multilify-editform label {
-	font-size: 12px;
-	font-weight: 600;
-	color: var(--mlf-ink-soft);
-}
-
-.multilify-editform input[type="text"] {
-	height: 36px;
-	padding: 0 11px;
-	border: 1px solid var(--mlf-input-border);
-	border-radius: 4px;
-	background: var(--mlf-surface);
-	color: var(--mlf-ink);
-	font-size: 14px;
-}
-
-.multilify-editform input[type="text"]:focus {
-	border-color: var( --wp-admin-theme-color, #2271b1 );
-	box-shadow: 0 0 0 1px var( --wp-admin-theme-color, #2271b1 );
-	outline: 2px solid transparent;
-}
-
-.multilify-editform input[disabled] {
-	font-family: var(--mlf-mono);
-	text-align: center;
-	color: var(--mlf-ink-faint);
-	background: var(--mlf-surface-sunken);
-}
-
-.multilify-field--code input { width: 72px; }
-.multilify-field--name input { width: 220px; }
-
-.multilify-field--actions {
-	flex-direction: row;
-	align-items: center;
-	gap: 8px;
-}
-
-/* --------------------------------------------------------------- add form */
-
-/* Three named fields, so the grid is declared as three columns. auto-fit would
-   open a fourth, empty track on a wide screen and push the fields off-center. */
-.multilify-addform {
-	display: grid;
-	grid-template-columns: minmax( 0, 15em ) minmax( 0, 20em ) auto;
-	justify-content: start;
-	gap: 20px 32px;
-	align-items: start;
-}
-
-.multilify-addform .multilify-field {
-	display: flex;
-	flex-direction: column;
-	gap: 6px;
-	margin: 0;
-}
-
-.multilify-addform label {
-	font-size: 12px;
-	font-weight: 600;
-	color: var(--mlf-ink);
-}
-
-.multilify-addform input[type="text"] {
-	height: 36px;
-	padding: 0 11px;
-	border: 1px solid var(--mlf-input-border);
-	border-radius: 4px;
-	background: var(--mlf-surface);
-	color: var(--mlf-ink);
-	font-size: 14px;
-}
-
-.multilify-addform input[type="text"]:focus {
-	border-color: var( --wp-admin-theme-color, #2271b1 );
-	box-shadow: 0 0 0 1px var( --wp-admin-theme-color, #2271b1 );
-	outline: 2px solid transparent;
-}
-
-.multilify-addform input#lang_code {
-	font-family: var(--mlf-mono);
-	letter-spacing: 0.06em;
-}
-
-.multilify-addform .description {
-	margin: 0;
-	font-size: 12px;
-	line-height: 1.45;
-	color: var(--mlf-ink-faint);
-	font-style: normal;
-}
+/* ------------------------------------------------------------------ code */
 
 .multilify-admin code {
 	font-family: var(--mlf-mono);
@@ -378,25 +55,7 @@
 	text-align: left;
 }
 
-.multilify-addform__submit {
-	grid-column: 1 / -1;
-	margin: 4px 0 0;
-	padding-top: 18px;
-	border-top: 1px solid var(--mlf-rule);
-}
-
 /* ------------------------------------------------------------ flag picker */
-
-.multilify-field__label {
-	font-size: 12px;
-	font-weight: 600;
-	color: var(--mlf-ink);
-}
-
-.multilify-editform .multilify-field__label {
-	font-size: 12px;
-	color: var(--mlf-ink-soft);
-}
 
 .multilify-flagpicker {
 	display: flex;
@@ -479,24 +138,6 @@
 	border: solid #fff;
 	border-width: 0 2px 2px 0;
 	transform: translate( 0.5px, -1.5px ) rotate( 45deg );
-}
-
-.multilify-flagpicker__custom {
-	display: flex;
-	align-items: center;
-	gap: 8px;
-	font-size: 12px;
-	color: var(--mlf-ink-soft);
-}
-
-.multilify-flagpicker__custom input[type="text"] {
-	width: 62px;
-	text-align: center;
-	font-size: 15px;
-}
-
-.multilify-field--flagpicker .description {
-	margin-top: 2px;
 }
 
 /* ------------------------------------------------------------------ guide */
@@ -738,23 +379,11 @@
 /* ------------------------------------------------------------- responsive */
 
 @media ( max-width: 782px ) {
-	.multilify-editform input[type="text"],
-	.multilify-addform input[type="text"],
 	.multilify-meta-box .multilify-field input[type="text"] {
 		height: 40px;
 		font-size: 16px;
 	}
 
-	.multilify-entry {
-		grid-template-columns: minmax( 0, 1fr );
-		align-items: start;
-	}
-
-	.multilify-entry__actions {
-		justify-content: flex-start;
-	}
-
-	.multilify-addform,
 	.multilify-guide {
 		grid-template-columns: minmax( 0, 1fr );
 	}
@@ -763,30 +392,9 @@
 		gap: 28px;
 	}
 
-	.multilify-editform,
-	.multilify-editform .multilify-field {
-		width: 100%;
-	}
-
-	.multilify-field--code input,
-	.multilify-field--name input {
-		width: 100%;
-	}
-
 	/* Eight fixed columns are 327px, wider than a phone's section. */
 	.multilify-flagpicker__grid {
 		grid-template-columns: repeat( auto-fill, 34px );
-	}
-}
-
-@media ( max-width: 600px ) {
-	/* Title and tally no longer fit on one line, and core hides horizontal overflow here. */
-	.multilify-masthead {
-		grid-template-columns: minmax( 0, 1fr );
-	}
-
-	.multilify-tally {
-		white-space: normal;
 	}
 }
 
@@ -798,9 +406,6 @@
 		outline-offset: 2px;
 	}
 
-	.multilify-measure__fill {
-		background: Highlight;
-	}
 }
 
 /* ------------------------------------------------------------ entry lists */
@@ -863,5 +468,689 @@
 	.multilify-admin * {
 		transition: none !important;
 		animation: none !important;
+	}
+}
+
+/* ======================================================= admin screens */
+
+.mfy,
+.mfy-add,
+.mfy-tr,
+.mfy-menu {
+	--mfy-accent: var(--wp-admin-theme-color, #2271b1);
+	--mfy-accent-soft: #f0f6fc;
+	--mfy-ink: #1e1e1e;
+	--mfy-soft: #50575e;
+	--mfy-mute: #646970;
+	--mfy-rule: #dcdcde;
+	--mfy-rule-soft: #f0f0f1;
+	--mfy-card: #fff;
+	--mfy-done: #008a20;
+	--mfy-radius: 8px;
+	--mfy-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+}
+
+/* ------------------------------------------------------------ shared bits */
+
+.mfy .mfy-lede {
+	margin: 0;
+	color: var(--mfy-soft);
+	font-size: 13px;
+}
+
+.mfy-badge {
+	display: inline-block;
+	padding: 1px 8px;
+	border-radius: 999px;
+	background: var(--mfy-accent-soft);
+	color: var(--mfy-accent);
+	font-size: 11px;
+	font-weight: 600;
+	line-height: 1.7;
+}
+
+.mfy-muted {
+	color: var(--mfy-mute);
+}
+
+.mfy-bar {
+	display: block;
+	height: 6px;
+	border-radius: 999px;
+	background: #e9e9ea;
+	overflow: hidden;
+}
+
+.mfy-bar > span {
+	display: block;
+	height: 100%;
+	border-radius: inherit;
+	background: var(--mfy-accent);
+}
+
+.mfy-card {
+	background: var(--mfy-card);
+	border: 1px solid var(--mfy-rule);
+	border-radius: var(--mfy-radius);
+	padding: 16px 18px;
+}
+
+.mfy-card p {
+	margin: 0 0 10px;
+	color: var(--mfy-soft);
+}
+
+.mfy-card p:last-child {
+	margin-bottom: 0;
+}
+
+.mfy-card__title {
+	margin: 0 0 6px;
+	font-size: 13px;
+	font-weight: 600;
+}
+
+.mfy-iconbtn {
+	display: inline-grid;
+	place-items: center;
+	width: 30px;
+	height: 30px;
+	padding: 0;
+	border: 0;
+	border-radius: 4px;
+	background: transparent;
+	color: var(--mfy-soft);
+	cursor: pointer;
+}
+
+.mfy-iconbtn .dashicons {
+	line-height: 20px;
+}
+
+.mfy-iconbtn:hover {
+	background: var(--mfy-rule-soft);
+	color: var(--mfy-ink);
+}
+
+.mfy-iconbtn:focus-visible {
+	outline: 2px solid var(--mfy-accent);
+	outline-offset: 1px;
+}
+
+.mfy-empty {
+	margin: 0;
+	padding: 24px;
+	color: var(--mfy-soft);
+}
+
+/* A flag another language shows cannot be picked twice. */
+.multilify-flagpicker__option:disabled {
+	opacity: 0.3;
+	cursor: not-allowed;
+}
+
+/* ------------------------------------------------------------ languages */
+
+/* Core rings a link or button on any focus, a mouse press included, and a
+   closing dialog hands focus back to its button. The ring stays for keyboard
+   users and is dropped after a mouse click. */
+.mfy .button:focus:not(:focus-visible),
+.mfy .page-title-action:focus:not(:focus-visible),
+.mfy a:focus:not(:focus-visible),
+.mfy-iconbtn:focus:not(:focus-visible) {
+	box-shadow: none;
+	outline: none;
+}
+
+/* The add button sits beside the title, as "Add New Page" does; core styles
+   .page-title-action for links, so the button only needs its font back. */
+.mfy .page-title-action {
+	font-family: inherit;
+	cursor: pointer;
+}
+
+.mfy-intro {
+	margin: 4px 0 6px;
+}
+
+/* Core floats the views list; the content below starts on its own line. */
+.mfy .mfy-views {
+	margin-bottom: 14px;
+}
+
+.mfy-lang {
+	display: inline-flex;
+	align-items: center;
+	gap: 10px;
+	font-size: 14px;
+	font-weight: 600;
+}
+
+.mfy-lang__flag {
+	font-size: 22px;
+	line-height: 1;
+}
+
+.mfy-grid {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) 300px;
+	gap: 20px;
+	align-items: start;
+}
+
+.mfy-aside {
+	display: grid;
+	gap: 16px;
+}
+
+.mfy-card--flush {
+	padding: 0;
+	overflow: hidden;
+}
+
+.mfy-table {
+	width: 100%;
+	border-collapse: collapse;
+}
+
+.mfy-table th {
+	padding: 12px 16px;
+	border-bottom: 1px solid var(--mfy-rule);
+	color: var(--mfy-mute);
+	font-size: 12px;
+	font-weight: 500;
+	text-align: start;
+}
+
+.mfy-table td {
+	padding: 14px 16px;
+	border-bottom: 1px solid var(--mfy-rule-soft);
+	vertical-align: middle;
+}
+
+.mfy-table tbody tr:last-child td {
+	border-bottom: 0;
+}
+
+.mfy-table__actions {
+	text-align: end;
+	white-space: nowrap;
+}
+
+.mfy-table__actions .button-link {
+	margin-inline-end: 4px;
+	vertical-align: middle;
+	text-decoration: none;
+}
+
+.mfy-table__actions .mfy-iconbtn {
+	vertical-align: middle;
+}
+
+.mfy-iconbtn--blank {
+	visibility: hidden;
+}
+
+.mfy .mfy-chip {
+	font-size: 12px;
+}
+
+.mfy-snippet {
+	margin: 0;
+}
+
+.mfy-snippet pre {
+	padding: 10px 12px;
+	border: 1px solid var(--mfy-rule);
+	border-radius: 6px;
+	background: #f6f7f7;
+	overflow-x: auto;
+}
+
+.mfy .mfy-snippet pre code {
+	padding: 0;
+	border: 0;
+	background: none;
+}
+
+/* The row menu: a popover, placed under its button by the script. */
+.mfy-menu {
+	margin: 0;
+	padding: 6px;
+	min-width: 180px;
+	border: 1px solid var(--mfy-rule);
+	border-radius: 8px;
+	background: #fff;
+	box-shadow: 0 8px 24px rgb(0 0 0 / 0.14);
+	inset: auto;
+}
+
+.mfy-menu form {
+	margin: 0;
+}
+
+.mfy-menu__item {
+	display: block;
+	width: 100%;
+	padding: 8px 10px;
+	border: 0;
+	border-radius: 4px;
+	background: none;
+	color: var(--mfy-ink);
+	font: inherit;
+	text-align: start;
+	cursor: pointer;
+}
+
+.mfy-menu__item:hover,
+.mfy-menu__item:focus-visible {
+	background: var(--mfy-accent-soft);
+	outline: none;
+}
+
+.mfy-menu__item--danger {
+	color: #b32d2e;
+}
+
+.mfy-menu__item--danger:hover,
+.mfy-menu__item--danger:focus-visible {
+	background: #fcf0f1;
+}
+
+.mfy-cov {
+	display: grid;
+	grid-template-columns: 120px auto;
+	gap: 10px;
+	align-items: center;
+	color: var(--mfy-soft);
+}
+
+/* Headings in the guide carry no rule under them. */
+.mfy .multilify-guide h3 {
+	padding-bottom: 0;
+	border-bottom: 0;
+}
+
+.mfy-guide.mfy-card {
+	padding: 22px 24px;
+}
+
+/* ------------------------------------------------------- add a language */
+
+.mfy-add {
+	padding: 0;
+	border: 0;
+	border-radius: 8px;
+	width: min(520px, calc(100vw - 32px));
+	max-height: calc(100vh - 64px);
+	box-shadow: 0 20px 60px rgb(0 0 0 / 0.3);
+	color: var(--mfy-ink);
+}
+
+.mfy-add::backdrop {
+	background: rgb(0 0 0 / 0.4);
+}
+
+.mfy-add form {
+	width: 100%;
+	padding: 0;
+	border: 0;
+	background: none;
+	align-items: stretch;
+	gap: 0;
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	max-height: inherit;
+	margin: 0;
+}
+
+.mfy-add__head {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 16px 20px;
+	border-bottom: 1px solid var(--mfy-rule);
+}
+
+.mfy-add__head h2 {
+	margin: 0;
+	font-size: 16px;
+}
+
+.mfy-add__body {
+	display: grid;
+	gap: 16px;
+	align-content: start;
+	padding: 20px;
+	overflow-y: auto;
+	flex: 1;
+}
+
+.mfy-add__foot {
+	display: flex;
+	justify-content: flex-end;
+	gap: 8px;
+	padding: 14px 20px;
+	border-top: 1px solid var(--mfy-rule);
+}
+
+.mfy-label {
+	display: block;
+	margin-bottom: 6px;
+	font-weight: 600;
+}
+
+.mfy .mfy-input,
+.mfy-add .mfy-input {
+	width: 100%;
+	min-height: 36px;
+	margin: 0;
+	padding: 0 10px;
+	border: 1px solid #8c8f94;
+	border-radius: 4px;
+	font-size: 14px;
+}
+
+.mfy-add .mfy-input:focus {
+	border-color: var(--mfy-accent);
+	box-shadow: 0 0 0 1px var(--mfy-accent);
+	outline: none;
+}
+
+.mfy-add .mfy-input--mono,
+.mfy-add input#lang_code {
+	font-family: var(--mfy-mono);
+	letter-spacing: normal;
+}
+
+.mfy-add .mfy-input--flag {
+	font-size: 18px;
+	text-align: center;
+}
+
+.mfy-hint {
+	margin: 4px 0 0;
+	color: var(--mfy-mute);
+	font-size: 12px;
+}
+
+/* Edit: the flag grid under the shared fields, centered in the dialog's width. */
+.mfy-edit .multilify-flagpicker__grid {
+	grid-template-columns: repeat(8, minmax(0, 1fr));
+	margin-top: 4px;
+}
+
+.mfy-edit .multilify-flagpicker__option {
+	width: 100%;
+}
+
+.mfy-add .mfy-input:disabled {
+	background: #f6f7f7;
+	color: var(--mfy-mute);
+}
+
+/* Code on its own line; name and flag share the next one, the name wider,
+   the two filling the row together. */
+.mfy-add__fields {
+	display: grid;
+	grid-template-columns: minmax(0, 3fr) minmax(0, 1fr);
+	gap: 12px;
+	align-items: start;
+}
+
+.mfy-add__fields .mfy-field:first-child,
+.mfy-add__flaghint {
+	grid-column: 1 / -1;
+}
+
+.mfy-add .mfy-add__flaghint {
+	margin-top: -6px;
+}
+
+.mfy-search__list {
+	display: grid;
+	max-height: 220px;
+	overflow-y: auto;
+	margin-top: 6px;
+	border: 1px solid var(--mfy-rule);
+	border-radius: 4px;
+}
+
+.mfy-option {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 8px 10px;
+	border: 0;
+	border-bottom: 1px solid var(--mfy-rule-soft);
+	background: #fff;
+	font: inherit;
+	text-align: start;
+	cursor: pointer;
+}
+
+.mfy-option[hidden],
+.mfy-search[hidden],
+.mfy-search__list[hidden] {
+	display: none;
+}
+
+.mfy-option:last-child {
+	border-bottom: 0;
+}
+
+.mfy-option:hover,
+.mfy-option:focus-visible,
+.mfy-option.is-picked {
+	background: var(--mfy-accent-soft);
+	outline: none;
+}
+
+.mfy-option__name {
+	flex: 1;
+}
+
+.mfy-add .mfy-option code {
+	border: 0;
+	background: none;
+	color: var(--mfy-mute);
+}
+
+.mfy-tiles {
+	display: grid;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	gap: 8px;
+}
+
+.mfy-tile {
+	display: grid;
+	gap: 4px;
+	justify-items: center;
+	padding: 10px 4px;
+	border: 1px solid var(--mfy-rule);
+	border-radius: 10px;
+	background: #fff;
+	font: inherit;
+	font-size: 12px;
+	cursor: pointer;
+}
+
+.mfy-tile:hover,
+.mfy-tile:focus-visible {
+	border-color: var(--mfy-accent);
+	outline: none;
+}
+
+.mfy-tile.is-picked {
+	border-color: var(--mfy-accent);
+	background: var(--mfy-accent-soft);
+}
+
+.mfy-tile__flag {
+	font-size: 24px;
+	line-height: 1.1;
+}
+
+.mfy-tile .dashicons.mfy-tile__flag {
+	width: 24px;
+	height: 26px;
+	font-size: 22px;
+	color: var(--mfy-soft);
+}
+
+.mfy-add .mfy-addr {
+	padding: 0;
+	border: 0;
+	background: none;
+	color: var(--mfy-ink);
+	font-size: 12px;
+}
+
+/* --------------------------------------------------- translations box */
+
+/* One tab per language across the top of the box, wrapping onto a second
+   line when there are many. */
+.mfy-tr__tabs {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 2px;
+	margin: -6px -12px 0;
+	padding: 0 12px;
+	border-bottom: 1px solid var(--mfy-rule);
+}
+
+.mfy-tr__tab {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	margin-bottom: -1px;
+	padding: 10px 12px;
+	border: 0;
+	border-bottom: 2px solid transparent;
+	background: none;
+	color: var(--mfy-soft);
+	font: inherit;
+	cursor: pointer;
+}
+
+.mfy-tr__tab:hover {
+	color: var(--mfy-ink);
+}
+
+.mfy-tr__tab[aria-selected="true"] {
+	color: var(--mfy-ink);
+	font-weight: 600;
+	border-color: var(--mfy-accent);
+}
+
+.mfy-tr__tab:focus-visible {
+	outline: 2px solid var(--mfy-accent);
+	outline-offset: -2px;
+}
+
+.mfy-tr__flag {
+	font-size: 16px;
+	line-height: 1;
+}
+
+/* The state is read out in full; the dot says the same for the eye. */
+.mfy-tr__state {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	overflow: hidden;
+	clip-path: inset(50%);
+	white-space: nowrap;
+}
+
+.mfy-dot {
+	width: 8px;
+	height: 8px;
+	border-radius: 50%;
+	background: #c3c4c7;
+}
+
+.mfy-dot.is-done {
+	background: var(--mfy-done);
+}
+
+.mfy-tr__panels {
+	padding-top: 6px;
+}
+
+/* Inactive panels stay laid out, off screen, so the visual editor keeps its size. */
+.mfy-tr__panel:not(.is-active) {
+	position: absolute;
+	inset-inline-start: -10000px;
+	width: 600px;
+	visibility: hidden;
+}
+
+.mfy-tr .multilify-meta-box {
+	margin: 0;
+}
+
+/* ------------------------------------------------------------ narrow */
+
+@media ( max-width: 960px ) {
+	.mfy-grid {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+
+@media ( max-width: 600px ) {
+	/* A row becomes a small card: name and actions on top, the address
+	   under the name, the progress across the full width at the bottom. */
+	.mfy-table thead {
+		display: none;
+	}
+
+	.mfy-table tbody tr {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) auto;
+		grid-template-areas:
+			"lang act"
+			"addr addr"
+			"cov cov";
+		gap: 6px 8px;
+		align-items: center;
+		padding: 14px 16px;
+		border-bottom: 1px solid var(--mfy-rule-soft);
+	}
+
+	.mfy-table tbody tr:last-of-type {
+		border-bottom: 0;
+	}
+
+	.mfy-table td {
+		border: 0;
+		padding: 0;
+	}
+
+	.mfy-td-lang { grid-area: lang; }
+	.mfy-td-addr { grid-area: addr; }
+	.mfy-td-cov { grid-area: cov; }
+	.mfy-td-act { grid-area: act; }
+
+	.mfy-cov {
+		grid-template-columns: minmax(0, 1fr);
+		gap: 6px;
+	}
+
+	.mfy-tiles {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
+
+	.mfy-add__fields {
+		grid-template-columns: 1fr;
+	}
+}
+
+/* WordPress keeps room for its footer under every screen and hides the
+   footer itself below this width. */
+@media ( max-width: 782px ) {
+	body.toplevel_page_multilify #wpbody-content {
+		padding-bottom: 24px;
 	}
 }
