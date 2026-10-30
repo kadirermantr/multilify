@@ -19,6 +19,9 @@
     // waits for its content stylesheet to load in the document it wrote, which
     // is gone, so it never finishes and stays empty and dead. Its content is
     // still in the textarea, so only a finished editor is saved back first.
+    // Nothing typed can be lost with it: until the block editor moves them,
+    // the meta boxes sit in a hidden container (#metaboxes.hidden), and an
+    // editor the move left stuck shows an empty frame that takes no input.
     function reviveEditor(frame) {
         var id = frame.id.replace(/_ifr$/, '');
         var editor = window.tinymce && window.tinymce.get(id);
