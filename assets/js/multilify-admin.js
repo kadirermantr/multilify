@@ -12,18 +12,29 @@
     // to finish loading before it builds an editor inside a meta box, but the
     // move can still come later, and then the translation editors showed an
     // empty page while their content sat in a document no longer on screen.
-    // An editor that has lost its document is rebuilt from the content it
-    // still holds. One in Code mode is left alone: it shows the textarea.
+    // An editor that has lost its document is rebuilt. One in Code mode is
+    // left alone: it shows the textarea.
+    //
+    // That includes an editor the move caught halfway through starting: it
+    // waits for its content stylesheet to load in the document it wrote, which
+    // is gone, so it never finishes and stays empty and dead. Its content is
+    // still in the textarea, so only a finished editor is saved back first.
+    // Nothing typed can be lost with it: until the block editor moves them,
+    // the meta boxes sit in a hidden container (#metaboxes.hidden), and an
+    // editor the move left stuck shows an empty frame that takes no input.
     function reviveEditor(frame) {
         var id = frame.id.replace(/_ifr$/, '');
         var editor = window.tinymce && window.tinymce.get(id);
         var settings = window.tinyMCEPreInit && window.tinyMCEPreInit.mceInit[id];
 
-        if (!editor || !settings || !editor.initialized || editor.isHidden() || editor.getDoc() === frame.contentDocument) {
+        if (!editor || !settings || editor.isHidden() || editor.getDoc() === frame.contentDocument) {
             return;
         }
 
-        editor.save();
+        if (editor.initialized) {
+            editor.save();
+        }
+
         editor.remove();
         window.tinymce.init(settings);
     }
