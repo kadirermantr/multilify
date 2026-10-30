@@ -537,7 +537,17 @@ class Multilify {
 					$edit_name = $edit_code;
 				}
 
-				if ( $this->flag_in_use( $edit_flag, $languages, $edit_code ) ) {
+				// Only a new flag is checked: an install from before 1.8.0 may already
+				// share one between two languages, and renaming either must still work.
+				$saved_flag = '';
+				foreach ( $languages as $lang ) {
+					if ( $lang['code'] === $edit_code ) {
+						$saved_flag = $lang['flag'];
+						break;
+					}
+				}
+
+				if ( $edit_flag !== $saved_flag && $this->flag_in_use( $edit_flag, $languages, $edit_code ) ) {
 					$error = 'duplicate_flag';
 					break;
 				}

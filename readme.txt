@@ -38,8 +38,9 @@ Multilify keeps every translation inside the post it translates. There is no cop
 
 1. Install Multilify from Plugins > Add New and activate it
 2. Open Multilify in the admin menu and add your languages
-3. Translate a post in its Translations box
-4. Put `[multilify_switcher]` where the language switcher should appear
+3. Make the language your posts are written in the default, with Make default in its row's menu. A new install starts with English
+4. Translate a post in its Translations box
+5. Put `[multilify_switcher]` where the language switcher should appear
 
 The [documentation](https://multilify.com/en/docs) covers the rest.
 
