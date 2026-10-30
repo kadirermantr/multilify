@@ -3,8 +3,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Multilify 1.7.0\n"
-"Report-Msgid-Bugs-To: https://github.com/kadirermantr/multilify/issues\n"
-"POT-Creation-Date: 2026-10-10 11:01+0300\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/multilify\n"
+"POT-Creation-Date: 2026-10-30T14:25:12+00:00\n"
 "PO-Revision-Date: 2026-10-12 21:35\n"
 "Last-Translator: Kadir Erman <kadirermantr@gmail.com>\n"
 "Language-Team: German <https://translate.wordpress.org/projects/wp-plugins/"
@@ -15,65 +15,85 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: includes/class-multilify.php:266
-msgid "Multilify - Language Management"
-msgstr "Multilify - Sprachverwaltung"
-
 #. Plugin Name of the plugin
-#: multilify.php includes/class-multilify.php:267
+#: multilify.php includes/class-multilify.php:281
 msgid "Multilify"
 msgstr "Multilify"
 
+#. Plugin URI of the plugin
+#: multilify.php
+msgid "https://multilify.com"
+msgstr "https://multilify.com"
+
+#. Description of the plugin
+#: multilify.php
+msgid ""
+"A powerful multilingual content management system for WordPress. Supports "
+"unlimited languages with custom slugs, SEO optimization, and performance "
+"caching."
+msgstr ""
+"Ein leistungsstarkes mehrsprachiges Content-Management-System für WordPress. "
+"Unterstützt beliebig viele Sprachen mit eigenen Titelformen, SEO-Optimierung "
+"und Caching für schnelle Seiten."
+
+#. Author of the plugin
+#: multilify.php
+msgid "Kadir Erman"
+msgstr "Kadir Erman"
+
+#. Author URI of the plugin
+#: multilify.php
+msgid "https://kadirerman.com"
+msgstr "https://kadirerman.com"
+
+#: includes/class-multilify.php:280
+msgid "Multilify - Language Management"
+msgstr "Multilify - Sprachverwaltung"
+
 #. translators: %s: language name.
-#: includes/class-multilify.php:301
+#: includes/class-multilify.php:326
 #, php-format
 msgid "Delete %s?"
 msgstr "%s löschen?"
 
-#: includes/class-multilify.php:302
+#: includes/class-multilify.php:327
 msgid "Copied"
 msgstr "Kopiert"
 
-#: includes/class-multilify.php:303
+#: includes/class-multilify.php:328
 msgid "Press Ctrl+C to copy"
 msgstr "Zum Kopieren Strg+C drücken"
 
-#. translators: 1: language flag emoji, 2: language name.
-#: includes/class-multilify.php:753
-#, php-format
-msgid "%1$s %2$s Translation"
-msgstr "%1$s %2$s Übersetzung"
+#: includes/class-multilify.php:873 includes/views/translations-box.php:19
+msgid "Translations"
+msgstr "Übersetzungen"
 
-#. translators: Appended to a translation panel's title once the entry has text in that language.
-#: includes/class-multilify.php:765
-msgid "translated"
-msgstr "übersetzt"
-
-#: includes/class-multilify.php:2295
-msgid "Language switcher"
-msgstr "Sprachumschalter"
-
-#: includes/views/admin-page.php:30
+#: includes/class-multilify.php:907 includes/views/admin-page.php:32
+#: includes/views/admin-page.php:47 includes/views/parts/add-dialog.php:39
 msgid "Languages"
 msgstr "Sprachen"
 
-#. translators: 1: number of languages, 2: number of published entries.
-#: includes/views/admin-page.php:35
+#. translators: %s: language name.
+#: includes/class-multilify.php:954
 #, php-format
-msgid "%1$s language"
-msgid_plural "%1$s languages"
-msgstr[0] "%1$s Sprache"
-msgstr[1] "%1$s Sprachen"
+msgid "%s: translated"
+msgstr "%s: übersetzt"
 
-#. translators: 1: number of languages, 2: number of published entries.
-#: includes/views/admin-page.php:37
+#. translators: %s: language name.
+#: includes/class-multilify.php:957
 #, php-format
-msgid "%2$s entry to translate"
-msgid_plural "%2$s entries to translate"
-msgstr[0] "%2$s Eintrag zu übersetzen"
-msgstr[1] "%2$s Einträge zu übersetzen"
+msgid "%s: not translated"
+msgstr "%s: nicht übersetzt"
 
-#: includes/views/admin-page.php:45
+#: includes/class-multilify.php:2614
+msgid "Language switcher"
+msgstr "Sprachumschalter"
+
+#: includes/views/admin-page.php:33 includes/views/parts/add-dialog.php:31
+msgid "Add a language"
+msgstr "Sprache hinzufügen"
+
+#: includes/views/admin-page.php:38
 msgid ""
 "Every language you add gets its own URL prefix and its own set of "
 "translation fields on each post and page."
@@ -81,223 +101,85 @@ msgstr ""
 "Jede Sprache, die du hinzufügst, bekommt ein eigenes URL-Präfix und eigene "
 "Übersetzungsfelder an jedem Beitrag und jeder Seite."
 
-#: includes/views/admin-page.php:54
-msgid "Changes saved."
-msgstr "Änderungen gespeichert."
-
-#: includes/views/admin-page.php:64
-msgid ""
-"That language code is already in use. Pick a code no other language uses."
-msgstr ""
-"Dieser Sprachcode wird bereits verwendet. Wähle einen Code, den keine andere "
-"Sprache nutzt."
-
-#: includes/views/admin-page.php:65
-msgid "Use 2 to 5 lowercase letters for a language code, such as tr, en or de."
-msgstr ""
-"Verwende 2 bis 5 Kleinbuchstaben für einen Sprachcode, etwa tr, en oder de."
-
-#: includes/views/admin-page.php:66
-msgid "That language is no longer in the list. Reload the page and try again."
-msgstr ""
-"Diese Sprache steht nicht mehr in der Liste. Lade die Seite neu und versuche "
-"es erneut."
-
-#: includes/views/admin-page.php:67
-msgid "Set another language as the default before deleting this one."
-msgstr "Lege eine andere Sprache als Standard fest, bevor du diese löschst."
-
-#: includes/views/admin-page.php:68
-msgid ""
-"WordPress already serves that address, so a language cannot take it. Pick "
-"another code."
-msgstr ""
-"Diese Adresse wird bereits von WordPress bedient, eine Sprache kann sie "
-"nicht übernehmen. Wähle einen anderen Code."
-
-#: includes/views/admin-page.php:69
-msgid ""
-"A post or page already lives at that address. Change its slug first, or pick "
-"another code."
-msgstr ""
-"Unter dieser Adresse liegt bereits ein Beitrag oder eine Seite. Ändere "
-"zuerst deren Slug, oder wähle einen anderen Code."
-
-#: includes/views/admin-page.php:73
-msgid "That did not go through. Try again."
-msgstr "Das hat nicht geklappt. Versuche es erneut."
-
-#: includes/views/admin-page.php:81
-msgid "Active languages"
-msgstr "Aktive Sprachen"
-
-#: includes/views/admin-page.php:83
-msgid ""
-"The default language keeps your existing URLs. Every other language serves "
-"its content under its own prefix."
-msgstr ""
-"Die Standardsprache behält deine bestehenden URLs. Jede andere Sprache "
-"liefert ihre Inhalte unter einem eigenen Präfix aus."
-
-#: includes/views/admin-page.php:89
-msgid "No languages yet. Add one below to start translating."
-msgstr ""
-"Noch keine Sprachen. Füge unten eine hinzu, um mit dem Übersetzen zu "
-"beginnen."
-
-#: includes/views/admin-page.php:112
-msgid "Default"
-msgstr "Standard"
-
-#: includes/views/admin-page.php:149
-msgid "Make default"
-msgstr "Als Standard festlegen"
-
-#: includes/views/admin-page.php:159
-msgid "Edit"
-msgstr "Bearbeiten"
-
-#: includes/views/admin-page.php:169
-msgid "Delete"
-msgstr "Löschen"
-
-#: includes/views/admin-page.php:184
-msgid "Code"
-msgstr "Code"
-
-#: includes/views/admin-page.php:194
-msgid "Name"
-msgstr "Name"
-
-#: includes/views/admin-page.php:200
-msgid "Leave empty to use the code"
-msgstr "Leer lassen, um den Code zu verwenden"
-
-#: includes/views/admin-page.php:205 includes/views/admin-page.php:292
-msgid "Flag"
-msgstr "Flagge"
-
-#: includes/views/admin-page.php:222 includes/views/admin-page.php:306
-msgid "Or type your own"
-msgstr "Oder gib eine eigene ein"
-
-#: includes/views/admin-page.php:236
-msgid "Save language"
-msgstr "Sprache speichern"
-
-#: includes/views/admin-page.php:240
-msgid "Cancel"
-msgstr "Abbrechen"
-
-#: includes/views/admin-page.php:251
-msgid "Add a language"
-msgstr "Sprache hinzufügen"
-
-#: includes/views/admin-page.php:253
-msgid ""
-"A language code cannot be changed later, because your translations are "
-"stored under it."
-msgstr ""
-"Ein Sprachcode lässt sich später nicht ändern, weil deine Übersetzungen "
-"darunter gespeichert werden."
-
-#: includes/views/admin-page.php:261
-msgid "Language code"
-msgstr "Sprachcode"
-
-#: includes/views/admin-page.php:270
-msgid "Two to five lowercase letters. This becomes the URL prefix."
-msgstr "Zwei bis fünf Kleinbuchstaben. Daraus wird das URL-Präfix."
-
-#: includes/views/admin-page.php:274
-msgid "Language name"
-msgstr "Sprachname"
-
-#. translators: %s: the show_name="false" shortcode attribute.
-#: includes/views/admin-page.php:284
-#, php-format
-msgid ""
-"Shown in the switcher. Leave it empty to show the code instead, or hide it "
-"with %s."
-msgstr ""
-"Wird im Umschalter angezeigt. Lass es leer, um stattdessen den Code zu "
-"zeigen, oder blende es mit %s aus."
-
-#: includes/views/admin-page.php:318
-msgid "Pick a flag, or type any emoji. Screen readers skip it."
-msgstr ""
-"Wähle eine Flagge oder gib ein beliebiges Emoji ein. Screenreader "
-"überspringen es."
-
-#: includes/views/admin-page.php:322
-msgid "Add language"
-msgstr "Sprache hinzufügen"
-
-#: includes/views/admin-page.php:328
+#: includes/views/admin-page.php:53
 msgid "How translating works"
 msgstr "Wie das Übersetzen funktioniert"
 
-#: includes/views/admin-page.php:332
-msgid "Translate a post or page"
-msgstr "Einen Beitrag oder eine Seite übersetzen"
-
-#: includes/views/admin-page.php:333
-msgid ""
-"Open any post or page. Each language gets its own panel where you can set a "
-"title, the content, and the slug that language uses in the URL."
+#: includes/views/admin-page.php:63
+msgid "No languages yet. Add one to start translating."
 msgstr ""
-"Öffne einen beliebigen Beitrag oder eine Seite. Jede Sprache bekommt ein "
-"eigenes Panel, in dem du Titel, Inhalt und die Titelform festlegst, die "
-"diese Sprache in der URL verwendet."
+"Noch keine Sprachen. Füge eine hinzu, um mit dem Übersetzen zu beginnen."
 
-#: includes/views/admin-page.php:334
-msgid ""
-"Leave a field empty and visitors see the default language instead, so a half-"
-"finished translation never shows a blank page."
-msgstr ""
-"Lässt du ein Feld leer, sehen Besucher stattdessen die Standardsprache, "
-"sodass eine halbfertige Übersetzung nie eine leere Seite zeigt."
+#: includes/views/admin-page.php:68 includes/views/parts/add-dialog.php:53
+msgid "Language"
+msgstr "Sprache"
 
-#: includes/views/admin-page.php:338
-msgid "What the URLs look like"
-msgstr "Wie die URLs aussehen"
+#: includes/views/admin-page.php:69
+msgid "Address"
+msgstr "Adresse"
 
-#: includes/views/admin-page.php:339
-msgid ""
-"The default language keeps the address it already has. Every other language "
-"serves the same entry under its own prefix:"
-msgstr ""
-"Die Standardsprache behält ihre bisherige Adresse. Jede andere Sprache "
-"liefert denselben Eintrag unter einem eigenen Präfix aus:"
+#: includes/views/admin-page.php:70
+msgid "Translated"
+msgstr "Übersetzt"
 
-#: includes/views/admin-page.php:348
+#: includes/views/admin-page.php:71
+msgid "Actions"
+msgstr "Aktionen"
+
+#: includes/views/admin-page.php:89
+msgid "Default"
+msgstr "Standard"
+
+#: includes/views/admin-page.php:96 includes/views/translations-box.php:38
+msgid "Original"
+msgstr "Original"
+
+#. translators: 1: translated entry count, 2: total entry count.
+#: includes/views/admin-page.php:104
+#, php-format
+msgid "%1$s of %2$s entry translated"
+msgid_plural "%1$s of %2$s entries translated"
+msgstr[0] "%1$s von %2$s Eintrag übersetzt"
+msgstr[1] "%1$s von %2$s Einträgen übersetzt"
+
+#. translators: %s: language name.
+#: includes/views/admin-page.php:117 includes/views/parts/edit-form.php:33
+#, php-format
+msgid "Edit %s"
+msgstr "%s bearbeiten"
+
+#. translators: %s: language name.
+#: includes/views/admin-page.php:118
+msgid "Edit"
+msgstr "Bearbeiten"
+
+#: includes/views/admin-page.php:138 includes/views/parts/guide.php:32
 msgid "Show the language switcher"
 msgstr "Den Sprachumschalter anzeigen"
 
-#: includes/views/admin-page.php:349
+#: includes/views/admin-page.php:139 includes/views/parts/guide.php:33
 msgid "Drop the shortcode into any post, page or block:"
 msgstr ""
 "Setze den Shortcode in einen beliebigen Beitrag, eine Seite oder einen Block:"
 
-#: includes/views/admin-page.php:354 includes/views/admin-page.php:362
+#. translators: %s: the snippet the button copies.
+#: includes/views/admin-page.php:143 includes/views/parts/guide.php:37
+#: includes/views/parts/guide.php:46
+#, php-format
+msgid "Copy %s"
+msgstr "%s kopieren"
+
+#. translators: %s: the snippet the button copies.
+#: includes/views/admin-page.php:144 includes/views/parts/guide.php:38
+#: includes/views/parts/guide.php:47
 msgid "Copy"
 msgstr "Kopieren"
 
-#: includes/views/admin-page.php:357
-msgid "Or call it from a theme template:"
-msgstr "Oder rufe ihn aus einem Theme-Template auf:"
-
-#. translators: %s: the show_name="false" shortcode attribute.
-#: includes/views/admin-page.php:369
-#, php-format
-msgid "Add %s to show flags only."
-msgstr "Füge %s hinzu, um nur Flaggen anzuzeigen."
-
-#: includes/views/admin-page.php:377
+#: includes/views/admin-page.php:150 includes/views/parts/guide.php:63
 msgid "Search engines"
 msgstr "Suchmaschinen"
 
-#: includes/views/admin-page.php:378
+#: includes/views/admin-page.php:151 includes/views/parts/guide.php:64
 msgid ""
 "Multilify adds hreflang tags to each entry and to the homepage so search "
 "engines know which languages an entry exists in, and sets the page language "
@@ -306,37 +188,6 @@ msgstr ""
 "Multilify fügt jedem Eintrag und der Homepage hreflang-Tags hinzu, damit "
 "Suchmaschinen wissen, in welchen Sprachen ein Eintrag verfügbar ist, und "
 "setzt die Seitensprache, damit Screenreader den Text korrekt aussprechen."
-
-#: includes/views/admin-page.php:379
-msgid ""
-"Visitors who open the homepage are sent to the language their browser asks "
-"for. Once someone picks a language from the switcher, that choice is "
-"remembered. Logged-in users and search engines are never redirected."
-msgstr ""
-"Wenn Besucher die Homepage öffnen, werden sie zur Sprache ihres Browsers "
-"weitergeleitet. Sobald ein Besucher im Umschalter eine Sprache wählt, wird "
-"diese Auswahl gespeichert. Angemeldete Benutzer und Suchmaschinen werden nie "
-"weitergeleitet."
-
-#: includes/views/admin-page.php:388
-msgid "Delete this language?"
-msgstr "Diese Sprache löschen?"
-
-#: includes/views/admin-page.php:391
-msgid ""
-"Its translations stay in the database, so adding the same code again brings "
-"them back."
-msgstr ""
-"Ihre Übersetzungen bleiben in der Datenbank, denselben Code erneut "
-"hinzuzufügen holt sie zurück."
-
-#: includes/views/admin-page.php:395
-msgid "Keep language"
-msgstr "Sprache behalten"
-
-#: includes/views/admin-page.php:398
-msgid "Delete language"
-msgstr "Sprache löschen"
 
 #: includes/views/meta-box.php:16
 msgid ""
@@ -381,82 +232,211 @@ msgstr ""
 msgid "Content"
 msgstr "Inhalt"
 
-#: multilify.php:187
-msgid "Settings"
-msgstr "Einstellungen"
-
-#. Plugin URI of the plugin
-#: multilify.php
-msgid "https://multilify.com"
-msgstr "https://multilify.com"
-
-#. Description of the plugin
-#: multilify.php
-msgid ""
-"A powerful multilingual content management system for WordPress. Supports "
-"unlimited languages with custom slugs, SEO optimization, and performance "
-"caching."
-msgstr ""
-"Ein leistungsstarkes mehrsprachiges Content-Management-System für WordPress. "
-"Unterstützt beliebig viele Sprachen mit eigenen Titelformen, SEO-Optimierung "
-"und Caching für schnelle Seiten."
-
-#. Author of the plugin
-#: multilify.php
-msgid "Kadir Erman"
-msgstr "Kadir Erman"
-
-#. Author URI of the plugin
-#: multilify.php
-msgid "https://kadirerman.com"
-msgstr "https://kadirerman.com"
-
-#. translators: 1: translated entry count, 2: total entry count.
-#: includes/views/admin-page.php:118
-#, php-format
-msgid "%1$s of %2$s entry translated"
-msgid_plural "%1$s of %2$s entries translated"
-msgstr[0] "%1$s von %2$s Eintrag übersetzt"
-msgstr[1] "%1$s von %2$s Einträgen übersetzt"
-
-#. translators: %s: language name.
-#: includes/views/admin-page.php:148
-#, php-format
-msgid "Make %s the default"
-msgstr "%s als Standard festlegen"
-
-#. translators: %s: language name.
-#: includes/views/admin-page.php:158
-#, php-format
-msgid "Edit %s"
-msgstr "%s bearbeiten"
-
-#. translators: %s: language name.
-#: includes/views/admin-page.php:168
-#, php-format
-msgid "Delete %s"
-msgstr "%s löschen"
-
-#. translators: %s: the snippet the button copies.
-#: includes/views/admin-page.php:353 includes/views/admin-page.php:361
-#, php-format
-msgid "Copy %s"
-msgstr "%s kopieren"
-
 #. translators: %s: language name.
 #: includes/views/meta-box.php:66
 #, php-format
 msgid "Content in %s"
 msgstr "Inhalt auf %s"
 
-#. translators: %s: language name.
-#: includes/class-multilify.php:866
+#: includes/views/parts/add-dialog.php:32
+#: includes/views/parts/add-dialog.php:101
+#: includes/views/parts/edit-form.php:35 includes/views/parts/edit-form.php:91
+msgid "Cancel"
+msgstr "Abbrechen"
+
+#: includes/views/parts/add-dialog.php:55
+msgid "Search languages"
+msgstr "Sprache suchen"
+
+#: includes/views/parts/add-dialog.php:74 includes/views/parts/edit-form.php:44
+msgid "Language code"
+msgstr "Sprachcode"
+
+#. translators: %s: address of the language's home page, such as example.com/it/.
+#: includes/views/parts/add-dialog.php:81
 #, php-format
-msgid "%s: translated"
-msgstr "%s: übersetzt"
+msgid "Two to five lowercase letters, used in the address: %s"
+msgstr "Zwei bis fünf Kleinbuchstaben, Teil der Adresse: %s"
+
+#: includes/views/parts/add-dialog.php:88 includes/views/parts/edit-form.php:53
+msgid "Language name"
+msgstr "Sprachname"
+
+#: includes/views/parts/add-dialog.php:92 includes/views/parts/edit-form.php:60
+#: includes/views/parts/edit-form.php:72
+msgid "Flag"
+msgstr "Flagge"
+
+#: includes/views/parts/add-dialog.php:96 includes/views/parts/edit-form.php:69
+msgid "Pick a flag, or type any emoji. Screen readers skip it."
+msgstr ""
+"Wähle eine Flagge oder gib ein beliebiges Emoji ein. Screenreader "
+"überspringen es."
+
+#: includes/views/parts/add-dialog.php:102
+msgid "Add language"
+msgstr "Sprache hinzufügen"
+
+#: includes/views/parts/confirm-dialog.php:17
+msgid "Delete this language?"
+msgstr "Diese Sprache löschen?"
+
+#: includes/views/parts/confirm-dialog.php:20
+msgid ""
+"Its translations stay in the database, so adding the same code again brings "
+"them back."
+msgstr ""
+"Ihre Übersetzungen bleiben in der Datenbank, denselben Code erneut "
+"hinzuzufügen holt sie zurück."
+
+#: includes/views/parts/confirm-dialog.php:24
+msgid "Keep language"
+msgstr "Sprache behalten"
+
+#: includes/views/parts/confirm-dialog.php:27
+msgid "Delete language"
+msgstr "Sprache löschen"
+
+#: includes/views/parts/edit-form.php:50
+msgid "The code cannot be changed: your translations are stored under it."
+msgstr "Der Code lässt sich nicht ändern, deine Übersetzungen sind darunter gespeichert."
 
 #. translators: %s: language name.
-#: includes/class-multilify.php:869
+#: includes/views/parts/edit-form.php:82
 #, php-format
-msgid "%s: not translated"
-msgstr "%s: nicht übersetzt"
+msgid "Used by %s"
+msgstr "Verwendet von %s"
+
+#: includes/views/parts/edit-form.php:92
+msgid "Save language"
+msgstr "Sprache speichern"
+
+#: includes/views/parts/guide.php:16
+msgid "Translate a post or page"
+msgstr "Einen Beitrag oder eine Seite übersetzen"
+
+#: includes/views/parts/guide.php:17
+msgid ""
+"Open any post or page. Each language gets its own panel where you can set a "
+"title, the content, and the slug that language uses in the URL."
+msgstr ""
+"Öffne einen beliebigen Beitrag oder eine Seite. Jede Sprache bekommt ein "
+"eigenes Panel, in dem du Titel, Inhalt und die Titelform festlegst, die "
+"diese Sprache in der URL verwendet."
+
+#: includes/views/parts/guide.php:18
+msgid ""
+"Leave a field empty and visitors see the default language instead, so a half-"
+"finished translation never shows a blank page."
+msgstr ""
+"Lässt du ein Feld leer, sehen Besucher stattdessen die Standardsprache, "
+"sodass eine halbfertige Übersetzung nie eine leere Seite zeigt."
+
+#: includes/views/parts/guide.php:22
+msgid "What the URLs look like"
+msgstr "Wie die URLs aussehen"
+
+#: includes/views/parts/guide.php:23
+msgid ""
+"The default language keeps the address it already has. Every other language "
+"serves the same entry under its own prefix:"
+msgstr ""
+"Die Standardsprache behält ihre bisherige Adresse. Jede andere Sprache "
+"liefert denselben Eintrag unter einem eigenen Präfix aus:"
+
+#: includes/views/parts/guide.php:42
+msgid "Or call it from a theme template:"
+msgstr "Oder rufe ihn aus einem Theme-Template auf:"
+
+#. translators: %s: the show_name="false" shortcode attribute.
+#: includes/views/parts/guide.php:55
+#, php-format
+msgid "Add %s to show flags only."
+msgstr "Füge %s hinzu, um nur Flaggen anzuzeigen."
+
+#: includes/views/parts/guide.php:65
+msgid ""
+"Visitors who open the homepage are sent to the language their browser asks "
+"for. Once someone picks a language from the switcher, that choice is "
+"remembered. Logged-in users and search engines are never redirected."
+msgstr ""
+"Wenn Besucher die Homepage öffnen, werden sie zur Sprache ihres Browsers "
+"weitergeleitet. Sobald ein Besucher im Umschalter eine Sprache wählt, wird "
+"diese Auswahl gespeichert. Angemeldete Benutzer und Suchmaschinen werden nie "
+"weitergeleitet."
+
+#: includes/views/parts/notices.php:18
+msgid "Changes saved."
+msgstr "Änderungen gespeichert."
+
+#: includes/views/parts/notices.php:28
+msgid ""
+"That language code is already in use. Pick a code no other language uses."
+msgstr ""
+"Dieser Sprachcode wird bereits verwendet. Wähle einen Code, den keine andere "
+"Sprache nutzt."
+
+#: includes/views/parts/notices.php:29
+msgid "Use 2 to 5 lowercase letters for a language code, such as tr, en or de."
+msgstr ""
+"Verwende 2 bis 5 Kleinbuchstaben für einen Sprachcode, etwa tr, en oder de."
+
+#: includes/views/parts/notices.php:30
+msgid "That language is no longer in the list. Reload the page and try again."
+msgstr ""
+"Diese Sprache steht nicht mehr in der Liste. Lade die Seite neu und versuche "
+"es erneut."
+
+#: includes/views/parts/notices.php:31
+msgid "Set another language as the default before deleting this one."
+msgstr "Lege eine andere Sprache als Standard fest, bevor du diese löschst."
+
+#: includes/views/parts/notices.php:32
+msgid ""
+"WordPress already serves that address, so a language cannot take it. Pick "
+"another code."
+msgstr ""
+"Diese Adresse wird bereits von WordPress bedient, eine Sprache kann sie "
+"nicht übernehmen. Wähle einen anderen Code."
+
+#: includes/views/parts/notices.php:33
+msgid ""
+"A post or page already lives at that address. Change its slug first, or pick "
+"another code."
+msgstr ""
+"Unter dieser Adresse liegt bereits ein Beitrag oder eine Seite. Ändere "
+"zuerst deren Slug, oder wähle einen anderen Code."
+
+#: includes/views/parts/notices.php:34
+msgid "Another language already uses that flag. Pick a different one."
+msgstr "Diese Flagge nutzt schon eine andere Sprache. Wähle eine andere."
+
+#: includes/views/parts/notices.php:38
+msgid "That did not go through. Try again."
+msgstr "Das hat nicht geklappt. Versuche es erneut."
+
+#. translators: %s: language name.
+#: includes/views/parts/row-menu.php:17
+#, php-format
+msgid "More actions for %s"
+msgstr "Weitere Aktionen für %s"
+
+#: includes/views/parts/row-menu.php:25
+msgid "Make default"
+msgstr "Als Standard festlegen"
+
+#: includes/views/parts/row-menu.php:31
+msgid "Delete"
+msgstr "Löschen"
+
+#: includes/views/translations-box.php:40
+msgid "translated"
+msgstr "übersetzt"
+
+#: includes/views/translations-box.php:42
+msgid "Not translated"
+msgstr "Nicht übersetzt"
+
+#: multilify.php:187
+msgid "Settings"
+msgstr "Einstellungen"

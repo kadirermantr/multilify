@@ -365,8 +365,89 @@ class Multilify {
 		$translatable     = $this->count_translatable_entries();
 		$progress         = $this->get_translation_progress( $languages );
 		$flag_choices     = $this->get_flag_choices();
+		$catalog          = $this->get_language_catalog();
 
 		include MULTILIFY_INCLUDES_DIR . 'views/admin-page.php';
+	}
+
+	/**
+	 * Whether another language already shows a flag.
+	 *
+	 * @param string $flag      Flag being saved.
+	 * @param array  $languages Configured languages.
+	 * @param string $except    Code of the language being edited, which may keep its own flag.
+	 * @return bool True when a different language uses the same flag.
+	 */
+	public function flag_in_use( $flag, $languages, $except = '' ) {
+		if ( '' === trim( (string) $flag ) ) {
+			return false;
+		}
+
+		foreach ( $languages as $language ) {
+			if ( $language['code'] !== $except && isset( $language['flag'] ) && $language['flag'] === $flag ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Languages offered when adding one: code, name in that language, flag, and
+	 * the English name, which the search also matches.
+	 *
+	 * Picking one fills the add form; the fields stay editable, so a language
+	 * that is not listed is still typed in by hand.
+	 *
+	 * @return array Map of language code to an array with "name", "flag" and "english".
+	 */
+	public function get_language_catalog() {
+		$catalog = array(
+			'en' => array( 'English', '🇬🇧', 'English' ),
+			'de' => array( 'Deutsch', '🇩🇪', 'German' ),
+			'fr' => array( 'Français', '🇫🇷', 'French' ),
+			'es' => array( 'Español', '🇪🇸', 'Spanish' ),
+			'it' => array( 'Italiano', '🇮🇹', 'Italian' ),
+			'pt' => array( 'Português', '🇵🇹', 'Portuguese' ),
+			'nl' => array( 'Nederlands', '🇳🇱', 'Dutch' ),
+			'tr' => array( 'Türkçe', '🇹🇷', 'Turkish' ),
+			'ar' => array( 'العربية', '🇸🇦', 'Arabic' ),
+			'ru' => array( 'Русский', '🇷🇺', 'Russian' ),
+			'ja' => array( '日本語', '🇯🇵', 'Japanese' ),
+			'zh' => array( '中文', '🇨🇳', 'Chinese' ),
+			'ko' => array( '한국어', '🇰🇷', 'Korean' ),
+			'pl' => array( 'Polski', '🇵🇱', 'Polish' ),
+			'uk' => array( 'Українська', '🇺🇦', 'Ukrainian' ),
+			'el' => array( 'Ελληνικά', '🇬🇷', 'Greek' ),
+			'sv' => array( 'Svenska', '🇸🇪', 'Swedish' ),
+			'nb' => array( 'Norsk', '🇳🇴', 'Norwegian' ),
+			'da' => array( 'Dansk', '🇩🇰', 'Danish' ),
+			'fi' => array( 'Suomi', '🇫🇮', 'Finnish' ),
+			'cs' => array( 'Čeština', '🇨🇿', 'Czech' ),
+			'ro' => array( 'Română', '🇷🇴', 'Romanian' ),
+			'hu' => array( 'Magyar', '🇭🇺', 'Hungarian' ),
+			'bg' => array( 'Български', '🇧🇬', 'Bulgarian' ),
+			'he' => array( 'עברית', '🇮🇱', 'Hebrew' ),
+			'fa' => array( 'فارسی', '🇮🇷', 'Persian' ),
+			'hi' => array( 'हिन्दी', '🇮🇳', 'Hindi' ),
+			'id' => array( 'Bahasa Indonesia', '🇮🇩', 'Indonesian' ),
+			'th' => array( 'ไทย', '🇹🇭', 'Thai' ),
+			'vi' => array( 'Tiếng Việt', '🇻🇳', 'Vietnamese' ),
+			'az' => array( 'Azərbaycanca', '🇦🇿', 'Azerbaijani' ),
+			'ka' => array( 'ქართული', '🇬🇪', 'Georgian' ),
+		);
+
+		$list = array();
+
+		foreach ( $catalog as $code => $entry ) {
+			$list[ $code ] = array(
+				'name'    => $entry[0],
+				'flag'    => $entry[1],
+				'english' => $entry[2],
+			);
+		}
+
+		return $list;
 	}
 
 	/**
@@ -388,6 +469,7 @@ class Multilify {
 		$action      = sanitize_text_field( wp_unslash( $_POST['multilify_action'] ) );
 		$languages   = $this->get_languages();
 		$needs_flush = false;
+		$changed     = true;
 		$error       = '';
 
 		switch ( $action ) {
@@ -420,6 +502,12 @@ class Multilify {
 					break;
 				}
 
+				// Two languages with one flag cannot be told apart in the switcher.
+				if ( $this->flag_in_use( $new_lang['flag'], $languages ) ) {
+					$error = 'duplicate_flag';
+					break;
+				}
+
 				// A code becomes a top level URL prefix whose rewrite rules sit
 				// above the core ones, so a code WordPress already answers to
 				// would quietly take that address over.
@@ -449,10 +537,17 @@ class Multilify {
 					$edit_name = $edit_code;
 				}
 
+				if ( $this->flag_in_use( $edit_flag, $languages, $edit_code ) ) {
+					$error = 'duplicate_flag';
+					break;
+				}
+
 				// The code is immutable (translation meta is keyed by it); only name/flag change.
 				$found = false;
 				foreach ( $languages as &$lang ) {
 					if ( $lang['code'] === $edit_code ) {
+						// Saved as it was: nothing to write, and nothing to report.
+						$changed      = ( $lang['name'] !== $edit_name || $lang['flag'] !== $edit_flag );
 						$lang['name'] = $edit_name;
 						$lang['flag'] = $edit_flag;
 						$found        = true;
@@ -461,9 +556,9 @@ class Multilify {
 				}
 				unset( $lang );
 
-				if ( $found ) {
+				if ( $found && $changed ) {
 					update_option( 'multilify_languages', $languages );
-				} else {
+				} elseif ( ! $found ) {
 					$error = 'not_found';
 				}
 				break;
@@ -534,6 +629,8 @@ class Multilify {
 		// Redirect to prevent form resubmission.
 		if ( '' !== $error ) {
 			$redirect = add_query_arg( 'multilify_error', $error, admin_url( 'admin.php?page=multilify' ) );
+		} elseif ( ! $changed ) {
+			$redirect = admin_url( 'admin.php?page=multilify' );
 		} else {
 			$redirect = add_query_arg( 'multilify_updated', '1', admin_url( 'admin.php?page=multilify' ) );
 		}
@@ -763,43 +860,22 @@ class Multilify {
 	public function add_translation_meta_boxes( $post_type = '', $post = null ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found -- Signature set by the add_meta_boxes action.
 		$post_types = $this->get_translatable_post_types();
 		$languages  = $this->get_languages();
-		$entry_id   = $post instanceof WP_Post ? $post->ID : 0;
 
+		if ( empty( $languages ) ) {
+			return;
+		}
+
+		// One panel for every language, switched with tabs: a box per language
+		// stacked four or more panels under the editor.
 		foreach ( $post_types as $type ) {
-			foreach ( $languages as $language ) {
-				// Name is optional; fall back to the code so the meta box title is never blank.
-				$language_label = isset( $language['name'] ) ? trim( (string) $language['name'] ) : '';
-				if ( '' === $language_label ) {
-					$language_label = $language['code'];
-				}
-
-				$title = sprintf(
-					/* translators: 1: language flag emoji, 2: language name. */
-					__( '%1$s %2$s Translation', 'multilify' ),
-					$language['flag'],
-					$language_label
-				);
-
-				// A collapsed panel shows only its title, so which languages are
-				// already done has to be readable from there. Plain text, because
-				// the same title is also listed in the editor's own preferences
-				// panel and in Screen Options, and those render it as text: any
-				// markup here shows up as markup.
-				if ( $entry_id && $this->has_translation( $entry_id, $language['code'] ) ) {
-					/* translators: Appended to a translation panel's title once the entry has text in that language. */
-					$title .= ' · ' . esc_html__( 'translated', 'multilify' );
-				}
-
-				add_meta_box(
-					'multilify_' . $language['code'],
-					$title,
-					array( $this, 'render_translation_meta_box' ),
-					$type,
-					'normal',
-					'high',
-					array( 'language' => $language )
-				);
-			}
+			add_meta_box(
+				'multilify_translations',
+				__( 'Translations', 'multilify' ),
+				array( $this, 'render_translations_meta_box' ),
+				$type,
+				'normal',
+				'high'
+			);
 		}
 	}
 
@@ -910,10 +986,31 @@ class Multilify {
 	}
 
 	/**
-	 * Render translation meta box
+	 * Render the translations box: one tab and one panel per language.
 	 *
-	 * @param WP_Post $post    Post being edited.
-	 * @param array   $metabox Meta box registration arguments.
+	 * @param WP_Post $post Post being edited.
+	 */
+	public function render_translations_meta_box( $post ) {
+		$languages = $this->get_languages();
+		$default   = $this->get_default_language();
+		$active    = $default;
+
+		// Open on the first language a translator works in, not the original.
+		foreach ( $languages as $language ) {
+			if ( $language['code'] !== $default ) {
+				$active = $language['code'];
+				break;
+			}
+		}
+
+		include MULTILIFY_INCLUDES_DIR . 'views/translations-box.php';
+	}
+
+	/**
+	 * Render one language's fields inside the translations box.
+	 *
+	 * @param WP_Post $post    Entry being edited.
+	 * @param array   $metabox Array with an "args" entry holding the language.
 	 */
 	public function render_translation_meta_box( $post, $metabox ) {
 		$language  = $metabox['args']['language'];

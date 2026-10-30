@@ -3,8 +3,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Multilify 1.7.0\n"
-"Report-Msgid-Bugs-To: https://github.com/kadirermantr/multilify/issues\n"
-"POT-Creation-Date: 2026-10-10 11:01+0300\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/multilify\n"
+"POT-Creation-Date: 2026-10-30T14:25:12+00:00\n"
 "PO-Revision-Date: 2026-10-12 21:35\n"
 "Last-Translator: Kadir Erman <kadirermantr@gmail.com>\n"
 "Language-Team: Turkish <https://translate.wordpress.org/projects/wp-plugins/"
@@ -15,63 +15,85 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
-#: includes/class-multilify.php:266
-msgid "Multilify - Language Management"
-msgstr "Multilify - Dil Yönetimi"
-
 #. Plugin Name of the plugin
-#: multilify.php includes/class-multilify.php:267
+#: multilify.php includes/class-multilify.php:281
 msgid "Multilify"
 msgstr "Multilify"
 
+#. Plugin URI of the plugin
+#: multilify.php
+msgid "https://multilify.com"
+msgstr "https://multilify.com"
+
+#. Description of the plugin
+#: multilify.php
+msgid ""
+"A powerful multilingual content management system for WordPress. Supports "
+"unlimited languages with custom slugs, SEO optimization, and performance "
+"caching."
+msgstr ""
+"WordPress için güçlü, çok dilli bir içerik yönetim sistemi. Sınırsız dil, "
+"her dil için özel adres son eki, SEO iyileştirmesi ve başarım için "
+"önbellekleme sunar."
+
+#. Author of the plugin
+#: multilify.php
+msgid "Kadir Erman"
+msgstr "Kadir Erman"
+
+#. Author URI of the plugin
+#: multilify.php
+msgid "https://kadirerman.com"
+msgstr "https://kadirerman.com"
+
+#: includes/class-multilify.php:280
+msgid "Multilify - Language Management"
+msgstr "Multilify - Dil Yönetimi"
+
 #. translators: %s: language name.
-#: includes/class-multilify.php:301
+#: includes/class-multilify.php:326
 #, php-format
 msgid "Delete %s?"
 msgstr "%s silinsin mi?"
 
-#: includes/class-multilify.php:302
+#: includes/class-multilify.php:327
 msgid "Copied"
 msgstr "Kopyalandı"
 
-#: includes/class-multilify.php:303
+#: includes/class-multilify.php:328
 msgid "Press Ctrl+C to copy"
 msgstr "Kopyalamak için Ctrl+C'ye basın"
 
-#. translators: 1: language flag emoji, 2: language name.
-#: includes/class-multilify.php:753
-#, php-format
-msgid "%1$s %2$s Translation"
-msgstr "%1$s %2$s çevirisi"
+#: includes/class-multilify.php:873 includes/views/translations-box.php:19
+msgid "Translations"
+msgstr "Çeviriler"
 
-#. translators: Appended to a translation panel's title once the entry has text in that language.
-#: includes/class-multilify.php:765
-msgid "translated"
-msgstr "çevrildi"
-
-#: includes/class-multilify.php:2295
-msgid "Language switcher"
-msgstr "Dil seçici"
-
-#: includes/views/admin-page.php:30
+#: includes/class-multilify.php:907 includes/views/admin-page.php:32
+#: includes/views/admin-page.php:47 includes/views/parts/add-dialog.php:39
 msgid "Languages"
 msgstr "Diller"
 
-#. translators: 1: number of languages, 2: number of published entries.
-#: includes/views/admin-page.php:35
+#. translators: %s: language name.
+#: includes/class-multilify.php:954
 #, php-format
-msgid "%1$s language"
-msgid_plural "%1$s languages"
-msgstr[0] "%1$s dil"
+msgid "%s: translated"
+msgstr "%s: çevrildi"
 
-#. translators: 1: number of languages, 2: number of published entries.
-#: includes/views/admin-page.php:37
+#. translators: %s: language name.
+#: includes/class-multilify.php:957
 #, php-format
-msgid "%2$s entry to translate"
-msgid_plural "%2$s entries to translate"
-msgstr[0] "çevrilecek %2$s kayıt"
+msgid "%s: not translated"
+msgstr "%s: çevrilmedi"
 
-#: includes/views/admin-page.php:45
+#: includes/class-multilify.php:2614
+msgid "Language switcher"
+msgstr "Dil seçici"
+
+#: includes/views/admin-page.php:33 includes/views/parts/add-dialog.php:31
+msgid "Add a language"
+msgstr "Dil ekle"
+
+#: includes/views/admin-page.php:38
 msgid ""
 "Every language you add gets its own URL prefix and its own set of "
 "translation fields on each post and page."
@@ -79,247 +101,98 @@ msgstr ""
 "Eklediğiniz her dil kendi URL önekini ve her yazı ile sayfada kendi çeviri "
 "alanlarını alır."
 
-#: includes/views/admin-page.php:54
-msgid "Changes saved."
-msgstr "Değişiklikler kaydedildi."
+#: includes/views/admin-page.php:53
+msgid "How translating works"
+msgstr "Çeviri nasıl çalışır?"
 
-#: includes/views/admin-page.php:64
-msgid ""
-"That language code is already in use. Pick a code no other language uses."
-msgstr ""
-"Bu dil kodu zaten kullanılıyor. Başka bir dilin kullanmadığı bir kod seçin."
+#: includes/views/admin-page.php:63
+msgid "No languages yet. Add one to start translating."
+msgstr "Henüz dil yok. Çeviriye başlamak için bir dil ekleyin."
 
-#: includes/views/admin-page.php:65
-msgid "Use 2 to 5 lowercase letters for a language code, such as tr, en or de."
-msgstr "Dil kodu için 2 ila 5 küçük harf kullanın; tr, en veya de gibi."
-
-#: includes/views/admin-page.php:66
-msgid "That language is no longer in the list. Reload the page and try again."
-msgstr "Bu dil artık listede yok. Sayfayı yenileyip tekrar deneyin."
-
-#: includes/views/admin-page.php:67
-msgid "Set another language as the default before deleting this one."
-msgstr "Bunu silmeden önce başka bir dili varsayılan yapın."
-
-#: includes/views/admin-page.php:68
-msgid ""
-"WordPress already serves that address, so a language cannot take it. Pick "
-"another code."
-msgstr ""
-"WordPress bu adresi zaten kullanıyor, bir dil onu devralamaz. Başka bir kod "
-"seçin."
+#: includes/views/admin-page.php:68 includes/views/parts/add-dialog.php:53
+msgid "Language"
+msgstr "Dil"
 
 #: includes/views/admin-page.php:69
-msgid ""
-"A post or page already lives at that address. Change its slug first, or pick "
-"another code."
-msgstr "Bu adreste zaten bir yazı ya da sayfa var. Önce onun adres son ekini değiştirin ya da başka bir kod seçin."
+msgid "Address"
+msgstr "Adres"
 
-#: includes/views/admin-page.php:73
-msgid "That did not go through. Try again."
-msgstr "İşlem tamamlanmadı. Tekrar deneyin."
+#: includes/views/admin-page.php:70
+msgid "Translated"
+msgstr "Çevrildi"
 
-#: includes/views/admin-page.php:81
-msgid "Active languages"
-msgstr "Etkin diller"
-
-#: includes/views/admin-page.php:83
-msgid ""
-"The default language keeps your existing URLs. Every other language serves "
-"its content under its own prefix."
-msgstr ""
-"Varsayılan dil mevcut adreslerinizi korur. Diğer her dil içeriğini kendi "
-"öneki altında sunar."
+#: includes/views/admin-page.php:71
+msgid "Actions"
+msgstr "İşlemler"
 
 #: includes/views/admin-page.php:89
-msgid "No languages yet. Add one below to start translating."
-msgstr "Henüz dil yok. Çeviriye başlamak için aşağıdan bir dil ekleyin."
-
-#: includes/views/admin-page.php:112
 msgid "Default"
 msgstr "Varsayılan"
 
-#: includes/views/admin-page.php:149
-msgid "Make default"
-msgstr "Varsayılan yap"
+#: includes/views/admin-page.php:96 includes/views/translations-box.php:38
+msgid "Original"
+msgstr "Asıl metin"
 
-#: includes/views/admin-page.php:159
+#. translators: 1: translated entry count, 2: total entry count.
+#: includes/views/admin-page.php:104
+#, php-format
+msgid "%1$s of %2$s entry translated"
+msgid_plural "%1$s of %2$s entries translated"
+msgstr[0] "%2$s kayıttan %1$s tanesi çevrildi"
+
+#. translators: %s: language name.
+#: includes/views/admin-page.php:117 includes/views/parts/edit-form.php:33
+#, php-format
+msgid "Edit %s"
+msgstr "%s dilini düzenle"
+
+#. translators: %s: language name.
+#: includes/views/admin-page.php:118
 msgid "Edit"
 msgstr "Düzenle"
 
-#: includes/views/admin-page.php:169
-msgid "Delete"
-msgstr "Sil"
-
-#: includes/views/admin-page.php:184
-msgid "Code"
-msgstr "Kod"
-
-#: includes/views/admin-page.php:194
-msgid "Name"
-msgstr "Ad"
-
-#: includes/views/admin-page.php:200
-msgid "Leave empty to use the code"
-msgstr "Kodu kullanmak için boş bırakın"
-
-#: includes/views/admin-page.php:205 includes/views/admin-page.php:292
-msgid "Flag"
-msgstr "Bayrak"
-
-#: includes/views/admin-page.php:222 includes/views/admin-page.php:306
-msgid "Or type your own"
-msgstr "Ya da kendiniz yazın"
-
-#: includes/views/admin-page.php:236
-msgid "Save language"
-msgstr "Dili kaydet"
-
-#: includes/views/admin-page.php:240
-msgid "Cancel"
-msgstr "Vazgeç"
-
-#: includes/views/admin-page.php:251
-msgid "Add a language"
-msgstr "Dil ekle"
-
-#: includes/views/admin-page.php:253
-msgid ""
-"A language code cannot be changed later, because your translations are "
-"stored under it."
-msgstr ""
-"Dil kodu sonradan değiştirilemez, çünkü çevirileriniz onun altında saklanır."
-
-#: includes/views/admin-page.php:261
-msgid "Language code"
-msgstr "Dil kodu"
-
-#: includes/views/admin-page.php:270
-msgid "Two to five lowercase letters. This becomes the URL prefix."
-msgstr "İki ila beş küçük harf. Bu, URL öneki olur."
-
-#: includes/views/admin-page.php:274
-msgid "Language name"
-msgstr "Dil adı"
-
-#. translators: %s: the show_name="false" shortcode attribute.
-#: includes/views/admin-page.php:284
-#, php-format
-msgid ""
-"Shown in the switcher. Leave it empty to show the code instead, or hide it "
-"with %s."
-msgstr ""
-"Dil seçicide görünür. Bunun yerine kodu göstermek için boş bırakın, gizlemek "
-"için %s kullanın."
-
-#: includes/views/admin-page.php:318
-msgid "Pick a flag, or type any emoji. Screen readers skip it."
-msgstr ""
-"Bir bayrak seçin ya da herhangi bir emoji yazın. Ekran okuyucular bunu atlar."
-
-#: includes/views/admin-page.php:322
-msgid "Add language"
-msgstr "Dili ekle"
-
-#: includes/views/admin-page.php:328
-msgid "How translating works"
-msgstr "Çeviri nasıl çalışır"
-
-#: includes/views/admin-page.php:332
-msgid "Translate a post or page"
-msgstr "Bir yazıyı ya da sayfayı çevirin"
-
-#: includes/views/admin-page.php:333
-msgid ""
-"Open any post or page. Each language gets its own panel where you can set a "
-"title, the content, and the slug that language uses in the URL."
-msgstr "Herhangi bir yazıyı ya da sayfayı açın. Her dil kendi panosunu alır; başlığı, içeriği ve o dilin adreste kullandığı adres son ekini buradan girersiniz."
-
-#: includes/views/admin-page.php:334
-msgid ""
-"Leave a field empty and visitors see the default language instead, so a half-"
-"finished translation never shows a blank page."
-msgstr ""
-"Bir alanı boş bırakırsanız ziyaretçiler varsayılan dili görür, böylece yarım "
-"kalmış bir çeviri asla boş sayfa göstermez."
-
-#: includes/views/admin-page.php:338
-msgid "What the URLs look like"
-msgstr "Adresler nasıl görünür"
-
-#: includes/views/admin-page.php:339
-msgid ""
-"The default language keeps the address it already has. Every other language "
-"serves the same entry under its own prefix:"
-msgstr "Varsayılan dil mevcut adresini korur. Diğer her dil aynı kaydı kendi öneki altında sunar:"
-
-#: includes/views/admin-page.php:348
+#: includes/views/admin-page.php:138 includes/views/parts/guide.php:32
 msgid "Show the language switcher"
 msgstr "Dil seçiciyi gösterin"
 
-#: includes/views/admin-page.php:349
+#: includes/views/admin-page.php:139 includes/views/parts/guide.php:33
 msgid "Drop the shortcode into any post, page or block:"
 msgstr "Kısa kodu herhangi bir yazıya, sayfaya ya da bloğa ekleyin:"
 
-#: includes/views/admin-page.php:354 includes/views/admin-page.php:362
+#. translators: %s: the snippet the button copies.
+#: includes/views/admin-page.php:143 includes/views/parts/guide.php:37
+#: includes/views/parts/guide.php:46
+#, php-format
+msgid "Copy %s"
+msgstr "%s ögesini kopyala"
+
+#. translators: %s: the snippet the button copies.
+#: includes/views/admin-page.php:144 includes/views/parts/guide.php:38
+#: includes/views/parts/guide.php:47
 msgid "Copy"
 msgstr "Kopyala"
 
-#: includes/views/admin-page.php:357
-msgid "Or call it from a theme template:"
-msgstr "Ya da tema şablonundan çağırın:"
-
-#. translators: %s: the show_name="false" shortcode attribute.
-#: includes/views/admin-page.php:369
-#, php-format
-msgid "Add %s to show flags only."
-msgstr "Yalnızca bayrakları göstermek için %s ekleyin."
-
-#: includes/views/admin-page.php:377
+#: includes/views/admin-page.php:150 includes/views/parts/guide.php:63
 msgid "Search engines"
 msgstr "Arama motorları"
 
-#: includes/views/admin-page.php:378
+#: includes/views/admin-page.php:151 includes/views/parts/guide.php:64
 msgid ""
 "Multilify adds hreflang tags to each entry and to the homepage so search "
 "engines know which languages an entry exists in, and sets the page language "
 "so screen readers pronounce it correctly."
-msgstr "Multilify her kayda ve giriş sayfasına hreflang etiketleri ekler, böylece arama motorları kaydın hangi dillerde bulunduğunu bilir. Sayfa dilini de ayarladığı için ekran okuyucular metni doğru telaffuz eder."
-
-#: includes/views/admin-page.php:379
-msgid ""
-"Visitors who open the homepage are sent to the language their browser asks "
-"for. Once someone picks a language from the switcher, that choice is "
-"remembered. Logged-in users and search engines are never redirected."
 msgstr ""
-"Giriş sayfasını açan ziyaretçiler tarayıcılarının istediği dile "
-"yönlendirilir. Dil seçiciden bir dil seçildiğinde bu tercih hatırlanır. "
-"Oturum açmış kullanıcılar ve arama motorları asla yönlendirilmez."
-
-#: includes/views/admin-page.php:388
-msgid "Delete this language?"
-msgstr "Bu dil silinsin mi?"
-
-#: includes/views/admin-page.php:391
-msgid ""
-"Its translations stay in the database, so adding the same code again brings "
-"them back."
-msgstr ""
-"Çevirileri veritabanında kalır, aynı kodu tekrar eklerseniz geri gelir."
-
-#: includes/views/admin-page.php:395
-msgid "Keep language"
-msgstr "Dili koru"
-
-#: includes/views/admin-page.php:398
-msgid "Delete language"
-msgstr "Dili sil"
+"Multilify her kayda ve giriş sayfasına hreflang etiketleri ekler, böylece "
+"arama motorları kaydın hangi dillerde bulunduğunu bilir. Sayfa dilini de "
+"ayarladığı için ekran okuyucular metni doğru telaffuz eder."
 
 #: includes/views/meta-box.php:16
 msgid ""
 "Anything filled in here replaces the entry's own title, content or address "
 "in the default language. Leave a field empty to keep the original."
-msgstr "Buraya yazdıklarınız, varsayılan dilde kaydın kendi başlığının, içeriğinin ya da adresinin yerine geçer. Boş bıraktığınız alanlarda özgün değer korunur."
+msgstr ""
+"Buraya yazdıklarınız, varsayılan dilde kaydın kendi başlığının, içeriğinin "
+"ya da adresinin yerine geçer. Boş bıraktığınız alanlarda özgün değer korunur."
 
 #: includes/views/meta-box.php:18
 msgid ""
@@ -356,78 +229,204 @@ msgstr ""
 msgid "Content"
 msgstr "İçerik"
 
-#: multilify.php:187
-msgid "Settings"
-msgstr "Ayarlar"
-
-#. Plugin URI of the plugin
-#: multilify.php
-msgid "https://multilify.com"
-msgstr "https://multilify.com"
-
-#. Description of the plugin
-#: multilify.php
-msgid ""
-"A powerful multilingual content management system for WordPress. Supports "
-"unlimited languages with custom slugs, SEO optimization, and performance "
-"caching."
-msgstr "WordPress için güçlü, çok dilli bir içerik yönetim sistemi. Sınırsız dil, her dil için özel adres son eki, SEO iyileştirmesi ve başarım için önbellekleme sunar."
-
-#. Author of the plugin
-#: multilify.php
-msgid "Kadir Erman"
-msgstr "Kadir Erman"
-
-#. Author URI of the plugin
-#: multilify.php
-msgid "https://kadirerman.com"
-msgstr "https://kadirerman.com"
-
-#. translators: 1: translated entry count, 2: total entry count.
-#: includes/views/admin-page.php:118
-#, php-format
-msgid "%1$s of %2$s entry translated"
-msgid_plural "%1$s of %2$s entries translated"
-msgstr[0] "%2$s kayıttan %1$s tanesi çevrildi"
-
-#. translators: %s: language name.
-#: includes/views/admin-page.php:148
-#, php-format
-msgid "Make %s the default"
-msgstr "%s dilini varsayılan yap"
-
-#. translators: %s: language name.
-#: includes/views/admin-page.php:158
-#, php-format
-msgid "Edit %s"
-msgstr "%s dilini düzenle"
-
-#. translators: %s: language name.
-#: includes/views/admin-page.php:168
-#, php-format
-msgid "Delete %s"
-msgstr "%s dilini sil"
-
-#. translators: %s: the snippet the button copies.
-#: includes/views/admin-page.php:353 includes/views/admin-page.php:361
-#, php-format
-msgid "Copy %s"
-msgstr "%s ögesini kopyala"
-
 #. translators: %s: language name.
 #: includes/views/meta-box.php:66
 #, php-format
 msgid "Content in %s"
 msgstr "%s içeriği"
 
-#. translators: %s: language name.
-#: includes/class-multilify.php:866
+#: includes/views/parts/add-dialog.php:32
+#: includes/views/parts/add-dialog.php:101
+#: includes/views/parts/edit-form.php:35 includes/views/parts/edit-form.php:91
+msgid "Cancel"
+msgstr "Vazgeç"
+
+#: includes/views/parts/add-dialog.php:55
+msgid "Search languages"
+msgstr "Dil arayın"
+
+#: includes/views/parts/add-dialog.php:74 includes/views/parts/edit-form.php:44
+msgid "Language code"
+msgstr "Dil kodu"
+
+#. translators: %s: address of the language's home page, such as example.com/it/.
+#: includes/views/parts/add-dialog.php:81
 #, php-format
-msgid "%s: translated"
-msgstr "%s: çevrildi"
+msgid "Two to five lowercase letters, used in the address: %s"
+msgstr "İki ila beş küçük harf, adreste kullanılır: %s"
+
+#: includes/views/parts/add-dialog.php:88 includes/views/parts/edit-form.php:53
+msgid "Language name"
+msgstr "Dil adı"
+
+#: includes/views/parts/add-dialog.php:92 includes/views/parts/edit-form.php:60
+#: includes/views/parts/edit-form.php:72
+msgid "Flag"
+msgstr "Bayrak"
+
+#: includes/views/parts/add-dialog.php:96 includes/views/parts/edit-form.php:69
+msgid "Pick a flag, or type any emoji. Screen readers skip it."
+msgstr ""
+"Bir bayrak seçin ya da herhangi bir emoji yazın. Ekran okuyucular bunu atlar."
+
+#: includes/views/parts/add-dialog.php:102
+msgid "Add language"
+msgstr "Dili ekle"
+
+#: includes/views/parts/confirm-dialog.php:17
+msgid "Delete this language?"
+msgstr "Bu dil silinsin mi?"
+
+#: includes/views/parts/confirm-dialog.php:20
+msgid ""
+"Its translations stay in the database, so adding the same code again brings "
+"them back."
+msgstr ""
+"Çevirileri veritabanında kalır, aynı kodu tekrar eklerseniz geri gelir."
+
+#: includes/views/parts/confirm-dialog.php:24
+msgid "Keep language"
+msgstr "Dili koru"
+
+#: includes/views/parts/confirm-dialog.php:27
+msgid "Delete language"
+msgstr "Dili sil"
+
+#: includes/views/parts/edit-form.php:50
+msgid "The code cannot be changed: your translations are stored under it."
+msgstr "Kod değiştirilemez, çevirileriniz bu kodun altında saklanır."
 
 #. translators: %s: language name.
-#: includes/class-multilify.php:869
+#: includes/views/parts/edit-form.php:82
 #, php-format
-msgid "%s: not translated"
-msgstr "%s: çevrilmedi"
+msgid "Used by %s"
+msgstr "%s kullanıyor"
+
+#: includes/views/parts/edit-form.php:92
+msgid "Save language"
+msgstr "Dili kaydet"
+
+#: includes/views/parts/guide.php:16
+msgid "Translate a post or page"
+msgstr "Bir yazıyı ya da sayfayı çevirin"
+
+#: includes/views/parts/guide.php:17
+msgid ""
+"Open any post or page. Each language gets its own panel where you can set a "
+"title, the content, and the slug that language uses in the URL."
+msgstr ""
+"Herhangi bir yazıyı ya da sayfayı açın. Her dil kendi panosunu alır; "
+"başlığı, içeriği ve o dilin adreste kullandığı adres son ekini buradan "
+"girersiniz."
+
+#: includes/views/parts/guide.php:18
+msgid ""
+"Leave a field empty and visitors see the default language instead, so a half-"
+"finished translation never shows a blank page."
+msgstr ""
+"Bir alanı boş bırakırsanız ziyaretçiler varsayılan dili görür, böylece yarım "
+"kalmış bir çeviri asla boş sayfa göstermez."
+
+#: includes/views/parts/guide.php:22
+msgid "What the URLs look like"
+msgstr "Adresler nasıl görünür?"
+
+#: includes/views/parts/guide.php:23
+msgid ""
+"The default language keeps the address it already has. Every other language "
+"serves the same entry under its own prefix:"
+msgstr ""
+"Varsayılan dil mevcut adresini korur. Diğer her dil aynı kaydı kendi öneki "
+"altında sunar:"
+
+#: includes/views/parts/guide.php:42
+msgid "Or call it from a theme template:"
+msgstr "Ya da tema şablonundan çağırın:"
+
+#. translators: %s: the show_name="false" shortcode attribute.
+#: includes/views/parts/guide.php:55
+#, php-format
+msgid "Add %s to show flags only."
+msgstr "Yalnızca bayrakları göstermek için %s ekleyin."
+
+#: includes/views/parts/guide.php:65
+msgid ""
+"Visitors who open the homepage are sent to the language their browser asks "
+"for. Once someone picks a language from the switcher, that choice is "
+"remembered. Logged-in users and search engines are never redirected."
+msgstr ""
+"Giriş sayfasını açan ziyaretçiler tarayıcılarının istediği dile "
+"yönlendirilir. Dil seçiciden bir dil seçildiğinde bu tercih hatırlanır. "
+"Oturum açmış kullanıcılar ve arama motorları asla yönlendirilmez."
+
+#: includes/views/parts/notices.php:18
+msgid "Changes saved."
+msgstr "Değişiklikler kaydedildi."
+
+#: includes/views/parts/notices.php:28
+msgid ""
+"That language code is already in use. Pick a code no other language uses."
+msgstr ""
+"Bu dil kodu zaten kullanılıyor. Başka bir dilin kullanmadığı bir kod seçin."
+
+#: includes/views/parts/notices.php:29
+msgid "Use 2 to 5 lowercase letters for a language code, such as tr, en or de."
+msgstr "Dil kodu için 2 ila 5 küçük harf kullanın; tr, en veya de gibi."
+
+#: includes/views/parts/notices.php:30
+msgid "That language is no longer in the list. Reload the page and try again."
+msgstr "Bu dil artık listede yok. Sayfayı yenileyip tekrar deneyin."
+
+#: includes/views/parts/notices.php:31
+msgid "Set another language as the default before deleting this one."
+msgstr "Bunu silmeden önce başka bir dili varsayılan yapın."
+
+#: includes/views/parts/notices.php:32
+msgid ""
+"WordPress already serves that address, so a language cannot take it. Pick "
+"another code."
+msgstr ""
+"WordPress bu adresi zaten kullanıyor, bir dil onu devralamaz. Başka bir kod "
+"seçin."
+
+#: includes/views/parts/notices.php:33
+msgid ""
+"A post or page already lives at that address. Change its slug first, or pick "
+"another code."
+msgstr ""
+"Bu adreste zaten bir yazı ya da sayfa var. Önce onun adres son ekini "
+"değiştirin ya da başka bir kod seçin."
+
+#: includes/views/parts/notices.php:34
+msgid "Another language already uses that flag. Pick a different one."
+msgstr "Bu bayrağı başka bir dil kullanıyor. Farklı bir bayrak seçin."
+
+#: includes/views/parts/notices.php:38
+msgid "That did not go through. Try again."
+msgstr "İşlem tamamlanmadı. Tekrar deneyin."
+
+#. translators: %s: language name.
+#: includes/views/parts/row-menu.php:17
+#, php-format
+msgid "More actions for %s"
+msgstr "%s için diğer işlemler"
+
+#: includes/views/parts/row-menu.php:25
+msgid "Make default"
+msgstr "Varsayılan yap"
+
+#: includes/views/parts/row-menu.php:31
+msgid "Delete"
+msgstr "Sil"
+
+#: includes/views/translations-box.php:40
+msgid "translated"
+msgstr "çevrildi"
+
+#: includes/views/translations-box.php:42
+msgid "Not translated"
+msgstr "Çevrilmedi"
+
+#: multilify.php:187
+msgid "Settings"
+msgstr "Ayarlar"

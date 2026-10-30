@@ -1,6 +1,6 @@
 <?php
 /**
- * Admin page for language management.
+ * Languages screen: the languages in a table, the guide on its own tab.
  *
  * @package Multilify
  *
@@ -9,400 +9,162 @@
  * @var int    $translatable     Published entries that can carry a translation.
  * @var array  $progress         Translated entry count per language code.
  * @var array  $flag_choices     Flags offered by the picker, keyed by language code.
+ * @var array  $catalog          Languages offered when adding one.
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-$multilify_total = isset( $translatable ) ? (int) $translatable : 0;
-$multilify_done  = isset( $progress ) && is_array( $progress ) ? $progress : array();
-$multilify_flags = isset( $flag_choices ) && is_array( $flag_choices ) ? $flag_choices : array();
+$multilify_total = (int) $translatable;
+$multilify_done  = is_array( $progress ) ? $progress : array();
+$multilify_flags = is_array( $flag_choices ) ? $flag_choices : array();
+$multilify_host  = untrailingslashit( preg_replace( '#^https?://#', '', home_url() ) );
+// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+$multilify_tab   = isset( $_GET['tab'] ) && 'usage' === $_GET['tab'] ? 'usage' : 'languages';
+$multilify_base  = admin_url( 'admin.php?page=multilify' );
 
-// One nonce for every form on the page. wp_nonce_field() prints the field with
-// id="_wpnonce", and a page of forms then carries that id many times over.
+// One nonce for every form on the page, so the id _wpnonce is not repeated.
 $multilify_nonce = '<input type="hidden" name="_wpnonce" value="' . esc_attr( wp_create_nonce( 'multilify_action' ) ) . '">' . wp_referer_field( false );
 ?>
 
-<div class="wrap multilify-admin">
-
-	<div class="multilify-masthead">
-		<h1><?php esc_html_e( 'Languages', 'multilify' ); ?></h1>
-		<p class="multilify-tally">
-			<?php
-			printf(
-				/* translators: 1: number of languages, 2: number of published entries. */
-				esc_html( _n( '%1$s language', '%1$s languages', count( $languages ), 'multilify' ) ) . ' &middot; ' .
-				/* translators: 1: number of languages, 2: number of published entries. */
-				esc_html( _n( '%2$s entry to translate', '%2$s entries to translate', $multilify_total, 'multilify' ) ),
-				'<strong>' . esc_html( number_format_i18n( count( $languages ) ) ) . '</strong>',
-				'<strong>' . esc_html( number_format_i18n( $multilify_total ) ) . '</strong>'
-			);
-			?>
-		</p>
-		<?php // A grid item in its own right, so it can run under both the title and the tally. ?>
-		<p class="multilify-masthead__lede">
-			<?php esc_html_e( 'Every language you add gets its own URL prefix and its own set of translation fields on each post and page.', 'multilify' ); ?>
-		</p>
-	</div>
-
-	<?php // Core moves admin notices here; without it they land inside the masthead grid. ?>
+<div class="wrap multilify-admin mfy">
+	<h1 class="wp-heading-inline"><?php esc_html_e( 'Languages', 'multilify' ); ?></h1>
+	<button type="button" class="page-title-action" data-multilify-add-open><?php esc_html_e( 'Add a language', 'multilify' ); ?></button>
+	<?php // Core moves admin notices here, right under the title line. ?>
 	<hr class="wp-header-end">
 
-	<?php
-	// phpcs:ignore WordPress.Security.NonceVerification.Recommended
-	if ( isset( $_GET['multilify_updated'] ) && '1' === $_GET['multilify_updated'] ) :
-		?>
-		<div class="notice notice-success is-dismissible">
-			<p><?php esc_html_e( 'Changes saved.', 'multilify' ); ?></p>
-		</div>
-	<?php endif; ?>
+	<div class="mfy-intro">
+		<p class="mfy-lede"><?php esc_html_e( 'Every language you add gets its own URL prefix and its own set of translation fields on each post and page.', 'multilify' ); ?></p>
+	</div>
 
-	<?php
-	// phpcs:ignore WordPress.Security.NonceVerification.Recommended
-	if ( isset( $_GET['multilify_error'] ) ) :
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		$multilify_error          = sanitize_key( wp_unslash( $_GET['multilify_error'] ) );
-		$multilify_error_messages = array(
-			'duplicate_code' => __( 'That language code is already in use. Pick a code no other language uses.', 'multilify' ),
-			'invalid_code'   => __( 'Use 2 to 5 lowercase letters for a language code, such as tr, en or de.', 'multilify' ),
-			'not_found'      => __( 'That language is no longer in the list. Reload the page and try again.', 'multilify' ),
-			'delete_default' => __( 'Set another language as the default before deleting this one.', 'multilify' ),
-			'reserved_code'  => __( 'WordPress already serves that address, so a language cannot take it. Pick another code.', 'multilify' ),
-			'code_in_use'    => __( 'A post or page already lives at that address. Change its slug first, or pick another code.', 'multilify' ),
-		);
-		$multilify_error_text     = isset( $multilify_error_messages[ $multilify_error ] )
-			? $multilify_error_messages[ $multilify_error ]
-			: __( 'That did not go through. Try again.', 'multilify' );
-		?>
-		<div class="notice notice-error is-dismissible">
-			<p><?php echo esc_html( $multilify_error_text ); ?></p>
-		</div>
-	<?php endif; ?>
+	<?php include __DIR__ . '/parts/notices.php'; ?>
 
-	<div class="multilify-section">
-		<h2><?php esc_html_e( 'Active languages', 'multilify' ); ?></h2>
-		<p class="multilify-section__note">
-			<?php esc_html_e( 'The default language keeps your existing URLs. Every other language serves its content under its own prefix.', 'multilify' ); ?>
-		</p>
+	<?php // The two views, linked the way core lists its own views ("All (13) | Mine (1)"). ?>
+	<ul class="subsubsub mfy-views">
+		<li>
+			<a href="<?php echo esc_url( $multilify_base ); ?>"<?php echo 'languages' === $multilify_tab ? ' class="current" aria-current="page"' : ''; ?>>
+				<?php esc_html_e( 'Languages', 'multilify' ); ?>
+				<span class="count">(<?php echo esc_html( number_format_i18n( count( $languages ) ) ); ?>)</span>
+			</a> |
+		</li>
+		<li>
+			<a href="<?php echo esc_url( add_query_arg( 'tab', 'usage', $multilify_base ) ); ?>"<?php echo 'usage' === $multilify_tab ? ' class="current" aria-current="page"' : ''; ?>>
+				<?php esc_html_e( 'How translating works', 'multilify' ); ?>
+			</a>
+		</li>
+	</ul>
+	<div class="clear"></div>
 
-		<div class="multilify-entries">
-			<?php if ( empty( $languages ) ) : ?>
-				<p class="multilify-empty">
-					<?php esc_html_e( 'No languages yet. Add one below to start translating.', 'multilify' ); ?>
-				</p>
-			<?php else : ?>
-				<?php
-				foreach ( $languages as $multilify_language ) :
-					$multilify_code       = $multilify_language['code'];
-					$multilify_is_default = ( $multilify_code === $default_language );
-					$multilify_name       = '' !== trim( (string) $multilify_language['name'] )
-						? $multilify_language['name']
-						: $multilify_code;
-					$multilify_count      = isset( $multilify_done[ $multilify_code ] ) ? (int) $multilify_done[ $multilify_code ] : 0;
-					?>
-					<div class="multilify-entry<?php echo $multilify_is_default ? ' multilify-entry--default' : ''; ?>">
-
-						<div class="multilify-entry__headword">
-							<span class="multilify-code"><?php echo esc_html( $multilify_code ); ?></span>
-							<span class="multilify-entry__gloss">
-								<span class="multilify-entry__name"><?php echo esc_html( $multilify_name ); ?></span>
-								<span class="multilify-entry__meta">
-									<?php if ( '' !== trim( (string) $multilify_language['flag'] ) ) : ?>
-										<span class="multilify-flag" aria-hidden="true"><?php echo esc_html( $multilify_language['flag'] ); ?></span>
-									<?php endif; ?>
-									<?php if ( $multilify_is_default ) : ?>
-										<span class="multilify-badge"><?php esc_html_e( 'Default', 'multilify' ); ?></span>
-									<?php else : ?>
-										<span>
-											<?php
-											printf(
-												/* translators: 1: translated entry count, 2: total entry count. */
-												esc_html( _n( '%1$s of %2$s entry translated', '%1$s of %2$s entries translated', $multilify_total, 'multilify' ) ),
-												esc_html( number_format_i18n( $multilify_count ) ),
-												esc_html( number_format_i18n( $multilify_total ) )
-											);
-											?>
+	<?php if ( 'languages' === $multilify_tab ) : ?>
+		<div class="mfy-grid">
+			<div class="mfy-card mfy-card--flush">
+				<?php if ( empty( $languages ) ) : ?>
+					<p class="mfy-empty"><?php esc_html_e( 'No languages yet. Add one to start translating.', 'multilify' ); ?></p>
+				<?php else : ?>
+					<table class="mfy-table">
+						<thead>
+							<tr>
+								<th scope="col"><?php esc_html_e( 'Language', 'multilify' ); ?></th>
+								<th scope="col"><?php esc_html_e( 'Address', 'multilify' ); ?></th>
+								<th scope="col"><?php esc_html_e( 'Translated', 'multilify' ); ?></th>
+								<th scope="col"><span class="screen-reader-text"><?php esc_html_e( 'Actions', 'multilify' ); ?></span></th>
+							</tr>
+						</thead>
+						<tbody>
+							<?php
+							foreach ( $languages as $multilify_language ) :
+								$multilify_code       = $multilify_language['code'];
+								$multilify_is_default = ( $multilify_code === $default_language );
+								$multilify_name       = '' !== trim( (string) $multilify_language['name'] ) ? $multilify_language['name'] : $multilify_code;
+								$multilify_count      = isset( $multilify_done[ $multilify_code ] ) ? (int) $multilify_done[ $multilify_code ] : 0;
+								$multilify_share      = $multilify_total > 0 ? min( 100, round( ( $multilify_count / $multilify_total ) * 100 ) ) : 0;
+								?>
+								<tr>
+									<td class="mfy-td-lang">
+										<span class="mfy-lang">
+											<span class="mfy-lang__flag" aria-hidden="true"><?php echo esc_html( $multilify_language['flag'] ); ?></span>
+											<span class="mfy-lang__name"><?php echo esc_html( $multilify_name ); ?></span>
+											<?php if ( $multilify_is_default ) : ?>
+												<span class="mfy-badge"><?php esc_html_e( 'Default', 'multilify' ); ?></span>
+											<?php endif; ?>
 										</span>
-									<?php endif; ?>
-								</span>
+									</td>
+									<td class="mfy-td-addr"><code class="mfy-chip"><?php echo esc_html( $multilify_is_default ? $multilify_host . '/' : '/' . $multilify_code . '/' ); ?></code></td>
+									<td class="mfy-td-cov">
+										<?php if ( $multilify_is_default ) : ?>
+											<span class="mfy-muted"><?php esc_html_e( 'Original', 'multilify' ); ?></span>
+										<?php else : ?>
+											<span class="mfy-cov">
+												<span class="mfy-bar" aria-hidden="true"><span style="width: <?php echo esc_attr( $multilify_share ); ?>%"></span></span>
+												<span>
+													<?php
+													printf(
+														/* translators: 1: translated entry count, 2: total entry count. */
+														esc_html( _n( '%1$s of %2$s entry translated', '%1$s of %2$s entries translated', $multilify_total, 'multilify' ) ),
+														esc_html( number_format_i18n( $multilify_count ) ),
+														esc_html( number_format_i18n( $multilify_total ) )
+													);
+													?>
+												</span>
+											</span>
+										<?php endif; ?>
+									</td>
+									<td class="mfy-table__actions mfy-td-act">
+										<button type="button" class="button button-link multilify-edit-toggle"
+												data-code="<?php echo esc_attr( $multilify_code ); ?>"
+												aria-haspopup="dialog"
+												aria-label="<?php echo esc_attr( sprintf( /* translators: %s: language name. */ __( 'Edit %s', 'multilify' ), $multilify_name ) ); ?>">
+											<?php esc_html_e( 'Edit', 'multilify' ); ?>
+										</button>
+										<?php
+										if ( $multilify_is_default ) {
+											// The default has no menu; the gap keeps Edit in line with the rows below.
+											echo '<span class="mfy-iconbtn mfy-iconbtn--blank" aria-hidden="true"></span>';
+										} else {
+											include __DIR__ . '/parts/row-menu.php';
+										}
+										?>
+									</td>
+								</tr>
+							<?php endforeach; ?>
+						</tbody>
+					</table>
+				<?php endif; ?>
+			</div>
 
-								<?php
-								if ( ! $multilify_is_default && $multilify_total > 0 ) :
-									// The sentence above already carries the figures, so the
-									// measure is decoration and stays out of the reading order.
-									$multilify_share = min( 100, round( ( $multilify_count / $multilify_total ) * 100 ) );
-									?>
-									<span class="multilify-measure" aria-hidden="true">
-										<span class="multilify-measure__fill" style="width: <?php echo esc_attr( $multilify_share ); ?>%"></span>
-									</span>
-								<?php endif; ?>
-							</span>
-						</div>
-
-						<div class="multilify-entry__actions">
-							<?php if ( ! $multilify_is_default ) : ?>
-								<form method="post">
-									<?php echo $multilify_nonce; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Built above from escaped parts. ?>
-									<input type="hidden" name="multilify_action" value="set_default">
-									<input type="hidden" name="default_language" value="<?php echo esc_attr( $multilify_code ); ?>">
-									<?php // A screen reader lists the page's buttons out of context, so each one names its language. ?>
-									<button type="submit" class="button button-small"
-											aria-label="<?php echo esc_attr( sprintf( /* translators: %s: language name. */ __( 'Make %s the default', 'multilify' ), $multilify_name ) ); ?>">
-										<?php esc_html_e( 'Make default', 'multilify' ); ?>
-									</button>
-								</form>
-							<?php endif; ?>
-
-							<button type="button" class="button button-small multilify-edit-toggle"
-									data-code="<?php echo esc_attr( $multilify_code ); ?>"
-									aria-expanded="false"
-									aria-controls="multilify-edit-<?php echo esc_attr( $multilify_code ); ?>"
-									aria-label="<?php echo esc_attr( sprintf( /* translators: %s: language name. */ __( 'Edit %s', 'multilify' ), $multilify_name ) ); ?>">
-								<?php esc_html_e( 'Edit', 'multilify' ); ?>
-							</button>
-
-							<?php if ( ! $multilify_is_default ) : ?>
-								<form method="post" data-multilify-confirm data-language="<?php echo esc_attr( $multilify_name ); ?>">
-									<?php echo $multilify_nonce; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Built above from escaped parts. ?>
-									<input type="hidden" name="multilify_action" value="delete_language">
-									<input type="hidden" name="lang_code" value="<?php echo esc_attr( $multilify_code ); ?>">
-									<button type="submit" class="button button-small button-link-delete"
-											aria-label="<?php echo esc_attr( sprintf( /* translators: %s: language name. */ __( 'Delete %s', 'multilify' ), $multilify_name ) ); ?>">
-										<?php esc_html_e( 'Delete', 'multilify' ); ?>
-									</button>
-								</form>
-							<?php endif; ?>
-						</div>
+			<aside class="mfy-aside">
+				<div class="mfy-card">
+					<h2 class="mfy-card__title"><?php esc_html_e( 'Show the language switcher', 'multilify' ); ?></h2>
+					<p><?php esc_html_e( 'Drop the shortcode into any post, page or block:', 'multilify' ); ?></p>
+					<div class="multilify-snippet mfy-snippet">
+						<pre><code>[multilify_switcher]</code></pre>
+						<button type="button" class="multilify-copy" data-multilify-copy="[multilify_switcher]"
+								aria-label="<?php echo esc_attr( sprintf( /* translators: %s: the snippet the button copies. */ __( 'Copy %s', 'multilify' ), '[multilify_switcher]' ) ); ?>">
+							<span class="multilify-copy__label"><?php esc_html_e( 'Copy', 'multilify' ); ?></span>
+						</button>
+						<span class="screen-reader-text" role="status" data-multilify-copy-status></span>
 					</div>
-
-					<div class="multilify-editrow" id="multilify-edit-<?php echo esc_attr( $multilify_code ); ?>" hidden>
-						<form method="post" class="multilify-editform">
-							<?php echo $multilify_nonce; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Built above from escaped parts. ?>
-							<input type="hidden" name="multilify_action" value="edit_language">
-							<input type="hidden" name="lang_code" value="<?php echo esc_attr( $multilify_code ); ?>">
-
-							<div class="multilify-field multilify-field--code">
-								<label for="multilify-edit-code-<?php echo esc_attr( $multilify_code ); ?>">
-									<?php esc_html_e( 'Code', 'multilify' ); ?>
-								</label>
-								<input type="text"
-										id="multilify-edit-code-<?php echo esc_attr( $multilify_code ); ?>"
-										value="<?php echo esc_attr( $multilify_code ); ?>"
-										disabled>
-							</div>
-
-							<div class="multilify-field multilify-field--name">
-								<label for="multilify-edit-name-<?php echo esc_attr( $multilify_code ); ?>">
-									<?php esc_html_e( 'Name', 'multilify' ); ?>
-								</label>
-								<input type="text"
-										id="multilify-edit-name-<?php echo esc_attr( $multilify_code ); ?>"
-										name="lang_name"
-										value="<?php echo esc_attr( $multilify_language['name'] ); ?>"
-										placeholder="<?php esc_attr_e( 'Leave empty to use the code', 'multilify' ); ?>">
-							</div>
-
-							<div class="multilify-field multilify-field--flag">
-								<span class="multilify-field__label" id="multilify-edit-flaglabel-<?php echo esc_attr( $multilify_code ); ?>">
-									<?php esc_html_e( 'Flag', 'multilify' ); ?>
-								</span>
-								<div class="multilify-flagpicker" data-multilify-flagpicker>
-									<div class="multilify-flagpicker__grid" role="radiogroup"
-											aria-labelledby="multilify-edit-flaglabel-<?php echo esc_attr( $multilify_code ); ?>">
-										<?php // The emoji is the option's name: a screen reader reads a flag as its country, where the key it was filed under named a language. ?>
-										<?php foreach ( $multilify_flags as $multilify_flag_emoji ) : ?>
-											<button type="button"
-													class="multilify-flagpicker__option<?php echo ( $multilify_flag_emoji === $multilify_language['flag'] ) ? ' is-selected' : ''; ?>"
-													role="radio"
-													aria-checked="<?php echo ( $multilify_flag_emoji === $multilify_language['flag'] ) ? 'true' : 'false'; ?>"
-													data-flag="<?php echo esc_attr( $multilify_flag_emoji ); ?>">
-												<span><?php echo esc_html( $multilify_flag_emoji ); ?></span>
-											</button>
-										<?php endforeach; ?>
-									</div>
-									<label class="multilify-flagpicker__custom" for="multilify-edit-flag-<?php echo esc_attr( $multilify_code ); ?>">
-										<span id="multilify-edit-flagcustom-<?php echo esc_attr( $multilify_code ); ?>"><?php esc_html_e( 'Or type your own', 'multilify' ); ?></span>
-										<input type="text"
-												id="multilify-edit-flag-<?php echo esc_attr( $multilify_code ); ?>"
-												name="lang_flag"
-												value="<?php echo esc_attr( $multilify_language['flag'] ); ?>"
-												maxlength="10"
-												aria-labelledby="multilify-edit-flaglabel-<?php echo esc_attr( $multilify_code ); ?> multilify-edit-flagcustom-<?php echo esc_attr( $multilify_code ); ?>"
-												data-multilify-flaginput>
-									</label>
-								</div>
-							</div>
-
-							<div class="multilify-field multilify-field--actions">
-								<button type="submit" class="button button-primary button-small">
-									<?php esc_html_e( 'Save language', 'multilify' ); ?>
-								</button>
-								<button type="button" class="button button-small multilify-edit-cancel"
-										data-code="<?php echo esc_attr( $multilify_code ); ?>">
-									<?php esc_html_e( 'Cancel', 'multilify' ); ?>
-								</button>
-							</div>
-						</form>
-					</div>
-				<?php endforeach; ?>
-			<?php endif; ?>
-		</div>
-	</div>
-
-	<div class="multilify-section">
-		<h2><?php esc_html_e( 'Add a language', 'multilify' ); ?></h2>
-		<p class="multilify-section__note">
-			<?php esc_html_e( 'A language code cannot be changed later, because your translations are stored under it.', 'multilify' ); ?>
-		</p>
-
-		<form method="post" class="multilify-addform">
-			<?php echo $multilify_nonce; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Built above from escaped parts. ?>
-			<input type="hidden" name="multilify_action" value="add_language">
-
-			<div class="multilify-field">
-				<label for="lang_code"><?php esc_html_e( 'Language code', 'multilify' ); ?></label>
-				<input type="text"
-						id="lang_code"
-						name="lang_code"
-						placeholder="de"
-						required
-						maxlength="5"
-						pattern="[a-z]{2,5}"
-						aria-describedby="multilify-add-code-hint">
-				<p class="description" id="multilify-add-code-hint"><?php esc_html_e( 'Two to five lowercase letters. This becomes the URL prefix.', 'multilify' ); ?></p>
-			</div>
-
-			<div class="multilify-field">
-				<label for="lang_name"><?php esc_html_e( 'Language name', 'multilify' ); ?></label>
-				<input type="text"
-						id="lang_name"
-						name="lang_name"
-						placeholder="Deutsch"
-						aria-describedby="multilify-add-name-hint">
-				<p class="description" id="multilify-add-name-hint">
-					<?php
-					printf(
-						/* translators: %s: the show_name="false" shortcode attribute. */
-						esc_html__( 'Shown in the switcher. Leave it empty to show the code instead, or hide it with %s.', 'multilify' ),
-						'<code>show_name="false"</code>'
-					);
-					?>
-				</p>
-			</div>
-
-			<div class="multilify-field multilify-field--flagpicker">
-				<span class="multilify-field__label" id="multilify-add-flaglabel"><?php esc_html_e( 'Flag', 'multilify' ); ?></span>
-				<div class="multilify-flagpicker" data-multilify-flagpicker>
-					<div class="multilify-flagpicker__grid" role="radiogroup" aria-labelledby="multilify-add-flaglabel">
-						<?php foreach ( $multilify_flags as $multilify_flag_emoji ) : ?>
-							<button type="button"
-									class="multilify-flagpicker__option"
-									role="radio"
-									aria-checked="false"
-									data-flag="<?php echo esc_attr( $multilify_flag_emoji ); ?>">
-								<span><?php echo esc_html( $multilify_flag_emoji ); ?></span>
-							</button>
-						<?php endforeach; ?>
-					</div>
-					<label class="multilify-flagpicker__custom" for="lang_flag">
-						<span id="multilify-add-flagcustom"><?php esc_html_e( 'Or type your own', 'multilify' ); ?></span>
-						<input type="text"
-								id="lang_flag"
-								name="lang_flag"
-								placeholder="🏴"
-								required
-								maxlength="10"
-								aria-labelledby="multilify-add-flaglabel multilify-add-flagcustom"
-								aria-describedby="multilify-add-flag-hint"
-								data-multilify-flaginput>
-					</label>
 				</div>
-				<p class="description" id="multilify-add-flag-hint"><?php esc_html_e( 'Pick a flag, or type any emoji. Screen readers skip it.', 'multilify' ); ?></p>
-			</div>
-
-			<p class="multilify-addform__submit">
-				<button type="submit" class="button button-primary"><?php esc_html_e( 'Add language', 'multilify' ); ?></button>
-			</p>
-		</form>
-	</div>
-
-	<div class="multilify-section" id="usage-guide">
-		<h2><?php esc_html_e( 'How translating works', 'multilify' ); ?></h2>
-
-		<div class="multilify-guide">
-			<div>
-				<h3><?php esc_html_e( 'Translate a post or page', 'multilify' ); ?></h3>
-				<p><?php esc_html_e( 'Open any post or page. Each language gets its own panel where you can set a title, the content, and the slug that language uses in the URL.', 'multilify' ); ?></p>
-				<p><?php esc_html_e( 'Leave a field empty and visitors see the default language instead, so a half-finished translation never shows a blank page.', 'multilify' ); ?></p>
-			</div>
-
-			<div>
-				<h3><?php esc_html_e( 'What the URLs look like', 'multilify' ); ?></h3>
-				<p><?php esc_html_e( 'The default language keeps the address it already has. Every other language serves the same entry under its own prefix:', 'multilify' ); ?></p>
-				<ul>
-					<li><code>example.com/about/</code></li>
-					<li><code>example.com/tr/hakkimizda/</code></li>
-					<li><code>example.com/de/ueber-uns/</code></li>
-				</ul>
-			</div>
-
-			<div>
-				<h3><?php esc_html_e( 'Show the language switcher', 'multilify' ); ?></h3>
-				<p><?php esc_html_e( 'Drop the shortcode into any post, page or block:', 'multilify' ); ?></p>
-				<div class="multilify-snippet">
-					<pre><code>[multilify_switcher]</code></pre>
-					<button type="button" class="multilify-copy" data-multilify-copy="[multilify_switcher]"
-							aria-label="<?php echo esc_attr( sprintf( /* translators: %s: the snippet the button copies. */ __( 'Copy %s', 'multilify' ), '[multilify_switcher]' ) ); ?>">
-						<span class="multilify-copy__label"><?php esc_html_e( 'Copy', 'multilify' ); ?></span>
-					</button>
-					<span class="screen-reader-text" role="status" data-multilify-copy-status></span>
+				<div class="mfy-card">
+					<h2 class="mfy-card__title"><?php esc_html_e( 'Search engines', 'multilify' ); ?></h2>
+					<p><?php esc_html_e( 'Multilify adds hreflang tags to each entry and to the homepage so search engines know which languages an entry exists in, and sets the page language so screen readers pronounce it correctly.', 'multilify' ); ?></p>
 				</div>
-				<p><?php esc_html_e( 'Or call it from a theme template:', 'multilify' ); ?></p>
-				<div class="multilify-snippet">
-					<pre><code>&lt;?php multilify_switcher(); ?&gt;</code></pre>
-					<button type="button" class="multilify-copy" data-multilify-copy="&lt;?php multilify_switcher(); ?&gt;"
-							aria-label="<?php echo esc_attr( sprintf( /* translators: %s: the snippet the button copies. */ __( 'Copy %s', 'multilify' ), '<?php multilify_switcher(); ?>' ) ); ?>">
-						<span class="multilify-copy__label"><?php esc_html_e( 'Copy', 'multilify' ); ?></span>
-					</button>
-					<span class="screen-reader-text" role="status" data-multilify-copy-status></span>
-				</div>
-				<p>
-					<?php
-					printf(
-						/* translators: %s: the show_name="false" shortcode attribute. */
-						esc_html__( 'Add %s to show flags only.', 'multilify' ),
-						'<code>show_name="false"</code>'
-					);
-					?>
-				</p>
-			</div>
-
-			<div>
-				<h3><?php esc_html_e( 'Search engines', 'multilify' ); ?></h3>
-				<p><?php esc_html_e( 'Multilify adds hreflang tags to each entry and to the homepage so search engines know which languages an entry exists in, and sets the page language so screen readers pronounce it correctly.', 'multilify' ); ?></p>
-				<p><?php esc_html_e( 'Visitors who open the homepage are sent to the language their browser asks for. Once someone picks a language from the switcher, that choice is remembered. Logged-in users and search engines are never redirected.', 'multilify' ); ?></p>
-			</div>
+			</aside>
 		</div>
-	</div>
+	<?php else : ?>
+		<?php include __DIR__ . '/parts/guide.php'; ?>
+	<?php endif; ?>
 
-	<div class="multilify-dialog" id="multilify-confirm" role="dialog" aria-modal="true"
-			aria-labelledby="multilify-confirm-title" aria-describedby="multilify-confirm-body" hidden>
-		<div class="multilify-dialog__panel">
-			<h2 class="multilify-dialog__title" id="multilify-confirm-title">
-				<?php esc_html_e( 'Delete this language?', 'multilify' ); ?>
-			</h2>
-			<p class="multilify-dialog__body" id="multilify-confirm-body">
-				<?php esc_html_e( 'Its translations stay in the database, so adding the same code again brings them back.', 'multilify' ); ?>
-			</p>
-			<div class="multilify-dialog__actions">
-				<button type="button" class="button" data-multilify-dialog-cancel>
-					<?php esc_html_e( 'Keep language', 'multilify' ); ?>
-				</button>
-				<button type="button" class="button button-primary multilify-dialog__delete" data-multilify-dialog-confirm>
-					<?php esc_html_e( 'Delete language', 'multilify' ); ?>
-				</button>
-			</div>
-		</div>
-	</div>
+	<?php
+	// One edit dialog per language, outside the table they are opened from.
+	foreach ( $languages as $multilify_language ) {
+		$multilify_code = $multilify_language['code'];
+		$multilify_name = '' !== trim( (string) $multilify_language['name'] ) ? $multilify_language['name'] : $multilify_code;
+		include __DIR__ . '/parts/edit-form.php';
+	}
+	?>
+
+	<?php include __DIR__ . '/parts/add-dialog.php'; ?>
+	<?php include __DIR__ . '/parts/confirm-dialog.php'; ?>
 </div>

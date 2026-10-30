@@ -4,166 +4,76 @@ Tags: multilingual, translation, language, i18n, localization
 Requires at least: 5.8
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.7.1
+Stable tag: 1.8.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Powerful multilingual content management for WordPress with custom slugs and SEO optimization.
+Make your WordPress site multilingual without copying posts. Each translation lives in the original post, with its own address.
 
 == Description ==
 
-**Multilify** is a lightweight yet powerful multilingual plugin for WordPress that allows you to create and manage content in multiple languages with ease.
+Multilify keeps every translation inside the post it translates. There is no copy per language to keep in sync: one post, and an address for each language.
 
-= Key Features =
+* `example.com/hello/` is the original
+* `example.com/de/hallo/` and `example.com/es/hola/` are the same post in German and Spanish
 
-* **Unlimited Languages** - Add as many languages as you need
-* **Custom Slugs** - Set a different URL for every language, including nested pages
-* **hreflang Tags** - `rel="alternate"` tags in `<head>`, plus `x-default`, so search engines index each language correctly
-* **Correct Page Language** - `<html lang>` and a `Content-Language` header follow the language being viewed
-* **Browser Language Detection** - First-time visitors land in the language their browser asks for; their own choice is remembered afterward
-* **Translation Progress** - The settings page shows how many entries each language still needs, and the Posts and Pages lists show which languages each entry already has
-* **Flag Picker** - Choose a flag from a grid instead of hunting for the emoji
-* **Performance First** - Object caching on the slug lookup, with an index to match
-* **Visual Editor** - Translate content using the familiar WordPress editor
-* **Language Switcher** - Built-in switcher with flag-only or flag + name display
-* **Any Post Type** - Posts and pages out of the box, anything else through the `multilify_post_types` filter
-* **Shortcode & Template Tag** - Drop the switcher anywhere with `[multilify_switcher]`
-* **Developer Friendly** - Filters for the post type list, the translated title and content, the flag choices, the locale, browser detection and crawler detection
+= What it does =
 
-= Perfect For =
+* Unlimited languages, each with its own address prefix
+* A slug of its own for every language, nested pages included
+* hreflang tags with x-default, a `lang` attribute that follows the page, and a sitemap for each language
+* One Translations box on the post, in the block and the classic editor, with a title, slug and content for each language
+* A language switcher as a shortcode, `[multilify_switcher]`, or a template tag
+* No outbound requests, no account and no pro tier
 
-* Blogs and magazines
-* Business websites
-* E-commerce stores (works with WooCommerce)
-* Portfolio sites
-* Any WordPress site that needs multilingual support
+= Learn more =
 
-= Why Choose Multilify? =
-
-Unlike bloated translation plugins, Multilify focuses on performance and simplicity:
-
-* **Lightweight** - The switcher's stylesheet is printed inline, and its script loads only where a switcher is shown
-* **Clean Database** - Efficient data storage with proper indexing
-* **No External Services** - All translations stored locally
-* **100% Free** - No premium features, no limitations
-* **Privacy Focused** - Your content stays on your server
-
-= How It Works =
-
-1. Install and activate the plugin
-2. Add your languages from the Multilify settings page
-3. Edit any post or page to see translation meta boxes
-4. Enter translations for each language
-5. Add the language switcher to your theme
-
-= Developer Features =
-
-* Object caching on the slug lookup, invalidated when a slug changes
-* Rewrite rules are rebuilt only when the language list changes or the plugin updates
-* Filters: `multilify_post_types`, `multilify_translated_title`, `multilify_translated_content`, `multilify_flag_choices`, `multilify_locale`, `multilify_enable_browser_detection`, `multilify_is_crawler`
-* Clean, documented code following the WordPress Coding Standards
-
-= Translating Content =
-
-When editing a post or page, you'll see meta boxes for each active language where you can:
-
-* Enter translated title
-* Add translated content using the WordPress editor
-* Set custom URL slugs for each language
-* All fields are optional - fallback to default language if not translated
-
-= Language Switcher =
-
-Add the language switcher to your theme using:
-
-`<?php if ( function_exists( 'multilify_switcher' ) ) multilify_switcher(); ?>`
-
-Or use the shortcode: `[multilify_switcher]`
-
-To show flags only (no language name):
-
-`<?php if ( function_exists( 'multilify_switcher' ) ) multilify_switcher( array( 'show_name' => false ) ); ?>`
-
-Or with the shortcode:
-
-`[multilify_switcher show_name="false"]`
-
-The language name is optional. If you leave it empty when adding a language, the language code is used as a fallback. You can also edit a language's name and flag at any time from the Multilify settings page.
+* [How it works](https://multilify.com/)
+* [Documentation](https://multilify.com/en/docs): addresses, the switcher and the filters
+* [Moving over from WPML or Polylang](https://multilify.com/en/migrate)
+* [Questions and answers](https://multilify.com/en/faq)
+* [Release notes](https://multilify.com/en/releases)
 
 == Installation ==
 
-= Automatic Installation =
+1. Install Multilify from Plugins > Add New and activate it
+2. Open Multilify in the admin menu and add your languages
+3. Translate a post in its Translations box
+4. Put `[multilify_switcher]` where the language switcher should appear
 
-1. Log in to your WordPress admin panel
-2. Navigate to Plugins > Add New
-3. Search for "Multilify"
-4. Click "Install Now" and then "Activate"
-
-= Manual Installation =
-
-1. Download the plugin zip file
-2. Log in to your WordPress admin panel
-3. Navigate to Plugins > Add New > Upload Plugin
-4. Choose the zip file and click "Install Now"
-5. Activate the plugin
-
-= After Installation =
-
-1. Go to Multilify in your WordPress admin menu
-2. Add your languages (e.g., English, Turkish, Spanish)
-3. Set your default language
-4. Start translating your content!
+The [documentation](https://multilify.com/en/docs) covers the rest.
 
 == Frequently Asked Questions ==
 
-= Is Multilify free? =
+= Is it free? =
 
-Yes! Multilify is 100% free with no premium version or hidden costs.
-
-= How many languages can I add? =
-
-Unlimited! Add as many languages as your site needs.
+Yes. There is no pro version and nothing to sign up for.
 
 = Does it work with page builders? =
 
-Multilify translates content that runs through the `the_content` filter, which covers the block editor and the classic editor. Builders that render from their own stored data, such as Elementor, bypass that filter, so their layouts are not translated.
+Multilify translates content that passes through `the_content`, which covers the block editor and the classic editor. Builders that render from their own stored data, such as Elementor, are not translated.
 
-= Will it slow down my site? =
+= Where can I find more answers? =
 
-No! Multilify is built with performance in mind. It uses caching and database indexing to ensure fast page loads.
-
-= Can I use custom URLs for each language? =
-
-Yes! You can set custom slugs for each language version of your content.
-
-= Does it support RTL languages? =
-
-Multilify sets `dir="rtl"` on the document when WordPress reports an RTL locale, so an RTL theme renders correctly. It does not ship RTL stylesheets of its own; that is your theme's job.
-
-= Can I translate menus and widgets? =
-
-Currently, Multilify focuses on post and page content. Menu and widget translation support is planned for future releases.
-
-= Is it compatible with WooCommerce? =
-
-Translation panels appear on posts and pages by default. To add them to products, or any other custom post type, use the `multilify_post_types` filter:
-
-`add_filter( 'multilify_post_types', function ( $types ) { $types[] = 'product'; return $types; } );`
-
-This translates the product title and description. Prices, attributes and variations are WooCommerce's own data and are not covered.
-
-= How do I get support? =
-
-You can get support through the WordPress.org support forums or by contacting us directly.
+On [multilify.com](https://multilify.com/en/faq): addresses, search engines, caching, WooCommerce, multisite and more. For anything else, open a topic in the [support forum](https://wordpress.org/support/plugin/multilify/).
 
 == Screenshots ==
 
-1. The Languages screen: every language with its code, flag and how much of the site it already covers, and the form that adds one, flag picker included
-2. The editor: one panel per language with the translated title, the slug that language uses in the address, and its own content editor
-3. The switcher on a published entry, flags and names, with the current language marked
-4. The guide at the foot of the Languages screen: what the addresses look like, where the shortcode goes, and what search engines are told
+1. The Languages screen: every language with its address and how much of the site it already covers
+2. Adding a language: pick one from the list or search for it, and the code, name and flag fill in
+3. The Translations box in the editor: a tab for each language with its own title, slug and content
+4. The language switcher on a published post
 
 == Changelog ==
+
+= 1.8.0 =
+Admin
+* The Languages screen is redesigned: each language with its address and progress, an Add language button beside the title, and Make default and Delete in a menu on each row
+* Adding a language opens a dialog that lists 32 languages to pick from or search, by their own name or the English one, and fills in the code, name and flag
+* Editing a language opens a dialog with the same fields, and its Save button stays off until something changes
+* A flag can belong to one language only
+* The editor shows one Translations box with a tab for each language, in place of a box per language
+* The guide to addresses, the switcher and search engines moved to its own tab, How translating works
 
 = 1.7.1 =
 Fixes
@@ -182,244 +92,9 @@ Admin
 * Code examples read left to right in a right-to-left admin, and the arrow keys in the flag picker follow the reading direction
 * A flags-only switcher, `show_name="false"`, underlines the current language's flag
 
-= 1.7.0 =
-Added
-* A Languages column on the Posts and Pages lists, and on the list of any post type handed to `multilify_post_types`: one badge per language, filled in once the entry has a title, content or slug in that language. It can be hidden from Screen Options like any other column
-
-= 1.6.0 =
-Fixes
-* A `comment-page-N` address of a translated page returned a 404 under a prefix, and the same tail on an entry's original name was not redirected to its translated address
-* `/{lang}/entry/feed/atom/` and the other typed feeds returned a 404 for a nested page and an empty feed for a flat one
-* The second page of a search under a prefix, `/{lang}/search/term/page/2/`, searched for "term/page/2" and found nothing, and a search feed came back as HTML
-* `?lang=` in the query string overrode the language in the address, so a Turkish entry opened with `?lang=de` was a 404. The address decides the language now, and the query variable is ignored
-* An oEmbed of a translated address named the entry in the default language and framed the default address
-* On a subdirectory install, a nested translated path whose first letters spell the directory's name lost them while being routed
-* The switcher on an attachment, a product or another post type the plugin does not translate linked every other language to a 404. It links to the language home now
-* An excluded search term, `-word`, was ignored when the word appeared only in the translation
-* A cookie left behind for a deleted language switched browser language detection off for a year
-* A crawler's answer at the site root carried no `Vary` header, so a shared cache could hand it to every browser
-* The site locale was never switched for the default language, so a site run from a Turkish admin that publishes in English printed Turkish dates and "Bir yanıt yazın" under `lang="en"`
-* Deactivating the plugin left its rewrite rules in place, so `/tr/` went on answering with the default text until the permalinks were saved
-* A network activation set up the main site only, and every other site 404ed on its language prefixes until an administrator opened its dashboard
-* The rewrite rules a new version adds waited for an administrator to log in. They are rebuilt in the first request after an update
-* A translated slug changed by WP-CLI, an importer or another plugin kept resolving to the old address for an hour on a persistent object cache, and an entry trashed, restored or published on schedule stayed in, or out of, the sitemap for as long
-* The slug suggested from a translated title dropped every accented letter outside Turkish and German, so "España" became "espaa", and emptied a non-Latin title. It follows WordPress' own rules now, with German umlauts written out as ae, oe and ue
-* The switcher marked its active link as the current page on archives, search results and 404s, where it points at the language home
-
-Changed
-* The default language's prefix, `/en/...` on an English site, redirects permanently to the address without it instead of serving the same page twice
-* A lookup for an address that does not exist is remembered for five minutes rather than an hour, so a flood of unknown addresses cannot push real entries out of a persistent object cache
-* The lookup index is created from an administrator's own request only, never from an anonymous `admin-ajax.php` call
-* Settings page: every button names its language for screen readers, each flag option is named by its emoji, the delete dialog makes the page behind it inert, the text fields meet the 3:1 contrast a control's edge needs, the selected flag keeps a visible focus ring and Space no longer clears it, forced-colors mode gets a system highlight, and the title and tally stack on a narrow screen. The stylesheet uses logical properties, so a right-to-left admin keeps its gutters
-* Editor: each translation's content editor is named with its language, and the slug hint is read out with its field
-* The unused `multilify_settings` settings group was removed. The settings page never used it, and through `options.php` it let an administrator store a default language that did not exist
-
-= 1.5.1 =
-Fixes
-* In the block editor a translation's content editor could show an empty page. The editor moves the meta boxes into its own panel after they have rendered, and that reloads each editor's frame. The text was still there and still saved, but could not be seen or edited in the Visual tab. An editor that loses its frame is now rebuilt with its content, including after a panel is moved
-
-= 1.5.0 =
-Fixes
-* A password-protected entry served its full translation in every other language without asking for the password. The password form now stands in every language, and a translated title keeps the "Protected:" prefix the original shows
-* A translated slug could take another entry's own address under a prefix, which left that entry unreachable in the language. Another entry's own name now counts as taken, and the slug is numbered instead
-* A page, or an entry of a custom post type, with no translation in a language returned a 404 under that language's prefix, although the settings screen promises the default text there
-* A post type the plugin does not translate, such as a WooCommerce product left out of `multilify_post_types`, lost its base in links on translated pages and pointed at a 404
-* Translated content ran after WordPress' own formatting, so paragraphs written in the editor came out joined and blocks and embeds did not render
-* The template tag switcher on the blog index, an archive or search results linked every language to the first post in the loop instead of the language homes
-* A prefixed language still answered on an entry's original slug beside its translated one. That address now redirects permanently, as the default language's has since 1.4.0
-* Embeds, comment pages and trackbacks of a translated entry returned a 404, and its oEmbed link was refused as an invalid URL
-* A search under a language prefix only matched the original title and content
-* An item in `/{lang}/feed/` paired a translated title with the original content
-* The bundled Turkish and German translations never loaded on WordPress 5.8 to 6.7
-* `wp_title()` and `single_post_title()` kept the original title on a translated page
-* Renaming an entry through Quick Edit, the REST API or WP-CLI left its translated addresses pointing at the old name in a persistent object cache
-* An array in `?name=` or `?pagename=` raised a PHP warning
-* The copy buttons on the settings page dropped keyboard focus to the top of the page, the flag grid ran off a phone screen, and the page's intro squeezed into a narrow column beside the tally
-
-Changed
-* hreflang tags are printed only on an entry and on the language homes, and only for languages the entry has text in. A language with no text of its own points its canonical at the default address
-* WordPress switches to the installed locale of the language being viewed, so its own strings, dates and the comment form follow the address. Return the site locale from `multilify_locale` to keep a language on it
-* A visitor at the site root is sent to the language they picked from the switcher before, ahead of their browser's preference. Logged-in users and crawlers are never redirected, and the answer is no longer kept by a shared cache for the next visitor
-* The switcher's stylesheet is printed inline, and its script loads only on a page that shows a switcher
-* Focus rings on the settings page follow the admin color scheme
-* Index creation and the first rewrite flush after an update run once, from the admin, instead of on every request until they succeeded
-
-Added
-* A sitemap for every language other than the default, listing its home and each entry with text in that language
-* The `multilify_is_crawler` filter
-
-= 1.4.0 =
-Changed
-* An entry given a custom slug in the default language now answers on that address alone. Its WordPress slug returns a permanent redirect to it, the way WordPress answers any renamed entry, and page numbers, feeds and embeds are carried across. Both addresses used to return 200, and inconsistently: the paged form already redirected, because WordPress only runs its canonical check on a request carrying a page number
-* An entry with no custom slug in the default language is untouched, and so is every prefixed language, which has one address already
-
-= 1.3.3 =
-Fixes
-* Renaming an entry left the cached answer to "does a real entry already live at this address" untouched for both the address it left and the address it took. A rename is not a status change, so nothing cleared it. On a site with a persistent object cache, an entry whose own translated slug was the freed address returned a 404 for up to an hour. Measured against a persistent cache on MySQL, before and after
-
-= 1.3.2 =
-Fixes
-* The marker added to a translation panel heading in 1.3.0 was written as markup. The block editor lists the same heading in its preferences panel and renders it as text, so the tag showed there verbatim. It is plain text now, and reads the same in the panel heading, the preferences list and Screen Options
-
-= 1.3.1 =
-Fixes
-* A paged page nested under a translated parent had no working address at all. `/{lang}/parent/entry/2/` returned a 404 and `/{lang}/parent/entry/page/2/` redirected to it, so the redirect landed on the 404 as well. Both now serve the right page, and a child page whose own slug is a number still resolves ahead of either
-* The address a visitor asked for is restored once routing has matched it. It was being left rewritten to the untranslated path, which put a paged entry into a redirect loop with itself and handed every other plugin an address nobody requested
-
-= 1.3.0 =
-Fixes
-* A custom slug in the default language produced a link that 404ed. Every link to the entry pointed at an address nothing resolved, while the entry itself stayed reachable only at its old one
-* A child page with no translated slug of its own returned a 404 under a translated parent, so a half-translated page tree lost every page below the first
-* `?lang=` on any address forced the front page onto it, which turned archives, search results and date listings into the blog index
-* An unknown language code from `?lang=` reached the `<html lang>` attribute and the `Content-Language` header unchanged; only configured codes are honored now
-* A paged entry under a language prefix returned a 404, and a feed of one did too, because both routed through the query variable an archive uses and through a rule WordPress rejects for a post. `/{lang}/entry/2/` now serves page two, and `/{lang}/entry/page/2/` reaches it the same way it does without a prefix
-* Two entries could be given the same translated slug in one language, leaving the second unreachable. A duplicate is now numbered the way WordPress numbers a duplicate post slug
-* Cached routes are dropped when an entry is trashed, restored or deleted, instead of answering for an hour from a persistent object cache
-* A language code that WordPress already serves, or that an existing post or page already lives at, is refused with an explanation instead of quietly taking the address over
-* Uninstall removes translation meta in batches, so a large site is not held on one unbounded delete
-
-Added
-* Each language on the settings page carries a measure of how much of it is done
-* A translation panel on the post editor says so in its heading when that language already has something, which a collapsed panel shows
-
-Changed
-* The switcher marks the active language with `aria-current="page"`
-* The switcher stylesheet and script are left out entirely on a site with one language
-
-= 1.2.0 =
-Added
-* Turkish, German and Spanish translations of the admin interface. WordPress shows the plugin in its own language when the site runs in one of them, and falls back to English otherwise.
-* Any other locale can be contributed at translate.wordpress.org, from the translation template the plugin already ships
-
-= 1.1.0 =
-Fixes
-* Language detection now works when WordPress is installed in a subdirectory; the install path is no longer mistaken for a language code
-* `/{lang}/page/2/` and `/{lang}/feed/` return content instead of a 404; paged entries, entry feeds and search under a language prefix now route correctly
-* Child pages keep their parent path in translated URLs, so `/{lang}/parent/child/` resolves instead of 404ing
-* The document title on the front page and on archives is no longer overwritten with a post title from the loop
-* Translation panels no longer save on revisions or on post types they were never added to
-* Meta box fields no longer inherit the inline editor's layout, which shrank their labels and clipped their inputs
-
-Added
-* `rel="alternate"` hreflang tags, including `x-default`, in `<head>`
-* `<html lang>` and a `Content-Language` header that follow the language being viewed
-* Browser language detection for first-time visitors, remembered per visitor and overridable with the `multilify_enable_browser_detection` filter
-* Translation progress per language on the settings page
-* A flag picker in place of the free text emoji field
-* Custom post type support through the `multilify_post_types` filter
-* Filters: `multilify_translated_title`, `multilify_translated_content`, `multilify_flag_choices`, `multilify_locale`
-
-Changed
-* Rebuilt the settings screen: language entries read as a list with their code, name, default state and progress
-* Corrected readme claims that the code did not support
-
-= 1.0.5 =
-* The default language no longer gets a URL prefix, so each post has a single canonical address
-* Added uninstall cleanup that removes plugin options, translation meta and the lookup index
-* Made the plugin translatable: interface strings now use the multilify text domain and a .pot template ships in /languages
-* The default language can no longer be deleted, and only an existing language can be set as default
-* Language switcher is now a nav list with hreflang, aria-current and a screen-reader label when only flags are shown
-* Fixed the delete confirmation appearing twice
-* Added a LICENSE file (GPL v2)
-
-= 1.0.4 =
-* Tested up to WordPress 7.1
-* Verified compatibility with the always-iframed post editor introduced in WordPress 7.1
-* Verified compatibility with the jQuery UI 1.14.2 update shipped in WordPress 7.1
-* No functional changes
-
-= 1.0.3 =
-* Added the ability to edit existing languages (name and flag) from the admin
-* Prevented adding a language with a code that already exists (shows an error)
-* Registered the [multilify_switcher] shortcode (supports show_name and show_flag)
-* Fixed a blank settings page after saving (form handling moved to admin_init so redirects work)
-* Fixed PHP warnings in the language switcher when a post object was unavailable
-* Tested up to WordPress 6.9
-
-= 1.0.2 =
-* Added flag-only language switcher support via show_name and show_flag arguments
-* Made the language name optional (falls back to the language code when left empty)
-* Fixed an empty/underlined language label appearing in the switcher
-
-= 1.0.1 =
-* Added plugin icon for WordPress.org directory
-* Added Plugin URI (https://multilify.vercel.app)
-* Updated support section with website and GitHub links
-
-= 1.0.0 =
-* Initial release
-* Unlimited language support
-* Custom slug functionality
-* Performance caching system
-* Database indexing
-* Language switcher
-* SEO optimization
-* Browser language detection
-* Admin interface
-* Translation meta boxes
+Earlier versions are listed in the [release notes](https://multilify.com/en/releases).
 
 == Upgrade Notice ==
 
-= 1.7.1 =
-Fixes the language home on sites with a static front page, keeps searches in the language they were made in, and improves the admin screens on phones and for screen readers. No action needed after updating.
-
-= 1.7.0 =
-Adds a Languages column to the Posts and Pages lists, showing which languages each entry already has. No action needed after updating.
-
-= 1.6.0 =
-Routing fixes: comment pages, typed feeds and search pages under a prefix, ?lang= no longer overrides the address, and /en/-style addresses of the default language redirect to the bare one. Deactivation removes the plugin's rules. Network activation reaches every site.
-
-= 1.5.1 =
-Fixes a translation's content editor showing an empty page in the block editor. Nothing was lost: the text was saved all along, only hidden from the Visual tab.
-
-= 1.5.0 =
-Security fix: a password-protected entry showed its translations without the password. Also fixes untranslated pages and custom post types returning 404 under a prefix, and WordPress now switches to the language being viewed. Rewrite rules refresh on their own after the update.
-
-= 1.4.0 =
-Changes URLs. If you set a custom slug in your default language, the entry's WordPress slug now redirects to it permanently instead of serving the same page. Browsers cache a permanent redirect, so clearing such a slug later can leave earlier visitors on the old address for a while.
-
-= 1.3.3 =
-Only affects sites running a persistent object cache such as Redis or Memcached: renaming an entry could 404 another entry for up to an hour.
-
-= 1.3.2 =
-Cosmetic only: a translation panel heading showed raw markup in the block editor preferences list.
-
-= 1.3.1 =
-Finishes the routing work in 1.3.0: a paged page under a translated parent had no working address, and the request URL was left rewritten after routing. Visit Settings > Permalinks once after updating.
-
-= 1.3.0 =
-Fixes four ways a translated address could 404 or resolve to the wrong page, including a custom slug in the default language and a child page under a translated parent. If either applies to your site, visit Settings > Permalinks once after updating.
-
-= 1.2.0 =
-The admin screens are now available in Turkish, German and Spanish. Nothing else changed; no action needed after updating.
-
-= 1.1.0 =
-Fixes 404s on paged, feed and child-page URLs under a language prefix, and on subdirectory installs where language detection never worked. Adds hreflang tags and browser language detection. Visit Settings > Permalinks once after updating so the new routes register.
-
-= 1.0.5 =
-URLs in the default language lose their /{lang}/ prefix in this release. If you rely on the prefixed form, add redirects before updating.
-
-= 1.0.4 =
-Compatibility release for WordPress 7.1. No functional changes.
-
-= 1.0.3 =
-Adds language editing, duplicate-code protection, the [multilify_switcher] shortcode, and fixes a blank settings page after saving.
-
-= 1.0.2 =
-Adds flag-only switcher support and makes the language name optional.
-
-= 1.0.1 =
-Minor update: Added plugin icon and website links.
-
-= 1.0.0 =
-Initial release of Multilify.
-
-== Support ==
-
-* **Website:** [https://multilify.com](https://multilify.com)
-* **Support Forums:** [WordPress.org support forums](https://wordpress.org/support/plugin/multilify/)
-* **GitHub:** [github.com/kadirermantr/multilify](https://github.com/kadirermantr/multilify)
-
-== Contributing ==
-
-Multilify is open source! Contribute on [GitHub](https://github.com/kadirermantr/multilify).
+= 1.8.0 =
+A redesigned Languages screen and one tabbed Translations box in the editor. Languages and translations stay as they are, so there is nothing to do after updating.

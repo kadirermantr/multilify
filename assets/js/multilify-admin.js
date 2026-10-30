@@ -185,38 +185,52 @@
             }
         });
 
-        // Toggle inline edit row for an existing language
+        // Edit a language in its dialog. Closing it any way but Save drops
+        // what was typed: the next opening shows the saved name and flag.
         $('.multilify-edit-toggle').on('click', function() {
-            var code = $(this).data('code');
-            var row = document.getElementById('multilify-edit-' + code);
+            var dialog = document.getElementById('multilify-edit-' + $(this).data('code'));
 
-            if (!row) {
-                return;
-            }
-
-            var willOpen = row.hidden;
-
-            row.hidden = !willOpen;
-            $(this).attr('aria-expanded', willOpen ? 'true' : 'false');
-
-            // Move focus into the form so keyboard users land where they expect.
-            if (willOpen) {
-                $(row).find('input[name="lang_name"]').trigger('focus');
+            if (dialog && 'function' === typeof dialog.showModal) {
+                dialog.showModal();
+                $(dialog).find('input[name="lang_name"]').trigger('focus');
             }
         });
 
-        // Cancel inline edit
-        $('.multilify-edit-cancel').on('click', function() {
-            var code = $(this).data('code');
-            var row = document.getElementById('multilify-edit-' + code);
+        $('[data-multilify-edit]').each(function() {
+            var dialog = this;
+            var $fields = $(dialog).find('input[name="lang_name"], input[name="lang_flag"]');
+            var $save = $(dialog).find('[data-multilify-edit-save]');
 
-            if (row) {
-                row.hidden = true;
+            // Save stays off until the name or the flag differs from what is saved.
+            // The flag grid writes the field without an input event, so clicks count too.
+            function updateSave() {
+                var dirty = $fields.toArray().some(function(field) {
+                    return field.value.trim() !== field.defaultValue.trim();
+                });
+
+                $save.prop('disabled', !dirty);
             }
 
-            $('.multilify-edit-toggle[data-code="' + code + '"]')
-                .attr('aria-expanded', 'false')
-                .trigger('focus');
+            $(dialog).on('input change', 'input', updateSave);
+            $(dialog).on('click', '.multilify-flagpicker__option', function() {
+                window.setTimeout(updateSave, 0);
+            });
+
+            $(dialog).on('click', '[data-multilify-edit-close]', function() {
+                dialog.close();
+            });
+
+            $(dialog).on('click', function(e) {
+                if (e.target === dialog) {
+                    dialog.close();
+                }
+            });
+
+            dialog.addEventListener('close', function() {
+                $(dialog).find('form').get(0).reset();
+                $(dialog).find('[data-multilify-flaginput]').trigger('input');
+                updateSave();
+            });
         });
 
         // Copy a snippet to the clipboard, with a text selection fallback for
@@ -450,4 +464,159 @@
 
     });
 
+
+    // ---------------------------------------------------------------
+    // Languages screen and translations box.
+    $(function() {
+
+        // Translations box: one tab per language, arrow keys move between them.
+        $('[data-multilify-tabs]').each(function() {
+            var $box = $(this);
+            var $tabs = $box.find('[role="tab"]');
+
+            function select($tab, focus) {
+                $tabs.attr('aria-selected', 'false').attr('tabindex', '-1');
+                $tab.attr('aria-selected', 'true').attr('tabindex', '0');
+                $box.find('[role="tabpanel"]').removeClass('is-active');
+                $('#' + $tab.attr('aria-controls')).addClass('is-active');
+
+                if (focus) {
+                    $tab.trigger('focus');
+                }
+            }
+
+            $tabs.on('click', function() {
+                select($(this), false);
+            });
+
+            $tabs.on('keydown', function(e) {
+                var index = $tabs.index(this);
+                var next = null;
+
+                if ('ArrowRight' === e.key || 'ArrowDown' === e.key) {
+                    next = (index + 1) % $tabs.length;
+                } else if ('ArrowLeft' === e.key || 'ArrowUp' === e.key) {
+                    next = (index - 1 + $tabs.length) % $tabs.length;
+                } else if ('Home' === e.key) {
+                    next = 0;
+                } else if ('End' === e.key) {
+                    next = $tabs.length - 1;
+                }
+
+                if (null !== next) {
+                    e.preventDefault();
+                    select($tabs.eq(next), true);
+                }
+            });
+        });
+
+        // Add a language: a dialog that fills its fields from the catalog.
+        var add = document.querySelector('[data-multilify-add]');
+
+        if (add && 'function' === typeof add.showModal) {
+            var $add = $(add);
+            var $code = $add.find('#lang_code');
+            var $addressCode = $add.find('[data-multilify-add-code]');
+
+            // The address in the code hint follows what is typed; an ellipsis
+            // stands in until there is a code.
+            function updatePreview() {
+                var value = $code.val();
+
+                $addressCode.text(value ? value : '\u2026');
+            }
+
+            $('[data-multilify-add-open]').on('click', function() {
+                add.showModal();
+                $add.find('[data-multilify-add-filter]').trigger('focus');
+            });
+
+            $add.on('click', '[data-multilify-add-close]', function() {
+                add.close();
+            });
+
+            // A click on the backdrop closes it, as WordPress's own modals do.
+            $add.on('click', function(e) {
+                if (e.target === add) {
+                    add.close();
+                }
+            });
+
+            var $list = $add.find('[data-multilify-add-list]');
+            var $filter = $add.find('[data-multilify-add-filter]');
+
+            $add.on('click', '.mfy-option, .mfy-tile[data-code]', function() {
+                var $pick = $(this);
+
+                $add.find('.is-picked').removeClass('is-picked');
+                $pick.addClass('is-picked');
+                $code.val($pick.attr('data-code'));
+                $add.find('#lang_name').val($pick.attr('data-name'));
+                $add.find('#lang_flag').val($pick.attr('data-flag'));
+                updatePreview();
+
+                // A pick from the results closes them and leaves its name in the search.
+                if ($pick.hasClass('mfy-option')) {
+                    $filter.val($pick.attr('data-name'));
+                    $list.prop('hidden', true);
+                }
+            });
+
+            // Matching ignores case and accents, so "viet" finds Tiếng Việt.
+            function fold(text) {
+                return String(text).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase();
+            }
+
+            // The results open only while something is typed, and only with matches.
+            $filter.on('input', function() {
+                var query = fold($(this).val()).trim();
+                var shown = 0;
+
+                $add.find('.mfy-option').each(function() {
+                    var $option = $(this);
+                    var haystack = fold($option.attr('data-name') + ' ' + $option.attr('data-english') + ' ' + $option.attr('data-code'));
+                    var match = '' !== query && -1 !== haystack.indexOf(query);
+
+                    $option.prop('hidden', !match);
+                    shown += match ? 1 : 0;
+                });
+
+                $list.prop('hidden', 0 === shown);
+            });
+
+            $code.on('input', updatePreview);
+
+            // Closed without adding (Escape, the close button, Cancel or the
+            // backdrop): the next opening starts from an empty form.
+            add.addEventListener('close', function() {
+                $add.find('form').get(0).reset();
+                $add.find('.is-picked').removeClass('is-picked');
+                $add.find('.mfy-option').prop('hidden', false);
+                $list.prop('hidden', true);
+                updatePreview();
+            });
+        }
+
+        // Row menus: placed under their button, and closed before the delete
+        // confirmation opens over them.
+        $('.mfy-menu').each(function() {
+            var menu = this;
+
+            menu.addEventListener('toggle', function(e) {
+                if ('open' !== e.newState) {
+                    return;
+                }
+
+                var button = document.querySelector('[popovertarget="' + menu.id + '"]');
+                var rect = button.getBoundingClientRect();
+
+                menu.style.top = (rect.bottom + 4) + 'px';
+                menu.style.left = Math.max(8, rect.right - menu.offsetWidth) + 'px';
+            });
+
+            $(menu).find('form').on('submit', function() {
+                menu.hidePopover();
+            });
+        });
+    });
 })(jQuery);
