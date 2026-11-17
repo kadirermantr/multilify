@@ -4,7 +4,7 @@ Tags: multilingual, translation, language, i18n, localization
 Requires at least: 5.8
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.8.1
+Stable tag: 1.8.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -67,6 +67,11 @@ On [multilify.com](https://multilify.com/en/faq): addresses, search engines, cac
 
 == Changelog ==
 
+= 1.8.2 =
+Fixes
+* Canceling the delete confirmation on the Languages screen left keyboard focus at the top of the page. It now returns to the row's More actions button
+* In the post editor, pressing Escape removed the `inert` attribute from the admin page, which could reactivate the page behind another plugin's open dialog
+
 = 1.8.1 =
 Fixes
 * The translation editors could open empty and take no typing when the block editor moved the Translations box while they were still starting. They are now rebuilt with their content, as they already were when the move came after they had started
@@ -84,5 +89,5 @@ Earlier versions are listed in the [release notes](https://multilify.com/en/rele
 
 == Upgrade Notice ==
 
-= 1.8.1 =
-Fixes translation editors that could open empty in the block editor. Nothing to do after updating.
+= 1.8.2 =
+Fixes keyboard focus after canceling a delete and an Escape key side effect in the editor. Coming from 1.7: 1.8.0 redesigned the Languages screen and moved translations into one tabbed box. Nothing to do after updating.
