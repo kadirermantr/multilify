@@ -115,7 +115,12 @@
 
         function openDialog(form, languageName) {
             pendingForm = form;
-            lastFocus = document.activeElement;
+
+            // A Delete inside a row menu is hidden with its menu, so focus
+            // goes back to the button that opened the menu.
+            var menu = $(form).closest('.mfy-menu').get(0);
+
+            lastFocus = menu ? document.querySelector('[popovertarget="' + menu.id + '"]') : document.activeElement;
 
             // A function, so a $ in the language name is never read as a pattern.
             $dialog.find('.multilify-dialog__title').text(
@@ -160,8 +165,10 @@
             }
         });
 
+        // The editor screens load this file without the dialog, and an empty
+        // set has no hidden attribute to read.
         $(document).on('keydown', function(e) {
-            if (!$dialog.attr('hidden') && e.key === 'Escape') {
+            if ($dialog.length && !$dialog.attr('hidden') && e.key === 'Escape') {
                 closeDialog();
             }
         });
