@@ -1,0 +1,39 @@
+# Rebuilds multilify.com when a release is published here.
+#
+# The site prints the current version, what it runs on and the release history,
+# and reads all of it while it is being built, from the plugin directory and
+# from this repository's releases. Without a build it goes on showing the
+# version before this one. The hook is a Vercel deploy hook for the site's main
+# branch; its address is the SITE_DEPLOY_HOOK secret and is never printed.
+name: Site
+
+on:
+  release:
+    types: [published]
+  # By hand from the Actions tab, for a readme-only change the site should show.
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  rebuild:
+    name: Rebuild multilify.com
+    runs-on: ubuntu-latest
+    steps:
+      # A release is published minutes after the tag reaches the plugin
+      # directory, and the directory's own API can trail the tag by a few more.
+      # A build that ran at once could read the previous version from it.
+      - name: Give the plugin directory time to show the release
+        if: github.event_name == 'release'
+        run: sleep 300
+
+      - name: Call the deploy hook
+        env:
+          HOOK: ${{ secrets.SITE_DEPLOY_HOOK }}
+        run: |
+          if [ -z "$HOOK" ]; then
+            echo "SITE_DEPLOY_HOOK is not set" >&2
+            exit 1
+          fi
+
+          curl --fail --silent --show-error --request POST --output /dev/null "$HOOK"
